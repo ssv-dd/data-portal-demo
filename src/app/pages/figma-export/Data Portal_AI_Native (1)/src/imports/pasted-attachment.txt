@@ -1,0 +1,266 @@
+Project: DoorDash — AI-Native BI (Frontend Prototype)
+One-line brief
+
+Design a desktop prototype (1440×1024) that demonstrates: Data Agent (chat) → Pin → Auto-Generate Dashboard Canvas → Publish (with verification gate), SQL Studio flow, Notebook scaffold, Discovery feed, Asset Verification, and Telemetry / Ingest Monitor. Use simple, modern cards, clear CTAs, and Verified vs Unverified states.
+
+Artboards (create each as an artboard/frame in Figma)
+
+01_Home_Discovery — 1440 × 1024
+
+02_DataAgent_Chat — 1440 × 1024
+
+03_Draft_Dashboard_Canvas — 1440 × 1024
+
+04_Dashboard_Publish_Modal — 720 × 520 (modal overlay)
+
+05_SQL_Studio — 1440 × 1024
+
+06_Notebook_Scaffold_Modal — 720 × 520
+
+07_Asset_Verification_Panel — 1024 × 768 (right rail / modal)
+
+08_Telemetry_Ingest_Monitor — 1440 × 1024
+
+Global settings / tokens
+
+Canvas size: 1440 × 1024 (desktop).
+
+Spacing base: 8px grid.
+
+Fonts: Inter / SF Pro (Regular 16px body, 20px headings).
+
+Accent color (example): #FF3A00 (DoorDash accent) — use for Primary CTAs.
+
+Neutral palette: gray-900 (text), gray-700 (muted), gray-100 (cards).
+
+Border radius: 8px for cards, 6px for buttons.
+
+Elevation: subtle shadow for floating modals.
+
+Component Library (create as Figma components with variants)
+Top Nav
+
+Elements: Logo (left), Global Search (center), Nav tabs (Discovery, Agent, Dashboards, Notebooks, SQL Studio, Admin), Right: Notifications, Avatar.
+
+States: Default, Active tab, Notifications badge (number).
+
+Left Rail
+
+Items: Home, My Work, Shared, Favorites, Metric Registry, Alerts.
+
+State: Collapsed / Expanded.
+
+Buttons
+
+Primary (filled): height 40px, radius 6px, bg #FF3A00, text white.
+
+Secondary (outline): border 1px gray-300, text gray-800.
+
+Tertiary (text): plain text link.
+
+Disabled variant.
+
+Cards
+
+Result Card (Agent): title (16px bold), one-line narrative (14px), mini chart thumbnail (left), metadata row: source (table), confidence badge, verified/unverified badge, action icons (Show SQL, Pin, Open in SQL Studio, Save to Discovery, Verify).
+
+Dashboard Card: thumbnail, title, owner, last updated, verified badge, share button.
+
+Badges
+
+Verified: green check circle + text “Verified” (tooltip: “Verified by <name> on YYYY-MM-DD”).
+
+Unverified: gray outline + text “Unverified” (tooltip: “Not eligible for org AI summaries”).
+
+Right Rail / Inspector
+
+Sections: Data Source, SQL (collapsible), Owner, Tags, Verification status, Actions (Promote, Verify, Edit, Open Notebook).
+
+Mode: Read / Edit.
+
+Modals
+
+Publish Dashboard Modal: Title, list of metrics (verified status displayed), Approve/Request verification options, Primary CTA: Publish, Secondary: Save as Draft.
+
+Promote to Metric Modal: Auto name, Owner dropdown, Tags input, Tests checklist, Buttons: Preview SQL / Run Tests / Create PR.
+
+Verification Modal: Checklist, PII scan summary, Owner assign, Approve / Request changes.
+
+SQL Editor
+
+Code area, Run on Sample toggle, Run Full query, Plan/Explain button, Test results area, Promote button.
+
+Notebooks List / Scaffold Modal
+
+Template list, small description, Owner field, Create Notebook CTA.
+
+Telemetry Widgets (Admin)
+
+KPI tiles: Last ingest, Retrain queue length, Verified assets count, Hallucination rate (user reported).
+
+Event table: time, artifact, owner, status, log preview.
+
+Toasts & Alerts
+
+Success (green), Warning (yellow), Error (red), Info (blue). Single line copy.
+
+Sample Microcopy (copy-paste into Figma text fields)
+
+Agent greeting:
+“Hi — ask me anything about orders, delivery, couriers or revenue. Try: ‘Why did completed orders drop in SF on Mar 5?’”
+
+Agent result action chips:
+“Create dashboard”, “Show SQL”, “Open in SQL Studio”, “Verify asset”, “Save to Discovery”, “Open in Notebook”
+
+Verified badge tooltip:
+“Verified: Approved for organizational AI insights by <name> on YYYY-MM-DD”
+
+Publish modal header:
+“Publish dashboard to Organization?”
+
+Publish modal body copy:
+“Verified metrics will power automated narrative summaries. Unverified assets will publish as draft-only and will not be used for org-wide AI summaries. To include unverified metrics in org summaries, request verification.”
+
+Promote modal CTAs:
+“Preview SQL”, “Run Tests”, “Create PR”
+
+Verification checklist items (labels):
+“Schema matches canonical definition”, “No PII leakage”, “Owner assigned”, “Test coverage present”, “Performance under threshold”
+
+Telemetry top line:
+“Last ingest: 6 min ago • Retrain queue: 2 items • Last verified asset: orders_by_city.sql (verified by A. Patel)”
+
+Empty Discovery state:
+“No recent artifacts. Try searching for ‘delivery latency’ or ask the Data Agent to surface related work.”
+
+Low confidence microcopy:
+“Low confidence — recommended reviewer check.”
+
+Sample datasets & artifacts (include as Figma text blocks or attach as assets)
+
+Provide these artifacts to populate card content and show SQL preview text.
+
+orders_by_city.sql — owner: A. Patel — created: 2026-03-01 — verified: true
+
+SELECT city, COUNT(*) AS completed_orders
+FROM orders
+WHERE status = 'completed' AND order_placed_at >= DATEADD(day, -30, CURRENT_DATE)
+GROUP BY city
+ORDER BY completed_orders DESC;
+
+delivery_latency_by_zone.sql — owner: M. Chen — created: 2026-02-27 — verified: false
+
+SELECT zone_id, AVG(delivery_time_minutes) AS avg_latency
+FROM deliveries
+WHERE delivered_at >= DATEADD(day, -14, CURRENT_DATE)
+GROUP BY zone_id
+ORDER BY avg_latency DESC;
+
+courier_availability_notebook.ipynb — owner: S. Lee — created: 2026-02-20 — verified: true
+
+Notebook summary: “Feature exploration & distribution for courier supply model. Contains feature compute SQL, histograms, and model eval charts.”
+
+dashboard_ops.json — owner: Ops Team — created: 2026-03-03 — verified: false
+
+Dashboard summary: “Ops dashboard: delivery latency, completed orders, courier active count.”
+
+agent_transcript_20260305.txt — sample conversation with the data agent (include short 200-word transcript to demo conversation history card).
+
+Screen Flows (step-by-step to prototype interactions)
+Flow A — Agent → Pin → Auto Dashboard (demoable)
+
+Open 02_DataAgent_Chat. Type question: “Why did completed orders drop in SF yesterday?”
+
+Agent returns: one-line summary + 3 Result Cards (orders_by_city, delivery_latency_by_zone, courier_availability).
+
+Hover a Result Card → reveal actions → click Pin. Repeat for second card. Toast: “2 cards pinned — Open canvas?” CTA → Open Canvas.
+
+03_Draft_Dashboard_Canvas opens with pinned cards auto-laid out. Use right-rail to change card 2 chart type to “geo map”.
+
+Click Publish → 04_Dashboard_Publish_Modal appears. Modal shows orders_by_city.sql (Verified) and delivery_latency_by_zone.sql (Unverified) with warning. Choose: Route delivery_latency_by_zone.sql to reviewer or publish as Draft. Click Publish (if draft, shows note).
+
+Success toast: “Dashboard published. Share link copied.”
+
+Flow B — Agent → Show SQL → SQL Studio → Promote
+
+From Agent Result Card click Show SQL → overlay with SQL snippet (use orders_by_city.sql text).
+
+Click Open in SQL Studio. 05_SQL_Studio loads with SQL prefilled.
+
+Toggle Run on Sample and click Run → sample results table displays.
+
+Click Promote to Metric → Promote Modal opens. Fill owner, add tag core:orders, click Create PR. Notification: “Metric draft created — assigned to A. Patel for verification.”
+
+Flow C — Discovery → Clone → Notebook scaffold
+
+01_Home_Discovery shows courier_availability_notebook.ipynb card (verified). Click Clone → 06_Notebook_Scaffold_Modal opens with scaffold options. Click Create Notebook to generate new notebook (demo as created state).
+
+Flow D — Verification
+
+Reviewer clicks notification: “Asset pending verification: delivery_latency_by_zone.sql.” Opens 07_Asset_Verification_Panel.
+
+Panel shows checklist, PII scan (none), automated test results (performance: PASS). Reviewer checks items, clicks Approve. Asset badge changes to Verified and push to ingest/retrain queue.
+
+Flow E — Telemetry
+
+08_Telemetry_Ingest_Monitor shows recent ingest events, retrain queue length (2), last ingest time. Click latest ingest row to open log preview. Click Trigger Retrain to start manual retrain (show toast: “Retrain started — job id: r-20260310-01”).
+
+Keyboard Shortcuts (include in design handoff)
+
+/ — focus global search / agent input
+
+P — pin selected card
+
+Ctrl/Cmd + Enter — run SQL in SQL Studio
+
+Shift + S — open SQL overlay from selected result
+
+? — show shortcuts modal
+
+Accessibility & edge states
+
+Verified badge must include icon + text (not color only).
+
+Provide skeleton loaders for slow queries (3s+).
+
+Show low-confidence banner: “Low confidence — recommended reviewer check.”
+
+Error state: SQL run failed → show error code + truncated log (first 200 chars) + CTAs: Retry / Open in SQL Studio.
+
+Demo script (3 minutes) — copy-paste
+
+Start on 01_Home_Discovery: highlight Verified badges and Discovery filters (10s)
+
+Open 02_DataAgent_Chat: ask question → show Result Cards + Show SQL overlay (45s)
+
+Pin two cards → open 03_Draft_Dashboard_Canvas → edit & Publish (show 04_Dashboard_Publish_Modal with verification warning) (45s)
+
+From Agent result open SQL Studio 05_SQL_Studio → run sample → Promote to metric (30s)
+
+Open 07_Asset_Verification_Panel and Approve an asset → show 08_Telemetry_Ingest_Monitor retrain queue (20s)
+
+Wrap: highlight backend integration points (ingest, verify, retrain, telemetry) — hand off API stub. (10s)
+
+Handoff assets (to attach or paste into Figma file)
+
+Sample SQL snippets (3 items) — use code blocks above.
+
+Sample notebook summary text — use above.
+
+Sample dashboard JSON description — use above.
+
+Component spec (list of components above) — copy into a Figma page titled “Design System”.
+
+Acceptance criteria (what to present to ENG)
+
+Complete Figma file with components and the 8 artboards.
+
+Interactive demo of Agent → Pin → Canvas → Publish (with verification gate).
+
+SQL Studio prefill & run sample flow.
+
+Discovery clone to Notebook scaffold.
+
+Verification modal and Telemetry monitor visible.
+
+Deliverable: Figma link + one-page PDF export with demo script.
