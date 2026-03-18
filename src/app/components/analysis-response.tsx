@@ -1,7 +1,7 @@
-import { Sparkles, ChevronUp, ChevronDown, TrendingUp, TrendingDown, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2 } from 'lucide-react';
+import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 const chartData = [
   { date: 'Jan 15', subscribers: 11.2, target: 11.0 },
@@ -195,7 +195,7 @@ export function AnalysisResponse() {
                   <YAxis domain={[10.5, 15]} tick={{ fontSize: 12 }} stroke="#9ca3af" tickFormatter={(v) => `${v}M`} />
                   <Tooltip
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
-                    formatter={(value: number) => [`${value}M`, '']}
+                    formatter={(value) => [`${value}M`, '']}
                   />
                   <Area type="monotone" dataKey="subscribers" stroke="#FF3A00" strokeWidth={2.5} fill="url(#subscriberGradient)" name="Actual" />
                   <Line type="monotone" dataKey="target" stroke="#9ca3af" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target" />

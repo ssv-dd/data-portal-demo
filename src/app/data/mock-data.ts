@@ -175,3 +175,231 @@ export const telemetryKPIs = {
   lastVerifiedAsset: 'orders_by_city.sql',
   lastVerifiedBy: 'A. Patel'
 };
+
+// --- Ported from Vision V1 (Quick Access / Golden Dashboards) ---
+
+export type UserRole = 'business-executive' | 'business-executive-pa' | 'so-analyst' | 'data-scientist' | 'data-engineer';
+
+export interface SearchResult {
+  id: string;
+  name: string;
+  type: 'dashboard' | 'table' | 'metric';
+  description: string;
+  lastUpdated?: string;
+  owner?: string;
+  tags?: string[];
+  verified?: boolean;
+  isPedregal?: boolean;
+}
+
+export interface GoldenDashboard {
+  id: string;
+  title: string;
+  description: string;
+  chartType: 'line' | 'area' | 'bar';
+  data: { month?: string; name?: string; value: number }[];
+  dataKey: string;
+  color: string;
+  icon?: string;
+  thumbnail?: string;
+}
+
+function generateGoldenChartData(points: number = 12): { month: string; value: number }[] {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return Array.from({ length: points }, (_, i) => ({
+    month: months[i % 12],
+    value: Math.floor(Math.random() * 5000) + 2000
+  }));
+}
+
+export const goldenDashboards: Record<UserRole, GoldenDashboard[]> = {
+  'business-executive': [
+    {
+      id: 'gd-be-4',
+      title: 'Company Performance Dashboard',
+      description: 'Comprehensive company-wide metrics',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#f59e0b',
+      icon: '📊'
+    },
+    {
+      id: 'gd-be-1',
+      title: 'Executive Revenue Overview',
+      description: 'Global revenue performance and trends',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#8b5cf6',
+      icon: '💰'
+    },
+    {
+      id: 'gd-be-2',
+      title: 'Market Share Analysis',
+      description: 'Market penetration across regions',
+      chartType: 'bar',
+      data: generateGoldenChartData(8),
+      dataKey: 'value',
+      color: '#3b82f6',
+      icon: '🎯'
+    },
+    {
+      id: 'gd-be-3',
+      title: 'Customer Growth Metrics',
+      description: 'User acquisition and retention trends',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#10b981',
+      icon: '📈'
+    }
+  ],
+  'business-executive-pa': [
+    {
+      id: 'gd-be-4',
+      title: 'Company Performance Dashboard',
+      description: 'Comprehensive company-wide metrics',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#f59e0b',
+      icon: '📊'
+    },
+    {
+      id: 'gd-be-1',
+      title: 'Executive Revenue Overview',
+      description: 'Global revenue performance and trends',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#8b5cf6',
+      icon: '💰'
+    },
+    {
+      id: 'gd-be-2',
+      title: 'Market Share Analysis',
+      description: 'Market penetration across regions',
+      chartType: 'bar',
+      data: generateGoldenChartData(8),
+      dataKey: 'value',
+      color: '#3b82f6',
+      icon: '🎯'
+    },
+    {
+      id: 'gd-be-3',
+      title: 'Customer Growth Metrics',
+      description: 'User acquisition and retention trends',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#10b981',
+      icon: '📈'
+    }
+  ],
+  'so-analyst': [
+    {
+      id: 'gd-soa-1',
+      title: 'Operational Efficiency Dashboard',
+      description: 'Key operational metrics and KPIs',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#8b5cf6'
+    },
+    {
+      id: 'gd-soa-2',
+      title: 'Market Analysis',
+      description: 'Competitive landscape and trends',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#f59e0b'
+    },
+    {
+      id: 'gd-soa-3',
+      title: 'Performance Metrics',
+      description: 'Strategic initiative performance',
+      chartType: 'bar',
+      data: generateGoldenChartData(10),
+      dataKey: 'value',
+      color: '#3b82f6'
+    }
+  ],
+  'data-scientist': [
+    {
+      id: 'gd-ds-1',
+      title: 'Core Consumer Funnel',
+      description: 'End-to-end conversion metrics',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#8b5cf6'
+    },
+    {
+      id: 'gd-ds-2',
+      title: 'Homepage Performance',
+      description: 'Homepage engagement and conversion',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#10b981'
+    },
+    {
+      id: 'gd-ds-3',
+      title: 'User Behavior Analysis',
+      description: 'User interaction patterns',
+      chartType: 'bar',
+      data: generateGoldenChartData(10),
+      dataKey: 'value',
+      color: '#3b82f6'
+    },
+    {
+      id: 'gd-ds-4',
+      title: 'Search Performance',
+      description: 'Search quality and relevance metrics',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#ef4444'
+    }
+  ],
+  'data-engineer': [
+    {
+      id: 'gd-de-1',
+      title: 'Pipeline Health Dashboard',
+      description: 'ETL pipeline monitoring and performance',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#10b981'
+    },
+    {
+      id: 'gd-de-2',
+      title: 'Data Quality Metrics',
+      description: 'Data validation and quality scores',
+      chartType: 'bar',
+      data: generateGoldenChartData(8),
+      dataKey: 'value',
+      color: '#8b5cf6'
+    },
+    {
+      id: 'gd-de-3',
+      title: 'Storage & Cost Analytics',
+      description: 'Infrastructure cost optimization',
+      chartType: 'area',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#ef4444'
+    },
+    {
+      id: 'gd-de-4',
+      title: 'Real-time Streaming',
+      description: 'Stream processing and throughput',
+      chartType: 'line',
+      data: generateGoldenChartData(),
+      dataKey: 'value',
+      color: '#3b82f6'
+    }
+  ]
+};

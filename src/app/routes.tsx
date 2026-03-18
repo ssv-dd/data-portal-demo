@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createHashRouter } from 'react-router'
 import { RootLayout } from './components/layout/root-layout'
 import { HomePage } from './pages/home-page'
 import { MyCanvasPage } from './pages/my-canvas-page'
@@ -7,7 +7,7 @@ import { SQLStudioPage } from './pages/sql-studio-page'
 import { NotebooksPage } from './pages/notebooks-page'
 import { AIWorkflowsPage } from './pages/ai-workflows-page'
 
-export const router = createBrowserRouter([
+export const router = createHashRouter([
   {
     path: '/',
     element: <RootLayout />,
