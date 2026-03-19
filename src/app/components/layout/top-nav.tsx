@@ -27,7 +27,7 @@ export function TopNav() {
   return (
     <nav className="h-16 border-b border-gray-200 bg-white flex items-center px-6 gap-6">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF3A00' }}>
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-dd-primary">
           <span className="text-white font-bold text-lg">D</span>
         </div>
         <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export function TopNav() {
                 ? 'text-white'
                 : 'text-gray-700 hover:bg-gray-100'
             }`}
-            style={isActive(tab.path) ? { backgroundColor: '#FF3A00' } : undefined}
+            style={isActive(tab.path) ? { backgroundColor: 'var(--dd-primary)' } : undefined}
           >
             {tab.name}
           </Link>

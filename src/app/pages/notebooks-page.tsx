@@ -2,53 +2,10 @@ import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, BookOpen, Code, BarChart3, Search, FileText, Clock, Users } from 'lucide-react';
+import { Plus, BookOpen, Search, FileText, Clock, Users } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
-
-const notebookTemplates = [
-  {
-    id: 'template_1',
-    name: 'Feature Exploration',
-    description: 'Explore feature distributions, correlations, and quality metrics',
-    icon: BarChart3,
-    cells: 8,
-  },
-  {
-    id: 'template_2',
-    name: 'Model Evaluation',
-    description: 'Evaluate model performance with standard ML metrics',
-    icon: Code,
-    cells: 12,
-  },
-  {
-    id: 'template_3',
-    name: 'Data Quality Check',
-    description: 'Run data quality checks and generate reports',
-    icon: BookOpen,
-    cells: 6,
-  },
-];
-
-interface Notebook {
-  id: string;
-  title: string;
-  description: string;
-  lastEdited: string;
-  owner: string;
-  shared: boolean;
-  cells: number;
-  language: string;
-}
-
-const mockNotebooks: Notebook[] = [
-  { id: '1', title: 'Courier Availability Analysis', description: 'Feature exploration & distribution for courier supply model', lastEdited: '2 hours ago', owner: 'S. Lee', shared: false, cells: 14, language: 'Python' },
-  { id: '2', title: 'DashPass Retention Deep-Dive', description: 'Cohort analysis of DashPass subscriber retention', lastEdited: '5 hours ago', owner: 'Tony', shared: true, cells: 18, language: 'Python' },
-  { id: '3', title: 'Merchant GMV Forecasting', description: 'Time-series forecasting for merchant gross merchandise value', lastEdited: '1 day ago', owner: 'A. Patel', shared: true, cells: 22, language: 'Python' },
-  { id: '4', title: 'Delivery Time Optimization', description: 'Analysis of delivery time factors and bottlenecks', lastEdited: '2 days ago', owner: 'Tony', shared: false, cells: 16, language: 'Python' },
-  { id: '5', title: 'New User Funnel Analysis', description: 'Conversion funnel from signup to first order', lastEdited: '3 days ago', owner: 'M. Chen', shared: true, cells: 10, language: 'SQL + Python' },
-  { id: '6', title: 'Ad Attribution Model', description: 'Multi-touch attribution for marketing campaigns', lastEdited: '4 days ago', owner: 'Tony', shared: false, cells: 20, language: 'Python' },
-];
+import { notebookTemplates, mockNotebooks } from '../data/mock/notebooks-data';
 
 export function NotebooksPage() {
   const [showScaffoldModal, setShowScaffoldModal] = useState(false);
@@ -79,8 +36,8 @@ export function NotebooksPage() {
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-3">
-              <BookOpen className="w-6 h-6" style={{ color: '#FF3A00' }} />
-              <h1 className="text-2xl" style={{ color: '#FF3A00' }}>Notebooks</h1>
+              <BookOpen className="w-6 h-6 text-dd-primary" />
+              <h1 className="text-2xl text-dd-primary">Notebooks</h1>
             </div>
             <p className="text-gray-600">
               Clone existing notebooks or create new ones from templates
@@ -98,8 +55,7 @@ export function NotebooksPage() {
               />
             </div>
             <Button
-              style={{ backgroundColor: '#FF3A00' }}
-              className="text-white gap-2"
+              className="bg-dd-primary text-white gap-2"
               onClick={() => setShowScaffoldModal(true)}
             >
               <Plus className="w-4 h-4" />
@@ -145,7 +101,7 @@ export function NotebooksPage() {
             <div className="text-center py-16 bg-gray-50 rounded-lg mb-10">
               <FileText className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-500 mb-4">No notebooks found</p>
-              <Button style={{ backgroundColor: '#FF3A00' }} className="text-white gap-2" onClick={() => setShowScaffoldModal(true)}>
+              <Button className="bg-dd-primary text-white gap-2" onClick={() => setShowScaffoldModal(true)}>
                 <Plus className="w-4 h-4" />
                 Create your first notebook
               </Button>
@@ -165,7 +121,7 @@ export function NotebooksPage() {
                   }}
                 >
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style={{ backgroundColor: '#FFF0EB' }}>
-                    <template.icon className="w-5 h-5" style={{ color: '#FF3A00' }} />
+                    <template.icon className="w-5 h-5 text-dd-primary" />
                   </div>
                   <h3 className="text-base font-medium text-gray-900 mb-1">{template.name}</h3>
                   <p className="text-sm text-gray-600 mb-3">{template.description}</p>
@@ -242,8 +198,7 @@ export function NotebooksPage() {
                 Cancel
               </Button>
               <Button
-                style={{ backgroundColor: '#FF3A00' }}
-                className="text-white"
+                className="bg-dd-primary text-white"
                 onClick={handleCreateNotebook}
                 disabled={!selectedTemplate || !notebookName}
               >

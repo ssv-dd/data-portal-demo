@@ -3,29 +3,27 @@ import { Button } from './ui/button';
 import { useState } from 'react';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
-const chartData = [
-  { date: 'Jan 15', subscribers: 11.2, target: 11.0 },
-  { date: 'Jan 22', subscribers: 11.5, target: 11.2 },
-  { date: 'Jan 29', subscribers: 11.8, target: 11.4 },
-  { date: 'Feb 5', subscribers: 12.1, target: 11.6 },
-  { date: 'Feb 12', subscribers: 12.0, target: 11.8 },
-  { date: 'Feb 19', subscribers: 12.4, target: 12.0 },
-  { date: 'Feb 26', subscribers: 12.9, target: 12.2 },
-  { date: 'Mar 5', subscribers: 13.3, target: 12.4 },
-  { date: 'Mar 12', subscribers: 13.8, target: 12.6 },
-  { date: 'Mar 16', subscribers: 14.2, target: 12.8 },
-];
+interface AnalysisChartDataPoint {
+  date: string;
+  subscribers: number;
+  target: number;
+}
 
-const summaryData = [
-  { region: 'US — Overall', subs: '14.2M', growth: '+12.4%', retention: '87.3%', aov: '$38.50', trend: 'up' as const },
-  { region: 'SF Bay Area', subs: '1.8M', growth: '+18.2%', retention: '91.1%', aov: '$42.10', trend: 'up' as const },
-  { region: 'NYC Metro', subs: '2.1M', growth: '+15.0%', retention: '88.7%', aov: '$40.30', trend: 'up' as const },
-  { region: 'Chicago', subs: '1.2M', growth: '+13.1%', retention: '86.2%', aov: '$35.80', trend: 'up' as const },
-  { region: 'LA / SoCal', subs: '1.6M', growth: '+9.8%', retention: '85.4%', aov: '$37.20', trend: 'up' as const },
-  { region: 'Other', subs: '7.5M', growth: '+10.2%', retention: '86.0%', aov: '$36.90', trend: 'up' as const },
-];
+interface AnalysisSummaryRow {
+  region: string;
+  subs: string;
+  growth: string;
+  retention: string;
+  aov: string;
+  trend: 'up' | 'down';
+}
 
-export function AnalysisResponse() {
+interface AnalysisResponseProps {
+  chartData: AnalysisChartDataPoint[];
+  summaryData: AnalysisSummaryRow[];
+}
+
+export function AnalysisResponse({ chartData, summaryData }: AnalysisResponseProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -33,7 +31,7 @@ export function AnalysisResponse() {
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#FF3A00' }}>
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-dd-primary">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="flex items-center gap-2">
@@ -186,8 +184,8 @@ export function AnalysisResponse() {
                 <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="subscriberGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#FF3A00" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="#FF3A00" stopOpacity={0} />
+                      <stop offset="5%" stopColor="var(--dd-primary)" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="var(--dd-primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -197,7 +195,7 @@ export function AnalysisResponse() {
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
                     formatter={(value) => [`${value}M`, '']}
                   />
-                  <Area type="monotone" dataKey="subscribers" stroke="#FF3A00" strokeWidth={2.5} fill="url(#subscriberGradient)" name="Actual" />
+                  <Area type="monotone" dataKey="subscribers" stroke="var(--dd-primary)" strokeWidth={2.5} fill="url(#subscriberGradient)" name="Actual" />
                   <Line type="monotone" dataKey="target" stroke="#9ca3af" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -239,7 +237,7 @@ export function AnalysisResponse() {
                     key={item.q}
                     className="flex items-start gap-3 p-3.5 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all text-left group/item"
                   >
-                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#FF3A00' }} />
+                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-dd-primary" />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-gray-800 group-hover/item:text-gray-900">{item.q}</div>
                       <div className="text-xs text-gray-400 mt-1">{item.tag}</div>

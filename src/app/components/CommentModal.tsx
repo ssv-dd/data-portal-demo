@@ -5,28 +5,22 @@ import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { MessageSquare, Send, AtSign, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import type { TeamMember } from '@/types/ai';
 
 interface CommentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedText: string;
   onSubmitComment: (comment: string, mentions: string[], selectedText: string) => void;
+  teamMembers: TeamMember[];
 }
-
-// Mock team members for @mentions
-const teamMembers = [
-  { id: '1', name: 'Sarah Chen', role: 'Data Engineering Lead', avatar: 'SC' },
-  { id: '2', name: 'James Park', role: 'Payments Team', avatar: 'JP' },
-  { id: '3', name: 'Abde Tambawala', role: 'Strategy & Operations', avatar: 'AT' },
-  { id: '4', name: 'Mike Torres', role: 'Analytics Manager', avatar: 'MT' },
-  { id: '5', name: 'Lisa Wong', role: 'Product Manager', avatar: 'LW' }
-];
 
 export function CommentModal({
   open,
   onOpenChange,
   selectedText,
-  onSubmitComment
+  onSubmitComment,
+  teamMembers
 }: CommentModalProps) {
   const [comment, setComment] = useState('');
   const [mentions, setMentions] = useState<string[]>([]);

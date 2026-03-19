@@ -7,22 +7,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AnalysisResponse } from '../components/analysis-response';
 import { ExecutiveScorecard } from '../components/ExecutiveScorecard';
 import { goldenDashboards } from '../data/mock-data';
+import { recommendations, favoriteAssets } from '../data/mock/home-data';
+import { chartData, summaryData } from '../data/mock/analysis-data';
+import { appConfig } from '@/config/app.config';
 import companyDashboardPreview from '../../assets/company-dashboard-preview.png';
 import progressVsPlanPreview from '../../assets/progress-vs-plan-preview.png';
-
-const recommendations = [
-  { id: 'rec-1', title: 'Company Dashboard', reason: 'Most viewed dashboard by your team this week — 23 views across leadership', type: 'Dashboard' },
-  { id: 'rec-2', title: 'Progress vs Plan Q1\'26', reason: 'Referenced in 3 recent Slack threads by your direct reports', type: 'Dashboard' },
-  { id: 'rec-3', title: 'DashPass Retention Deep Dive', reason: 'Related to your recent query about subscription churn trends', type: 'Analysis' },
-  { id: 'rec-4', title: 'Cx Marketplace Cohort Analysis', reason: 'Trending across S&O — 15 unique viewers in the last 7 days', type: 'Report' },
-];
-
-const favoriteAssets = [
-  { id: 'fav-1', name: 'Weekly KPI Tracker', type: 'Dashboard', icon: '📊' },
-  { id: 'fav-2', name: 'fact_order_delivery', type: 'Table', icon: '🗃️' },
-  { id: 'fav-3', name: 'Cx Retention Model', type: 'Notebook', icon: '📓' },
-  { id: 'fav-4', name: 'Revenue Forecast Q1', type: 'Dashboard', icon: '📈' },
-];
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
@@ -80,7 +69,7 @@ export function HomePage() {
       style={{ cursor: isChatCentered ? 'default' : 'pointer' }}
     >
       <div className="relative mb-4">
-        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#FF3A00' }} />
+        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dd-primary" />
         <Input
           placeholder="Prompt to explore your data"
           value={searchTerm}
@@ -90,8 +79,7 @@ export function HomePage() {
           className="pl-12 h-12 text-base border-gray-300"
         />
         <Send
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer"
-          style={{ color: '#FF3A00' }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-dd-primary"
           onClick={(e) => { e.stopPropagation(); submitPrompt(); }}
         />
       </div>
@@ -177,7 +165,7 @@ export function HomePage() {
               transition={{ duration: 0.5, ease }}
               className="text-gray-900"
             >
-              {getGreeting()}, Tony
+              {getGreeting()}, {appConfig.user.name}
             </motion.h1>
 
             {/* Spacer — grows to push chat box to ~center when in chat mode */}
@@ -246,8 +234,8 @@ export function HomePage() {
                       <Card
                         className="p-5 hover:shadow-md transition-all cursor-pointer border-purple-200 bg-purple-50/30 h-full"
                         onClick={() => {
-                          if (rec.id === 'rec-1') window.open('https://app.sigmacomputing.com/doordash/workbook/company-dashboard-clone-clone-1v3cQbtiMdsTvuRBLqYwBR', '_blank');
-                          else if (rec.id === 'rec-2') window.open('https://app.sigmacomputing.com/doordash/workbook/Progress-vs-Plan-Q1-26-Non-Live-6QudnUVKcXDBag3IBxuQsI', '_blank');
+                          if (rec.id === 'rec-1') window.open(appConfig.externalUrls.companyDashboard, '_blank');
+                          else if (rec.id === 'rec-2') window.open(appConfig.externalUrls.progressVsPlan, '_blank');
                         }}
                         onMouseEnter={() => setHoveredRecommendation(rec.id)}
                         onMouseLeave={() => setHoveredRecommendation(null)}
@@ -315,7 +303,7 @@ export function HomePage() {
                   {quickAccessTab === 'recent' ? (
                     goldenDashboards['business-executive'].map((dashboard) => (
                       <Card key={dashboard.id} className="p-4 hover:shadow-md transition-all cursor-pointer hover:border-yellow-500/50"
-                        onClick={() => { if (dashboard.id === 'gd-be-4') window.open('https://app.sigmacomputing.com/doordash/workbook/CPD-Projector-YXzYhYvhHGQckbSJrQfmX?:nodeId=Miflz3J74p', '_blank'); }}
+                        onClick={() => { if (dashboard.id === 'gd-be-4') window.open(appConfig.externalUrls.cpdProjector, '_blank'); }}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4 flex-1">
@@ -375,7 +363,7 @@ export function HomePage() {
                   <ChevronLeft className="w-5 h-5" />
                   <span className="text-sm">Back to Home</span>
                 </button>
-                <h1 className="text-2xl text-gray-900">{getGreeting()}, Tony</h1>
+                <h1 className="text-2xl text-gray-900">{getGreeting()}, {appConfig.user.name}</h1>
               </div>
             </div>
 
@@ -390,13 +378,13 @@ export function HomePage() {
                         </div>
                       </div>
                     )}
-                    {message.role === 'assistant' && message.content === 'analysis' && <AnalysisResponse />}
+                    {message.role === 'assistant' && message.content === 'analysis' && <AnalysisResponse chartData={chartData} summaryData={summaryData} />}
                   </div>
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF3A00' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-dd-primary">
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div className="bg-gray-50 rounded-lg px-4 py-3">

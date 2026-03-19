@@ -4,55 +4,8 @@ import { Share2, Settings, Eye, Plus, GripVertical, MoreVertical, TrendingUp, Tr
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
-
-const COLORS = ['#FF3A00', '#FF6B3D', '#FF9C7A', '#FFCDB7', '#FFE8DF'];
-
-const ordersData = [
-  { name: 'Mon', value: 12400 }, { name: 'Tue', value: 13100 },
-  { name: 'Wed', value: 14200 }, { name: 'Thu', value: 13800 },
-  { name: 'Fri', value: 15600 }, { name: 'Sat', value: 18200 },
-  { name: 'Sun', value: 17100 },
-];
-
-const revenueData = [
-  { name: 'Jan', value: 42 }, { name: 'Feb', value: 45 },
-  { name: 'Mar', value: 48 }, { name: 'Apr', value: 51 },
-  { name: 'May', value: 49 }, { name: 'Jun', value: 55 },
-];
-
-const latencyData = [
-  { name: 'SF', value: 28 }, { name: 'NYC', value: 32 },
-  { name: 'LA', value: 35 }, { name: 'CHI', value: 30 },
-  { name: 'BOS', value: 27 },
-];
-
-const marketShareData = [
-  { name: 'DoorDash', value: 67 }, { name: 'Uber Eats', value: 23 },
-  { name: 'Grubhub', value: 7 }, { name: 'Other', value: 3 },
-];
-
-interface WidgetConfig {
-  id: string;
-  title: string;
-  subtitle: string;
-  type: 'bar' | 'line' | 'area' | 'pie' | 'kpi';
-  data?: any[];
-  kpiValue?: string;
-  kpiChange?: string;
-  kpiTrend?: 'up' | 'down' | 'flat';
-  span?: 1 | 2;
-}
-
-const widgets: WidgetConfig[] = [
-  { id: 'w1', title: 'Total Orders', subtitle: 'This week', type: 'kpi', kpiValue: '104,400', kpiChange: '+8.2%', kpiTrend: 'up', span: 1 },
-  { id: 'w2', title: 'Revenue (GMV)', subtitle: 'Last 6 months ($M)', type: 'kpi', kpiValue: '$290M', kpiChange: '+12.4%', kpiTrend: 'up', span: 1 },
-  { id: 'w3', title: 'Avg Delivery Time', subtitle: 'P50, minutes', type: 'kpi', kpiValue: '30.4 min', kpiChange: '-2.1%', kpiTrend: 'down', span: 1 },
-  { id: 'w4', title: 'Active Dashers', subtitle: 'Currently online', type: 'kpi', kpiValue: '48,291', kpiChange: '+0.3%', kpiTrend: 'flat', span: 1 },
-  { id: 'w5', title: 'Orders by Day', subtitle: 'This week', type: 'bar', data: ordersData, span: 1 },
-  { id: 'w6', title: 'Revenue Trend', subtitle: 'Monthly GMV ($M)', type: 'area', data: revenueData, span: 1 },
-  { id: 'w7', title: 'Delivery Latency by City', subtitle: 'P50 minutes, last 14 days', type: 'bar', data: latencyData, span: 1 },
-  { id: 'w8', title: 'Market Share', subtitle: 'US delivery platforms', type: 'pie', data: marketShareData, span: 1 },
-];
+import { COLORS, widgets } from '../data/mock/dashboard-canvas-data';
+import type { WidgetConfig } from '@/types';
 
 export function DashboardCanvasPage() {
   const [showPublishModal, setShowPublishModal] = useState(false);
@@ -84,7 +37,7 @@ export function DashboardCanvasPage() {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Bar dataKey="value" fill="#FF3A00" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" fill="var(--dd-primary)" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         );
@@ -96,7 +49,7 @@ export function DashboardCanvasPage() {
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Line type="monotone" dataKey="value" stroke="#FF3A00" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="value" stroke="var(--dd-primary)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         );
@@ -106,15 +59,15 @@ export function DashboardCanvasPage() {
             <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
               <defs>
                 <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF3A00" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#FF3A00" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--dd-primary)" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="var(--dd-primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
               <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Area type="monotone" dataKey="value" stroke="#FF3A00" strokeWidth={2} fill="url(#areaGradient)" />
+              <Area type="monotone" dataKey="value" stroke="var(--dd-primary)" strokeWidth={2} fill="url(#areaGradient)" />
             </AreaChart>
           </ResponsiveContainer>
         );
@@ -166,8 +119,7 @@ export function DashboardCanvasPage() {
                 Settings
               </Button>
               <Button
-                style={{ backgroundColor: '#FF3A00' }}
-                className="text-white gap-2 text-sm"
+                className="bg-dd-primary text-white gap-2 text-sm"
                 onClick={() => setShowPublishModal(true)}
               >
                 <Share2 className="w-4 h-4" />
@@ -236,8 +188,7 @@ export function DashboardCanvasPage() {
                 Save as Draft
               </Button>
               <Button
-                style={{ backgroundColor: '#FF3A00' }}
-                className="text-white"
+                className="bg-dd-primary text-white"
                 onClick={() => setShowPublishModal(false)}
               >
                 Publish
