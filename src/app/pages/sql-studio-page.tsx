@@ -3,15 +3,10 @@ import { motion } from 'motion/react';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ChevronRight, ChevronDown, ChevronUp, Database, Table, Search, Clock, Users, Plus, Play, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Send, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, FilePlus, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Send, Sparkles, X, BookOpen, ArrowUp, Folder, FolderOpen, FilePlus, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { mockSavedQueries, sampleResults, DEFAULT_SQL } from '../data/mock/sql-studio-data';
-
-const knowledgeBases = [
-  { id: 'default', name: 'Default SQL Skills', description: 'Core SQL syntax, joins, aggregations, window functions' },
-  { id: 'analytics', name: 'Analytics SQL Skills', description: 'DoorDash analytics patterns, metric definitions, reporting' },
-  { id: 'wolt', name: 'Wolt SQL Skills', description: 'Wolt-specific schemas, tables, and query patterns' },
-];
+import { GradientOrb } from '../components/hero/gradient-orb';
 
 const queryHistoryGrouped = {
   recent: [
@@ -179,10 +174,27 @@ export function SQLStudioPage() {
   const [catalogSearch, setCatalogSearch] = useState('');
   const [expandedHistoryFolders, setExpandedHistoryFolders] = useState<Record<string, boolean>>({});
   const [expandedChatFolders, setExpandedChatFolders] = useState<Record<string, boolean>>({});
-  const [kbDropdownOpen, setKbDropdownOpen] = useState(false);
-  const [selectedKb, setSelectedKb] = useState(knowledgeBases[0]);
   const [chatInput, setChatInput] = useState('');
   const [centerExpanded, setCenterExpanded] = useState<'none' | 'editor' | 'results'>('none');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detect theme changes
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    };
+
+    updateTheme();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Tab management
   const [sqlTabs, setSqlTabs] = useState<{ id: string; name: string; sql: string }[]>([
@@ -193,9 +205,6 @@ export function SQLStudioPage() {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTabName, setEditingTabName] = useState('');
   const editInputRef = useRef<HTMLInputElement>(null);
-
-  const kbDropdownRef = useRef<HTMLDivElement>(null);
-  const kbButtonRef = useRef<HTMLButtonElement>(null);
 
   // Focus input when editing a tab name
   useEffect(() => {
@@ -256,23 +265,6 @@ export function SQLStudioPage() {
     }
   }, [editingTabId, editingTabName]);
 
-  // Close KB dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as Node;
-      if (
-        kbDropdownRef.current && !kbDropdownRef.current.contains(target) &&
-        kbButtonRef.current && !kbButtonRef.current.contains(target)
-      ) {
-        setKbDropdownOpen(false);
-      }
-    }
-    if (kbDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [kbDropdownOpen]);
-
   const filteredQueries = mockSavedQueries.filter((query) => {
     const matchesSearch = query.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       query.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -292,9 +284,23 @@ export function SQLStudioPage() {
     }, 800);
   };
 
+  const handleStop = () => {
+    setIsRunning(false);
+    setResults([]);
+    setRunTime(null);
+  };
+
   if (showLanding) {
     return (
-      <div className="h-full flex overflow-hidden">
+      <div className="h-full bg-background overflow-hidden relative">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+
+        {/* Gradient Orbs */}
+        <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
+        <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
+
+        <div className="relative z-10 h-full flex overflow-hidden">
         <div className="flex-1 p-8 overflow-auto">
           <div className="max-w-7xl mx-auto">
             <motion.div variants={fadeInUp} initial="hidden" animate="visible">
@@ -339,18 +345,18 @@ export function SQLStudioPage() {
                 {filteredQueries.map((query) => (
                   <motion.div variants={staggerItem} key={query.id}>
                     <div
-                      className="bg-white border border-border/60 rounded-2xl p-5 hover:shadow-card-hover transition-shadow cursor-pointer"
+                      className="bg-white dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl p-5 hover:shadow-card-hover transition-shadow cursor-pointer"
                       onClick={() => setShowLanding(false)}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <Database className="w-5 h-5 text-muted-foreground/60" />
-                          <h3 className="font-medium text-foreground">{query.title}</h3>
+                          <Database className="w-5 h-5 text-muted-foreground/60 dark:text-slate-500" />
+                          <h3 className="font-medium text-slate-900 dark:text-white">{query.title}</h3>
                         </div>
-                        {query.shared && <Users className="w-4 h-4 text-muted-foreground/60" />}
+                        {query.shared && <Users className="w-4 h-4 text-muted-foreground/60 dark:text-slate-500" />}
                       </div>
-                      <p className="text-sm text-muted-foreground mb-4">{query.description}</p>
-                      <div className="flex items-center text-xs text-muted-foreground gap-1">
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{query.description}</p>
+                      <div className="flex items-center text-xs text-slate-600 dark:text-slate-500 gap-1">
                         <Clock className="w-3 h-3" />
                         <span>{query.lastEdited}</span>
                       </div>
@@ -359,9 +365,9 @@ export function SQLStudioPage() {
                 ))}
               </motion.div>
             ) : (
-              <div className="text-center py-16 bg-muted/50 rounded-2xl">
-                <Database className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60" />
-                <p className="text-muted-foreground mb-4">No queries found</p>
+              <div className="text-center py-16 bg-muted/50 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl">
+                <Database className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60 dark:text-slate-600" />
+                <p className="text-slate-600 dark:text-slate-400 mb-4">No queries found</p>
                 <Button className="bg-dd-primary text-white gap-2" onClick={() => setShowLanding(false)}>
                   <Plus className="w-4 h-4" />
                   Create your first query
@@ -372,18 +378,18 @@ export function SQLStudioPage() {
         </div>
 
         {/* Right Panel - AI Assistant (simplified for landing) */}
-        <div className="w-[440px] border-l border-border/60 flex flex-col overflow-hidden bg-white">
-          <div className="px-4 py-3 border-b border-border/60">
-            <h3 className="font-medium text-foreground">SQL Assistant</h3>
+        <div className="w-[440px] border-l border-border/60 dark:border-white/10 flex flex-col overflow-hidden bg-white/90 dark:bg-slate-950/55 backdrop-blur-xl">
+          <div className="px-4 py-3 border-b border-border/60 dark:border-white/10">
+            <h3 className="font-semibold text-slate-900 dark:text-white">SQL Assistant</h3>
           </div>
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-auto px-4 py-6 flex flex-col">
               <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-dd-primary/10 to-dd-primary/5 flex items-center justify-center mb-4">
-                  <Sparkles className="w-5 h-5 text-dd-primary" />
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/15 to-violet-500/5 flex items-center justify-center mb-4">
+                  <Sparkles className="w-5 h-5 text-violet-600 dark:text-violet-400" />
                 </div>
-                <h3 className="text-sm font-medium text-foreground mb-1">SQL Assistant</h3>
-                <p className="text-xs text-muted-foreground text-center max-w-[240px] leading-relaxed mb-6">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">SQL Assistant</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 text-center max-w-[240px] leading-relaxed mb-6">
                   I can help you write SQL queries, explain code, and search for tables and metrics.
                 </p>
                 <div className="w-full space-y-2">
@@ -396,7 +402,7 @@ export function SQLStudioPage() {
                     <button
                       key={index}
                       onClick={() => setShowLanding(false)}
-                      className="w-full px-3 py-2.5 rounded-lg border border-border/60 bg-white text-foreground text-xs text-left hover:bg-muted/50 transition-colors"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 text-xs text-left hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors"
                     >
                       {suggestion}
                     </button>
@@ -405,23 +411,23 @@ export function SQLStudioPage() {
               </div>
             </div>
             <div className="px-3 pb-3">
-              <div className="border border-border rounded-xl bg-white overflow-hidden">
+              <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/[0.04] overflow-hidden">
                 <div className="px-3 pt-2.5 flex items-center gap-1.5">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-muted/70 text-xs text-foreground">
-                    <BookOpen className="w-3 h-3 text-muted-foreground" />
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/[0.06] text-xs text-slate-700 dark:text-slate-300">
+                    <BookOpen className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                     <span>Default SQL Skills</span>
                   </div>
                 </div>
                 <textarea
                   placeholder="Ask about SQL, tables, or metrics..."
                   rows={2}
-                  className="w-full px-3 py-2 text-sm text-foreground bg-transparent placeholder-muted-foreground/50 focus:outline-none resize-none"
+                  className="w-full px-3 py-2 text-sm text-slate-900 dark:text-slate-200 bg-transparent placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none resize-none"
                 />
                 <div className="px-3 pb-2.5 flex items-center justify-between">
-                  <button className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+                  <button className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
                     <Plus className="w-4 h-4" />
                   </button>
-                  <button className="p-1.5 rounded-lg bg-muted text-muted-foreground/40">
+                  <button className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-slate-500">
                     <ArrowUp className="w-4 h-4" />
                   </button>
                 </div>
@@ -429,40 +435,49 @@ export function SQLStudioPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
     );
   }
 
   // ─── Premium Editor View ───────────────────────────────────────────────
   return (
-    <div className="h-full flex overflow-hidden p-2 gap-2 bg-gradient-to-br from-[#f8f9fb] via-[#f3f4f8] to-[#eef1f5]">
+    <div className="h-full bg-background overflow-hidden relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+
+      {/* Gradient Orbs */}
+      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
+      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
+
+      <div className="relative z-10 h-full flex overflow-hidden p-2 gap-2">
       {/* ── Left Panel ── */}
       {leftPanelOpen ? (
-        <div className="w-72 rounded-2xl glass-panel flex flex-col overflow-hidden transition-all duration-200">
+        <div className="w-72 rounded-2xl border border-border/60 dark:border-white/10 bg-white/90 dark:bg-slate-950/55 backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-200">
           {/* Header */}
-          <div className="h-12 flex items-center justify-between px-3 shrink-0">
-            <div className="flex items-center gap-1 p-1 rounded-full bg-foreground/[0.04]">
+          <div className="h-12 flex items-center justify-between px-3 shrink-0 border-b border-border/40 dark:border-white/10">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
               {(['history', 'catalog'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setLeftPanelTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full capitalize transition-all duration-200 ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl capitalize transition-all duration-200 ${
                     leftPanelTab === tab
-                      ? 'bg-white text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {tab === 'history' ? (
-                    <span className="flex items-center gap-1.5"><Clock className="w-3 h-3" /> History</span>
+                    <><Clock className="w-3 h-3" /> History</>
                   ) : (
-                    <span className="flex items-center gap-1.5"><Database className="w-3 h-3" /> Catalog</span>
+                    <><Database className="w-3 h-3" /> Catalog</>
                   )}
                 </button>
               ))}
             </div>
             <button
               onClick={() => setLeftPanelOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-foreground/[0.05] text-muted-foreground hover:text-foreground transition-all duration-200"
+              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>
@@ -476,28 +491,28 @@ export function SQLStudioPage() {
                   <input
                     type="text"
                     placeholder="Search history..."
-                    className="text-xs w-full rounded-xl px-3 py-2 bg-foreground/[0.04] placeholder-muted-foreground/50 focus:outline-none focus:bg-foreground/[0.06] transition-colors duration-200 border-0"
+                    className="text-xs w-full rounded-xl px-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
                   />
                 </div>
 
                 <div className="px-2 pt-3 pb-1.5">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Recent</span>
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Recent</span>
                 </div>
                 {queryHistoryGrouped.recent.map((item) => (
-                  <div key={item.id} className="px-3 py-2.5 hover:bg-foreground/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                  <div key={item.id} className="px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
                     <div className="flex items-start gap-2">
-                      <Clock className="w-3.5 h-3.5 text-muted-foreground/40 mt-0.5 shrink-0" />
+                      <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                       <div className="min-w-0">
-                        <div className="text-xs text-foreground truncate">{item.title}</div>
-                        <div className="text-[10px] text-muted-foreground/50 mt-0.5">{item.timestamp}</div>
+                        <div className="text-xs text-slate-900 dark:text-slate-200 truncate">{item.title}</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">{item.timestamp}</div>
                       </div>
                     </div>
                   </div>
                 ))}
 
                 <div className="px-2 pt-5 pb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Folders</span>
-                  <button className="p-1 rounded-lg hover:bg-foreground/[0.05] text-muted-foreground/40 hover:text-muted-foreground transition-all duration-200" title="New folder">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Folders</span>
+                  <button className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 transition-all duration-200" title="New folder">
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
@@ -505,25 +520,25 @@ export function SQLStudioPage() {
                   <div key={folder.id}>
                     <button
                       onClick={() => setExpandedHistoryFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-foreground/[0.04] rounded-xl cursor-pointer transition-all duration-150"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
                     >
                       {expandedHistoryFolders[folder.id]
-                        ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                        : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                       }
-                      <span className="text-xs font-medium text-foreground">{folder.name}</span>
-                      <span className="text-[10px] text-muted-foreground/40 ml-auto">{folder.items.length}</span>
+                      <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{folder.name}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{folder.items.length}</span>
                       {expandedHistoryFolders[folder.id]
-                        ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                        : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                        ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                        : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                       }
                     </button>
                     {expandedHistoryFolders[folder.id] && (
-                      <div className="ml-5 pl-3 border-l border-foreground/[0.06]">
+                      <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
                         {folder.items.map((item) => (
-                          <div key={item.id} className="px-2 py-2 hover:bg-foreground/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                            <div className="text-xs text-foreground truncate">{item.title}</div>
-                            <div className="text-[10px] text-muted-foreground/50 mt-0.5">{item.timestamp}</div>
+                          <div key={item.id} className="px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                            <div className="text-xs text-slate-900 dark:text-slate-200 truncate">{item.title}</div>
+                            <div className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">{item.timestamp}</div>
                           </div>
                         ))}
                       </div>
@@ -535,44 +550,44 @@ export function SQLStudioPage() {
               <div>
                 <div className="p-3">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                     <input
                       type="text"
                       placeholder="Search tables or metrics..."
                       value={catalogSearch}
                       onChange={(e) => setCatalogSearch(e.target.value)}
-                      className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-foreground/[0.04] placeholder-muted-foreground/50 focus:outline-none focus:bg-foreground/[0.06] transition-colors duration-200 border-0"
+                      className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
                     />
                   </div>
                 </div>
 
                 <div className="p-2">
                   <div className="px-2 pt-2 pb-1.5">
-                    <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Source of Truth Datasets</span>
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Source of Truth Datasets</span>
                   </div>
                   {catalogBrowse.topics.map((topic) => (
                     <div key={topic.id}>
                       <button
                         onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [topic.id]: !prev[topic.id] }))}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-foreground/[0.04] rounded-xl cursor-pointer transition-all duration-150"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
                       >
                         {expandedCatalogBrowse[topic.id]
-                          ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                          : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                          : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                         }
-                        <span className="text-xs font-medium text-foreground">{topic.name}</span>
-                        <span className="text-[10px] text-muted-foreground/40 ml-auto">{topic.items.length}</span>
+                        <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{topic.name}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{topic.items.length}</span>
                         {expandedCatalogBrowse[topic.id]
-                          ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                          : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                          ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                          : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                         }
                       </button>
                       {expandedCatalogBrowse[topic.id] && (
-                        <div className="ml-5 pl-3 border-l border-foreground/[0.06]">
+                        <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
                           {topic.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-foreground/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                              <Table className="w-3 h-3 text-muted-foreground/40" />
-                              <span className="text-xs text-foreground font-mono">{item.name}</span>
+                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                              <Table className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                              <span className="text-xs text-slate-900 dark:text-slate-300 font-mono">{item.name}</span>
                             </div>
                           ))}
                         </div>
@@ -581,31 +596,31 @@ export function SQLStudioPage() {
                   ))}
 
                   <div className="px-2 pt-5 pb-1.5">
-                    <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Metrics</span>
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Metrics</span>
                   </div>
                   {catalogBrowse.metrics.map((group) => (
                     <div key={group.id}>
                       <button
                         onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-foreground/[0.04] rounded-xl cursor-pointer transition-all duration-150"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
                       >
                         {expandedCatalogBrowse[group.id]
-                          ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                          : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                          : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                         }
-                        <span className="text-xs font-medium text-foreground">{group.name}</span>
-                        <span className="text-[10px] text-muted-foreground/40 ml-auto">{group.items.length}</span>
+                        <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{group.name}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{group.items.length}</span>
                         {expandedCatalogBrowse[group.id]
-                          ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                          : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                          ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                          : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                         }
                       </button>
                       {expandedCatalogBrowse[group.id] && (
-                        <div className="ml-5 pl-3 border-l border-foreground/[0.06]">
+                        <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
                           {group.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-foreground/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                              <BarChart3 className="w-3 h-3 text-muted-foreground/40" />
-                              <span className="text-xs text-foreground">{item.name}</span>
+                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                              <BarChart3 className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                              <span className="text-xs text-slate-900 dark:text-slate-300">{item.name}</span>
                             </div>
                           ))}
                         </div>
@@ -618,10 +633,10 @@ export function SQLStudioPage() {
           </div>
         </div>
       ) : (
-        <div className="w-11 rounded-2xl glass-panel-subtle flex flex-col items-center pt-3 transition-all duration-200">
+        <div className="w-11 rounded-2xl border border-border/60 dark:border-white/10 bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl flex flex-col items-center pt-3 transition-all duration-200">
           <button
             onClick={() => setLeftPanelOpen(true)}
-            className="p-2 rounded-xl hover:bg-foreground/[0.05] text-muted-foreground hover:text-foreground transition-all duration-200"
+            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
             title="Open sidebar"
           >
             <PanelLeftOpen className="w-4 h-4" />
@@ -635,15 +650,15 @@ export function SQLStudioPage() {
         {centerExpanded !== 'results' && (
         <div className={`${centerExpanded === 'editor' ? 'flex-1' : 'flex-1'} min-h-0 flex flex-col rounded-2xl glass-panel overflow-hidden`}>
           {/* Tab Bar */}
-          <div className="h-12 flex items-center justify-between px-4 shrink-0">
+          <div className="h-12 flex items-center justify-between px-4 shrink-0 border-b border-border/40 dark:border-white/10 bg-slate-50/50 dark:bg-slate-950/45">
             <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
               {sqlTabs.map((tab) => (
                 <div
                   key={tab.id}
-                  className={`group relative flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono cursor-pointer transition-all duration-200 shrink-0 ${
+                  className={`group relative flex items-center gap-1 px-3 py-2 rounded-t-xl text-xs font-mono cursor-pointer transition-all duration-200 shrink-0 border border-b-0 ${
                     activeFileTab === tab.id
-                      ? 'bg-foreground/[0.05] text-foreground'
-                      : 'text-muted-foreground/60 hover:bg-foreground/[0.03]'
+                      ? 'bg-white dark:bg-[#0b1220] text-slate-900 dark:text-white border-slate-200 dark:border-white/10'
+                      : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.04]'
                   }`}
                   onClick={() => switchTab(tab.id)}
                   onDoubleClick={() => startRenaming(tab.id, tab.name)}
@@ -659,7 +674,7 @@ export function SQLStudioPage() {
                         if (e.key === 'Enter') commitRename();
                         if (e.key === 'Escape') setEditingTabId(null);
                       }}
-                      className="bg-transparent border-0 outline-none text-xs font-mono w-[120px] px-0 py-0 text-foreground"
+                      className="bg-transparent border-0 outline-none text-xs font-mono w-[120px] px-0 py-0"
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
@@ -668,7 +683,7 @@ export function SQLStudioPage() {
                   {sqlTabs.length > 1 && (
                     <button
                       onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-foreground/[0.08] text-muted-foreground/40 hover:text-muted-foreground transition-all duration-150 -mr-1"
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-150 -mr-1"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -677,45 +692,46 @@ export function SQLStudioPage() {
               ))}
               <button
                 onClick={addNewTab}
-                className="p-1 rounded-lg hover:bg-foreground/[0.05] text-muted-foreground/40 hover:text-muted-foreground transition-all duration-200 ml-1 shrink-0"
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 ml-1 shrink-0"
                 title="New query"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <select className="text-xs rounded-xl px-3 py-1.5 bg-foreground/[0.04] text-foreground border-0 focus:outline-none transition-colors duration-200">
+              <select className="text-xs rounded-xl px-3 py-2 bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-violet-400/20 transition-all duration-200">
                 <option>Snowflake</option>
-                <option>BigQuery</option>
-                <option>Redshift</option>
+                <option>Spark</option>
+                <option>ClickHouse</option>
               </select>
-              <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-xl border-foreground/[0.06] hover:bg-foreground/[0.04] transition-all duration-200">
+              <button className="inline-flex items-center gap-1.5 text-xs h-8 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all duration-200">
                 <BookmarkPlus className="w-3.5 h-3.5" /> Save
-              </Button>
-              <Button size="sm" variant="outline" className="text-xs h-8 gap-1.5 rounded-xl border-foreground/[0.06] hover:bg-foreground/[0.04] transition-all duration-200">
+              </button>
+              <button className="inline-flex items-center gap-1.5 text-xs h-8 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all duration-200">
                 <Share2 className="w-3.5 h-3.5" /> Share
-              </Button>
+              </button>
               <button
                 onClick={() => setCenterExpanded(prev => prev === 'editor' ? 'none' : 'editor')}
-                className="p-1.5 rounded-xl hover:bg-foreground/[0.05] text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
                 title={centerExpanded === 'editor' ? 'Restore panes' : 'Expand editor'}
               >
-                {centerExpanded === 'editor' ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                {centerExpanded === 'editor' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Monaco Editor */}
-          <div className="flex-1 min-h-0">
+          <div className={`flex-1 min-h-0 ${isDarkMode ? 'bg-[#0b1220]' : 'bg-white'}`}>
             <Editor
               height="100%"
               defaultLanguage="sql"
               value={sql}
               onChange={(value) => setSql(value || '')}
-              theme="vs-light"
+              theme={isDarkMode ? 'vs-dark' : 'vs-light'}
               options={{
                 minimap: { enabled: false },
                 fontSize: 13,
+                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                 lineNumbers: 'on',
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
@@ -732,33 +748,33 @@ export function SQLStudioPage() {
         {centerExpanded !== 'editor' && (
         <div className="flex-1 min-h-0 flex flex-col rounded-2xl glass-panel overflow-hidden">
           {/* Recommendation Banner */}
-          <div className="mx-3 mt-3 px-4 py-2.5 rounded-xl bg-amber-50/80 border border-amber-200/30">
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-amber-700 font-medium">Low confidence SQL</span>
+          <div className="mx-3 mt-3 px-4 py-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40">
+            <div className="flex items-center gap-3 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500 dark:bg-rose-400 animate-pulse" />
+                <span className="text-rose-900 dark:text-rose-200 font-semibold">Low confidence SQL</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                <span className="text-amber-700">Stale table: <code className="font-mono bg-amber-100/80 px-1.5 py-0.5 rounded-md">fact_orders</code></span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-rose-500 dark:bg-rose-400" />
+                <span className="text-rose-800 dark:text-rose-300">Stale table: <code className="font-mono bg-rose-100 dark:bg-rose-950/60 px-2 py-0.5 rounded-md text-rose-900 dark:text-rose-200">fact_orders</code></span>
               </div>
-              <button className="ml-auto text-xs font-medium text-dd-primary hover:text-dd-primary/80 transition-colors duration-200">
-                Refactor with SOT tables &rarr;
+              <button className="ml-auto text-sm font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors duration-200">
+                Refactor with SOT tables →
               </button>
             </div>
           </div>
 
           {/* Results Tabs + Run */}
-          <div className="flex items-center px-4 py-2.5 shrink-0">
-            <div className="flex items-center gap-1 p-1 rounded-full bg-foreground/[0.04]">
+          <div className="flex items-center px-4 py-2.5 shrink-0 border-b border-border/40 dark:border-white/10">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
               {(['results', 'chart', 'messages'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3.5 py-1.5 text-xs font-medium rounded-full capitalize transition-all duration-200 ${
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl capitalize transition-all duration-200 ${
                     activeTab === tab
-                      ? 'bg-white text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   {tab}
@@ -766,43 +782,52 @@ export function SQLStudioPage() {
               ))}
             </div>
             <div className="ml-auto flex items-center gap-3">
-              {runTime && <span className="text-xs text-muted-foreground/50">{results.length} rows &middot; {runTime}</span>}
-              <button
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-foreground/85 text-white text-xs font-medium shadow-xs hover:bg-foreground hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0"
-                onClick={handleRun}
-                disabled={isRunning}
-              >
-                <Play className="w-3.5 h-3.5" />
-                {isRunning ? 'Running...' : 'Run Query'}
-              </button>
+              {runTime && <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{results.length} rows · {runTime}</span>}
+              {isRunning ? (
+                <button
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 dark:bg-rose-400 text-white dark:text-slate-900 text-sm font-semibold shadow-sm hover:bg-rose-600 dark:hover:bg-rose-300 hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200"
+                  onClick={handleStop}
+                >
+                  <Square className="w-4 h-4" />
+                  Stop
+                </button>
+              ) : (
+                <button
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 dark:bg-emerald-400 text-white dark:text-slate-900 text-sm font-semibold shadow-sm hover:bg-emerald-600 dark:hover:bg-emerald-300 hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0"
+                  onClick={handleRun}
+                >
+                  <Play className="w-4 h-4" />
+                  Run
+                </button>
+              )}
               <button
                 onClick={() => setCenterExpanded(prev => prev === 'results' ? 'none' : 'results')}
-                className="p-1.5 rounded-xl hover:bg-foreground/[0.05] text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
                 title={centerExpanded === 'results' ? 'Restore panes' : 'Expand results'}
               >
-                {centerExpanded === 'results' ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                {centerExpanded === 'results' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
             </div>
           </div>
 
           {/* Results Table */}
-          <div className="flex-1 overflow-auto mx-3 mb-3 rounded-xl">
+          <div className="flex-1 overflow-auto mx-3 mb-3 rounded-xl border border-slate-200 dark:border-white/10">
             {results.length > 0 ? (
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-[#f0f1f4]/90 backdrop-blur-sm">
+                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-sm">
                   <tr>
-                    <th className="text-left py-3 px-4 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider w-10">#</th>
+                    <th className="text-left py-3 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">#</th>
                     {Object.keys(results[0]).map((key) => (
-                      <th key={key} className="text-left py-3 px-4 text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider">{key}</th>
+                      <th key={key} className="text-left py-3 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{key}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {results.map((row, i) => (
-                    <tr key={i} className="hover:bg-foreground/[0.03] even:bg-foreground/[0.015] transition-colors duration-150">
-                      <td className="py-2.5 px-4 text-muted-foreground/40 text-xs">{i + 1}</td>
+                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.03] even:bg-slate-50/50 dark:even:bg-white/[0.015] transition-colors duration-150">
+                      <td className="py-2.5 px-4 text-slate-400 dark:text-slate-500 text-xs">{i + 1}</td>
                       {Object.values(row).map((value: any, j) => (
-                        <td key={j} className="py-2.5 px-4 text-foreground font-mono text-xs">
+                        <td key={j} className="py-2.5 px-4 text-slate-900 dark:text-slate-200 font-mono text-xs">
                           {typeof value === 'number'
                             ? value % 1 !== 0 ? value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : value.toLocaleString()
                             : value}
@@ -813,12 +838,12 @@ export function SQLStudioPage() {
                 </tbody>
               </table>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40">
-                <div className="w-16 h-16 rounded-2xl bg-foreground/[0.03] flex items-center justify-center mb-4">
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center mb-4">
                   <Database className="w-7 h-7" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground/60">Run a query to see results</p>
-                <p className="text-xs mt-1.5 text-muted-foreground/40">Ctrl/Cmd + Enter</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Run a query to see results</p>
+                <p className="text-xs mt-1.5 text-slate-500 dark:text-slate-500">Ctrl/Cmd + Enter</p>
               </div>
             )}
           </div>
@@ -830,32 +855,38 @@ export function SQLStudioPage() {
       {rightPanelOpen ? (
         <div className="w-[440px] rounded-2xl glass-panel-chat flex flex-col overflow-hidden relative transition-all duration-200">
           {/* Header */}
-          <div className="h-12 flex items-center justify-between px-3 shrink-0">
-            <div className="flex items-center gap-1 p-1 rounded-full bg-[#6352af]/[0.06]">
+          <div className="px-4 py-3 border-b border-border/60 dark:border-white/10 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="font-medium text-foreground dark:text-white">SQL Assistant</h3>
+              <span className="rounded-xl border border-violet-400/20 dark:border-violet-400/30 bg-violet-500/10 dark:bg-violet-500/15 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-200">
+                SQL aware
+              </span>
+            </div>
+            <button
+              onClick={() => setRightPanelOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-accent/60 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="px-4 py-3 border-b border-border/40 dark:border-white/10">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
               {(['chat', 'past'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setRightPanelTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
+                  className={`flex-1 px-3 py-2 text-xs font-semibold rounded-xl capitalize transition-all duration-200 ${
                     rightPanelTab === tab
-                      ? 'bg-white/90 text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
-                  {tab === 'chat' ? (
-                    <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Chat</span>
-                  ) : (
-                    <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3" /> Past Chats</span>
-                  )}
+                  {tab === 'chat' ? 'Chat' : 'Past Chats'}
                 </button>
               ))}
             </div>
-            <button
-              onClick={() => setRightPanelOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground hover:text-foreground transition-all duration-200"
-            >
-              <PanelRightClose className="w-4 h-4" />
-            </button>
           </div>
 
           {/* Tab Content */}
@@ -863,123 +894,50 @@ export function SQLStudioPage() {
             <div className="flex-1 flex flex-col min-h-0">
               {/* Chat Messages Area */}
               <div className="flex-1 overflow-auto px-4 py-6 flex flex-col">
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6352af]/15 to-[#8b7fd4]/8 flex items-center justify-center mb-4">
-                    <Sparkles className="w-5 h-5 text-[#6352af]" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">SQL Assistant</h3>
-                  <p className="text-xs text-muted-foreground/70 text-center max-w-[240px] leading-relaxed mb-6">
+                <div className="mb-6">
+                  <p className="text-muted-foreground dark:text-slate-400 text-sm leading-relaxed">
                     I can help you write SQL queries, explain code, and search for tables and metrics.
                   </p>
-                  <div className="w-full space-y-2">
-                    {[
-                      'Write a revenue query by region',
-                      'Explain the current SQL',
-                      'Find customer-related tables',
-                      'Optimize my query performance',
-                    ].map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setChatInput(suggestion)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/50 border border-[#6352af]/[0.06] text-foreground text-xs text-left hover:bg-white/80 hover:border-[#6352af]/[0.12] hover:-translate-y-[1px] hover:shadow-sm transition-all duration-200"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
+                </div>
+
+                {/* Suggestion Chips */}
+                <div className="grid grid-cols-2 gap-3 mb-auto">
+                  {[
+                    'Write a revenue query by region',
+                    'Explain the current SQL',
+                    'Find customer-related tables',
+                    'Optimize my query performance',
+                  ].map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setChatInput(suggestion)}
+                      className="px-4 py-3 rounded-xl border border-border/60 dark:border-white/10 bg-background/40 dark:bg-white/[0.04] text-foreground dark:text-slate-200 text-sm flex items-center gap-2 hover:bg-accent/60 dark:hover:bg-white/[0.07] hover:border-border dark:hover:border-violet-400/20 transition-all hover:shadow-sm"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>{suggestion}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Knowledge base dropdown */}
-              {kbDropdownOpen && (
-                <div ref={kbDropdownRef} className="absolute bottom-20 left-3 right-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
-                  <div className="px-4 py-3">
-                    <span className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Knowledge Bases</span>
-                  </div>
-                  {knowledgeBases.map((kb) => (
-                    <button
-                      key={kb.id}
-                      onClick={() => {
-                        setSelectedKb(kb);
-                        setKbDropdownOpen(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3 ${
-                        selectedKb.id === kb.id ? 'bg-foreground/[0.03]' : ''
-                      }`}
-                    >
-                      <BookOpen className="w-4 h-4 text-muted-foreground/50 mt-0.5 shrink-0" />
-                      <div>
-                        <div className="text-xs font-medium text-foreground">{kb.name}</div>
-                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">{kb.description}</div>
-                      </div>
-                    </button>
-                  ))}
-                  <div className="border-t border-foreground/[0.04]">
-                    <button className="w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3">
-                      <Plus className="w-4 h-4 text-muted-foreground/50 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="text-xs font-medium text-dd-primary">Add Custom SQL Skills</div>
-                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">Import .cursorrules, .mdc files, or paste custom SQL patterns</div>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Input Area */}
-              <div className="px-3 pb-3">
-                <div className="rounded-2xl bg-white/50 border border-[#6352af]/[0.08] focus-within:border-[#6352af]/[0.2] focus-within:shadow-[0_0_0_3px_rgba(99,82,175,0.06)] transition-all duration-200">
-                  {/* Text input */}
-                  <textarea
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask about SQL, tables, or metrics..."
-                    rows={2}
-                    className="w-full px-3 pt-3 pb-2 text-sm text-foreground bg-transparent placeholder-muted-foreground/40 focus:outline-none resize-none"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        setChatInput('');
-                      }
-                    }}
-                  />
-
-                  {/* Bottom toolbar */}
-                  <div className="px-3 pb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        ref={kbButtonRef}
-                        onClick={() => setKbDropdownOpen(!kbDropdownOpen)}
-                        className="p-2 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
-                        title="Add knowledge base"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#6352af]/[0.07] text-xs text-foreground">
-                        <BookOpen className="w-3 h-3 text-muted-foreground/60" />
-                        <span>{selectedKb.name}</span>
-                        <button
-                          onClick={() => setSelectedKb(knowledgeBases[0])}
-                          className="text-muted-foreground/40 hover:text-muted-foreground ml-0.5 transition-colors duration-200"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <button
-                      className={`p-2 rounded-xl transition-all duration-200 ${
-                        chatInput.trim()
-                          ? 'bg-[#6352af] text-white hover:bg-[#5646a0] shadow-sm shadow-[#6352af]/20'
-                          : 'bg-[#6352af]/[0.06] text-muted-foreground/30'
-                      }`}
-                      disabled={!chatInput.trim()}
-                      onClick={() => setChatInput('')}
-                    >
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+              <div className="px-4 pb-4 relative">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="@ for objects, / for commands, ↕ for history"
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-border dark:border-white/10 text-foreground dark:text-slate-200 text-sm bg-background/50 dark:bg-slate-950/70 placeholder-muted-foreground/60 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 focus:border-violet-400/40 transition-all"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      setChatInput('');
+                    }
+                  }}
+                />
+                <button className="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-muted-foreground/60 dark:text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
+                  <Send className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ) : (
@@ -987,34 +945,34 @@ export function SQLStudioPage() {
             <div className="flex-1 overflow-auto">
               <div className="p-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                   <input
                     type="text"
                     placeholder="Search conversations..."
-                    className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-white/50 placeholder-muted-foreground/50 focus:outline-none focus:bg-white/70 transition-colors duration-200 border border-[#6352af]/[0.06]"
+                    className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
                   />
                 </div>
               </div>
               <div className="p-2">
                 <div className="px-2 pt-2 pb-1.5">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Recent</span>
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Recent</span>
                 </div>
                 {pastConversationsGrouped.recent.map((conv) => (
                   <div
                     key={conv.id}
-                    className="px-3 py-3 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150"
+                    className="px-3 py-3 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150"
                   >
                     <div className="flex items-start justify-between mb-0.5">
-                      <div className="text-xs font-medium text-foreground truncate pr-2">{conv.title}</div>
-                      <span className="text-[10px] text-muted-foreground/50 shrink-0">{conv.timestamp}</span>
+                      <div className="text-xs font-medium text-slate-900 dark:text-slate-200 truncate pr-2">{conv.title}</div>
+                      <span className="text-[10px] text-slate-500 dark:text-slate-500 shrink-0">{conv.timestamp}</span>
                     </div>
-                    <div className="text-[11px] text-muted-foreground/60 truncate">{conv.preview}</div>
+                    <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">{conv.preview}</div>
                   </div>
                 ))}
 
                 <div className="px-2 pt-5 pb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Folders</span>
-                  <button className="p-1 rounded-lg hover:bg-white/40 text-muted-foreground/40 hover:text-muted-foreground transition-all duration-200" title="New folder">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Folders</span>
+                  <button className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 transition-all duration-200" title="New folder">
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
@@ -1022,28 +980,28 @@ export function SQLStudioPage() {
                   <div key={folder.id}>
                     <button
                       onClick={() => setExpandedChatFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer transition-all duration-150"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
                     >
                       {expandedChatFolders[folder.id]
-                        ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                        : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
                       }
-                      <span className="text-xs font-medium text-foreground">{folder.name}</span>
-                      <span className="text-[10px] text-muted-foreground/40 ml-auto">{folder.items.length}</span>
+                      <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{folder.name}</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{folder.items.length}</span>
                       {expandedChatFolders[folder.id]
-                        ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                        : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                        ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                        : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                       }
                     </button>
                     {expandedChatFolders[folder.id] && (
-                      <div className="ml-5 pl-3 border-l border-[#6352af]/[0.08]">
+                      <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
                         {folder.items.map((item) => (
-                          <div key={item.id} className="px-2 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                          <div key={item.id} className="px-2 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
                             <div className="flex items-start justify-between mb-0.5">
-                              <div className="text-xs text-foreground truncate pr-2">{item.title}</div>
-                              <span className="text-[10px] text-muted-foreground/50 shrink-0">{item.timestamp}</span>
+                              <div className="text-xs text-slate-900 dark:text-slate-200 truncate pr-2">{item.title}</div>
+                              <span className="text-[10px] text-slate-500 dark:text-slate-500 shrink-0">{item.timestamp}</span>
                             </div>
-                            <div className="text-[11px] text-muted-foreground/60 truncate">{item.preview}</div>
+                            <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">{item.preview}</div>
                           </div>
                         ))}
                       </div>
@@ -1065,6 +1023,7 @@ export function SQLStudioPage() {
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }

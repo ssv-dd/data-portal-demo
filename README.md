@@ -1,6 +1,6 @@
 # Data Portal - AI-Native Analytics Interface
 
-An AI-native data portal UI built from Figma designs, featuring intelligent data exploration, SQL editing, and interactive dashboards.
+A modern, AI-native data analytics platform featuring intelligent data exploration, SQL editing, interactive dashboards, and automated workflows.
 
 ## Overview
 
@@ -110,34 +110,64 @@ import { appConfig } from '@/config/app.config'
 
 ## Features
 
+### Theme Support
+- Light and dark mode toggle
+- Theme-aware components and glass morphism effects
+- Persistent theme preference
+
 ### Home Page
-- AI chat interface with multiple modes (chat, hybrid, notebook)
+- Hero panel with quick prompts and search
+- Recent work and discovery feed
 - Executive scorecard with role-based metrics
-- Personalized recommendations
-- Quick access to recent and favorite assets
+- Quick create actions
+- AI chat interface
 
 ### SQL Studio
-- Full-featured SQL editor with Monaco
-- AI assistant for query help
-- Query history and folders
-- Schema browsing and search
-- Multiple knowledge bases
+- Full-featured SQL editor with Monaco (theme-aware)
+- AI assistant with past chats and knowledge bases
+- Query execution with Run/Stop controls
+- Low confidence SQL warnings
+- Query history organized in folders
+- Schema catalog browsing and search
+- Multiple database support (Snowflake, Spark, ClickHouse)
 
 ### Dashboards
-- Canvas-based dashboard builder
-- Golden dashboards by role
+- Canvas-based dashboard builder with metric library
+- Dashboard templates and recent canvases
 - Interactive visualizations
-- Real-time collaboration
+- Searchable dashboard library in left panel
+
+### Notebooks
+- Notebook creation from templates
+- Collaborative analysis workspace
+- Recent, templates, and shared notebooks views
+- Searchable notebook library
+
+### AI Workflows
+- Workflow automation and scheduling
+- Visual workflow builder with nodes panel
+- Workflow status tracking (active, paused, failed)
+- Searchable workflow library
+- Workflow templates
+
+### Consistent Layout Pattern
+- All workspace pages feature a 3-panel layout:
+  - Collapsible left panel for navigation and library access
+  - Center panel for main content
+  - Right panel with context-aware AI assistant
 
 ### Design System
 
 The project uses a custom design system built on Tailwind CSS v4:
+- Theme support (light/dark mode with persistent preference)
+- Violet/slate color scheme for headers and accents
 - DoorDash brand colors (`--dd-primary: #FF3A00`)
-- Custom shadow utilities (`shadow-card`, `shadow-card-hover`)
-- Glassmorphism effects (`glass-panel`, `glass-panel-chat`)
-- Motion animation variants
+- Custom shadow utilities (`shadow-card`, `shadow-card-hover`, `shadow-popover`)
+- Glassmorphism effects (`glass-panel`, `glass-panel-subtle`, `glass-panel-chat`)
+- Motion animation variants for smooth transitions
+- Consistent spacing and typography system
 
-See `src/styles/theme.css` for design tokens.
+See `src/styles/theme.css` for design tokens and `src/styles/index.css` for custom utilities.
 
 ## Development Notes
 
