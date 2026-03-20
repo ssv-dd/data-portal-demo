@@ -19,9 +19,9 @@ export function RootLayout() {
   }, []);
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex flex-col bg-white">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-background">
       <TopNav />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-background-secondary">
         <Outlet />
       </main>
       <KeyboardShortcutsModal open={showShortcuts} onOpenChange={setShowShortcuts} />

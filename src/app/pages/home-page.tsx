@@ -7,22 +7,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { AnalysisResponse } from '../components/analysis-response';
 import { ExecutiveScorecard } from '../components/ExecutiveScorecard';
 import { goldenDashboards } from '../data/mock-data';
+import { recommendations, favoriteAssets } from '../data/mock/home-data';
+import { chartData, summaryData } from '../data/mock/analysis-data';
+import { staggerContainer, staggerItem } from '@/app/lib/motion';
+import { appConfig } from '@/config/app.config';
 import companyDashboardPreview from '../../assets/company-dashboard-preview.png';
 import progressVsPlanPreview from '../../assets/progress-vs-plan-preview.png';
-
-const recommendations = [
-  { id: 'rec-1', title: 'Company Dashboard', reason: 'Most viewed dashboard by your team this week — 23 views across leadership', type: 'Dashboard' },
-  { id: 'rec-2', title: 'Progress vs Plan Q1\'26', reason: 'Referenced in 3 recent Slack threads by your direct reports', type: 'Dashboard' },
-  { id: 'rec-3', title: 'DashPass Retention Deep Dive', reason: 'Related to your recent query about subscription churn trends', type: 'Analysis' },
-  { id: 'rec-4', title: 'Cx Marketplace Cohort Analysis', reason: 'Trending across S&O — 15 unique viewers in the last 7 days', type: 'Report' },
-];
-
-const favoriteAssets = [
-  { id: 'fav-1', name: 'Weekly KPI Tracker', type: 'Dashboard', icon: '📊' },
-  { id: 'fav-2', name: 'fact_order_delivery', type: 'Table', icon: '🗃️' },
-  { id: 'fav-3', name: 'Cx Retention Model', type: 'Notebook', icon: '📓' },
-  { id: 'fav-4', name: 'Revenue Forecast Q1', type: 'Dashboard', icon: '📈' },
-];
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
@@ -75,35 +65,34 @@ export function HomePage() {
 
   const chatBox = (
     <div
-      className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 transition-shadow hover:shadow-md"
+      className="bg-white border border-border/60 rounded-2xl shadow-card p-6 transition-shadow hover:shadow-card-hover"
       onClick={!isChatCentered ? handleChatClick : undefined}
       style={{ cursor: isChatCentered ? 'default' : 'pointer' }}
     >
       <div className="relative mb-4">
-        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5" style={{ color: '#FF3A00' }} />
+        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dd-primary" />
         <Input
           placeholder="Prompt to explore your data"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleAgentSearch}
           onClick={!isChatCentered ? handleChatClick : undefined}
-          className="pl-12 h-12 text-base border-gray-300"
+          className="pl-12 h-12 text-base border-border"
         />
         <Send
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer"
-          style={{ color: '#FF3A00' }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-dd-primary"
           onClick={(e) => { e.stopPropagation(); submitPrompt(); }}
         />
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex items-center gap-1 bg-muted p-1 rounded-2xl">
           {(['chat', 'hybrid', 'notebook'] as const).map((mode) => (
             <button
               key={mode}
               onClick={(e) => { e.stopPropagation(); setAgentMode(mode); }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                agentMode === mode ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                agentMode === mode ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {mode === 'chat' && <MessageSquare className="w-4 h-4" />}
@@ -127,7 +116,7 @@ export function HomePage() {
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize ${
                 agentPurpose === purpose
                   ? 'bg-gray-900 text-white border-gray-900'
-                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  : 'bg-white text-foreground border-border hover:bg-accent/40'
               }`}
             >
               {purpose}
@@ -160,7 +149,7 @@ export function HomePage() {
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
                   onClick={handleBackClick}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                   <span className="text-sm">Back to Home</span>
@@ -175,9 +164,9 @@ export function HomePage() {
                 marginBottom: isChatCentered ? '32px' : '24px',
               }}
               transition={{ duration: 0.5, ease }}
-              className="text-gray-900"
+              className="text-foreground"
             >
-              {getGreeting()}, Tony
+              {getGreeting()}, {appConfig.user.name}
             </motion.h1>
 
             {/* Spacer — grows to push chat box to ~center when in chat mode */}
@@ -203,7 +192,7 @@ export function HomePage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
                   transition={{ delay: 0.2, duration: 0.3 }}
-                  className="text-center text-gray-500 text-sm -mt-4 mb-8"
+                  className="text-center text-muted-foreground text-sm -mt-4 mb-8"
                 >
                   Start typing to explore your data with AI
                 </motion.p>
@@ -220,8 +209,8 @@ export function HomePage() {
               style={{ overflow: 'hidden', pointerEvents: isChatCentered ? 'none' : 'auto' }}
             >
               <div className="mb-4">
-                <h2 className="text-lg text-gray-900">Discover</h2>
-                <p className="text-sm text-gray-500 mt-1">Curated insights, trends, and dashboards relevant to you</p>
+                <h2 className="text-lg text-foreground">Discover</h2>
+                <p className="text-sm text-muted-foreground mt-1">Curated insights, trends, and dashboards relevant to you</p>
               </div>
 
               <div className="mb-8">
@@ -240,14 +229,14 @@ export function HomePage() {
                   <Sparkles className="h-5 w-5 text-purple-500" />
                   Recommended for You
                 </h2>
-                <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-3 grid-cols-1 lg:grid-cols-2">
                   {recommendations.map((rec) => (
-                    <div key={rec.id} className="relative">
+                    <motion.div key={rec.id} variants={staggerItem} className="relative">
                       <Card
-                        className="p-5 hover:shadow-md transition-all cursor-pointer border-purple-200 bg-purple-50/30 h-full"
+                        className="p-5 hover:shadow-card-hover transition-all cursor-pointer border-purple-200 bg-purple-50/30 h-full"
                         onClick={() => {
-                          if (rec.id === 'rec-1') window.open('https://app.sigmacomputing.com/doordash/workbook/company-dashboard-clone-clone-1v3cQbtiMdsTvuRBLqYwBR', '_blank');
-                          else if (rec.id === 'rec-2') window.open('https://app.sigmacomputing.com/doordash/workbook/Progress-vs-Plan-Q1-26-Non-Live-6QudnUVKcXDBag3IBxuQsI', '_blank');
+                          if (rec.id === 'rec-1') window.open(appConfig.externalUrls.companyDashboard, '_blank');
+                          else if (rec.id === 'rec-2') window.open(appConfig.externalUrls.progressVsPlan, '_blank');
                         }}
                         onMouseEnter={() => setHoveredRecommendation(rec.id)}
                         onMouseLeave={() => setHoveredRecommendation(null)}
@@ -255,7 +244,7 @@ export function HomePage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <h3 className="font-semibold mb-1 line-clamp-1">{rec.title}</h3>
-                            <p className="text-sm text-gray-500 line-clamp-2">{rec.reason}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{rec.reason}</p>
                           </div>
                           <Badge variant="outline" className="text-xs ml-2 shrink-0">{rec.type}</Badge>
                         </div>
@@ -265,7 +254,7 @@ export function HomePage() {
                           <Card className="p-4 shadow-2xl border-2 border-purple-400 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
                             <div className="mb-3">
                               <p className="text-sm font-semibold text-purple-600">Dashboard Preview</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{rec.title}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{rec.title}</p>
                             </div>
                             <div className="rounded-lg overflow-hidden border-2 border-purple-100 shadow-lg">
                               <img src={companyDashboardPreview} alt="Company Dashboard Preview" className="w-full" />
@@ -278,7 +267,7 @@ export function HomePage() {
                           <Card className="p-4 shadow-2xl border-2 border-purple-400 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
                             <div className="mb-3">
                               <p className="text-sm font-semibold text-purple-600">Dashboard Preview</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{rec.title}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{rec.title}</p>
                             </div>
                             <div className="rounded-lg overflow-hidden border-2 border-purple-100 shadow-lg">
                               <img src={progressVsPlanPreview} alt="Progress vs Plan Preview" className="w-full" />
@@ -286,9 +275,9 @@ export function HomePage() {
                           </Card>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
 
               {/* Quick Access */}
@@ -300,13 +289,13 @@ export function HomePage() {
                 <div className="flex gap-2 mb-4 border-b">
                   <button
                     onClick={() => setQuickAccessTab('recent')}
-                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'recent' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
+                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'recent' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                   >
                     <div className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Recently Viewed</div>
                   </button>
                   <button
                     onClick={() => setQuickAccessTab('favorites')}
-                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'favorites' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-gray-500 hover:text-gray-900'}`}
+                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'favorites' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                   >
                     <div className="flex items-center gap-1.5"><Star className="h-4 w-4" /> Favorites</div>
                   </button>
@@ -314,38 +303,38 @@ export function HomePage() {
                 <div className="space-y-2">
                   {quickAccessTab === 'recent' ? (
                     goldenDashboards['business-executive'].map((dashboard) => (
-                      <Card key={dashboard.id} className="p-4 hover:shadow-md transition-all cursor-pointer hover:border-yellow-500/50"
-                        onClick={() => { if (dashboard.id === 'gd-be-4') window.open('https://app.sigmacomputing.com/doordash/workbook/CPD-Projector-YXzYhYvhHGQckbSJrQfmX?:nodeId=Miflz3J74p', '_blank'); }}
+                      <Card key={dashboard.id} className="p-4 hover:shadow-card-hover transition-all cursor-pointer hover:border-yellow-500/50"
+                        onClick={() => { if (dashboard.id === 'gd-be-4') window.open(appConfig.externalUrls.cpdProjector, '_blank'); }}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4 flex-1">
                             <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-2xl">{dashboard.icon}</div>
                             <div className="flex-1">
                               <div className="font-medium text-sm">{dashboard.title}</div>
-                              <div className="text-xs text-gray-500">{dashboard.description}</div>
+                              <div className="text-xs text-muted-foreground">{dashboard.description}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge variant="outline" className="text-xs">Dashboard</Badge>
-                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                           </div>
                         </div>
                       </Card>
                     ))
                   ) : (
                     favoriteAssets.map((asset) => (
-                      <Card key={asset.id} className="p-4 hover:shadow-md transition-all cursor-pointer hover:border-yellow-500/50">
+                      <Card key={asset.id} className="p-4 hover:shadow-card-hover transition-all cursor-pointer hover:border-yellow-500/50">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-4 flex-1">
                             <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center text-2xl">{asset.icon}</div>
                             <div className="flex-1">
                               <div className="font-medium text-sm">{asset.name}</div>
-                              <div className="text-xs text-gray-500">{asset.type}</div>
+                              <div className="text-xs text-muted-foreground">{asset.type}</div>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
                             <Badge variant="outline" className="text-xs">{asset.type}</Badge>
-                            <ChevronRight className="h-4 w-4 text-gray-400" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
                           </div>
                         </div>
                       </Card>
@@ -369,13 +358,13 @@ export function HomePage() {
             transition={{ duration: 0.3 }}
             className="absolute inset-0 z-20 bg-white flex flex-col"
           >
-            <div className="px-8 py-6 border-b border-gray-200">
+            <div className="px-8 py-6 border-b border-border/60">
               <div className="max-w-7xl mx-auto">
-                <button onClick={handleBackClick} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
+                <button onClick={handleBackClick} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
                   <ChevronLeft className="w-5 h-5" />
                   <span className="text-sm">Back to Home</span>
                 </button>
-                <h1 className="text-2xl text-gray-900">{getGreeting()}, Tony</h1>
+                <h1 className="text-2xl text-foreground">{getGreeting()}, {appConfig.user.name}</h1>
               </div>
             </div>
 
@@ -385,25 +374,25 @@ export function HomePage() {
                   <div key={index}>
                     {message.role === 'user' && (
                       <div className="flex justify-end mb-6">
-                        <div className="bg-gray-100 rounded-lg px-4 py-3 max-w-3xl">
-                          <p className="text-gray-900">{message.content}</p>
+                        <div className="bg-muted rounded-lg px-4 py-3 max-w-3xl">
+                          <p className="text-foreground">{message.content}</p>
                         </div>
                       </div>
                     )}
-                    {message.role === 'assistant' && message.content === 'analysis' && <AnalysisResponse />}
+                    {message.role === 'assistant' && message.content === 'analysis' && <AnalysisResponse chartData={chartData} summaryData={summaryData} />}
                   </div>
                 ))}
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FF3A00' }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-dd-primary">
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
-                      <div className="bg-gray-50 rounded-lg px-4 py-3">
+                      <div className="bg-muted/50 rounded-lg px-4 py-3">
                         <div className="flex gap-1">
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
                         </div>
                       </div>
                     </div>
@@ -416,7 +405,7 @@ export function HomePage() {
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, ease }}
-              className="border-t border-gray-200 bg-white px-8 py-4"
+              className="border-t border-border/60 bg-white px-8 py-4"
             >
               <div className="max-w-7xl mx-auto">
                 {chatBox}

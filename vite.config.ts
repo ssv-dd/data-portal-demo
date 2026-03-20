@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig({
-  base: '/Data-Portal-AI-Native/',
+  base: process.env.VITE_BASE_PATH || '/Data-Portal-AI-Native/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -12,6 +12,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5180,
+    port: parseInt(process.env.VITE_PORT || '5180'),
   },
 })

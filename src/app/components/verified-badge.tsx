@@ -25,7 +25,7 @@ export function VerifiedBadge({ verified, verifiedBy, verifiedDate }: VerifiedBa
             className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs ${
               verified
                 ? 'bg-green-50 text-green-700 border border-green-200'
-                : 'bg-gray-50 text-gray-600 border border-gray-300'
+                : 'bg-muted/50 text-muted-foreground border border-border'
             }`}
           >
             {verified ? (

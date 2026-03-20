@@ -159,7 +159,7 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary/10">
+          <div className="p-2 rounded-xl bg-primary/10">
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
           <h2>AI Overview</h2>
@@ -208,7 +208,7 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
           {/* Trend Chart */}
-          <div className="bg-card p-4 rounded-lg border" style={{ minHeight: '200px' }}>
+          <div className="bg-card p-4 rounded-xl border" style={{ minHeight: '200px' }}>
             <h4 className="mb-3 text-sm text-muted-foreground">Trend Over Time</h4>
             <div className="w-full h-[180px]">
               <ResponsiveContainer width="100%" height="100%" minHeight={180}>
@@ -243,7 +243,7 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
           </div>
 
           {/* Segment Breakdown Chart */}
-          <div className="bg-card p-4 rounded-lg border" style={{ minHeight: '200px' }}>
+          <div className="bg-card p-4 rounded-xl border" style={{ minHeight: '200px' }}>
             <h4 className="mb-3 text-sm text-muted-foreground">Breakdown by Segment</h4>
             <div className="w-full h-[180px]">
               <ResponsiveContainer width="100%" height="100%" minHeight={180}>
@@ -295,7 +295,7 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
           
           <CollapsibleContent className="mt-3 space-y-4">
             {/* Data Sources */}
-            <div className="p-4 rounded-lg bg-card border">
+            <div className="p-4 rounded-xl bg-card border">
               <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 Data Sources
@@ -325,7 +325,7 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
             </div>
 
             {/* Reasoning Steps */}
-            <div className="p-4 rounded-lg bg-card border">
+            <div className="p-4 rounded-xl bg-card border">
               <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                 AI Reasoning Steps
