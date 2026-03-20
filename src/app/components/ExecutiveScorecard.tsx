@@ -141,23 +141,25 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
         onDismiss={() => setShowNewFeatureBadge(false)}
       />
 
-      <ScorecardContextBar
+      {/* Product Areas - Temporarily commented out */}
+      {/* <ScorecardContextBar
         areas={allAreas}
         selectedAreas={selectedAreas}
         onToggleArea={toggleArea}
         timeRange={timeRange}
         onTimeRangeChange={handleTimeRangeChange}
-      />
+      /> */}
 
-      <AIExecutiveSummary
+      {/* AI Overview - Temporarily commented out */}
+      {/* <AIExecutiveSummary
         summary={aiExecutiveSummary}
         areaName={allAreas.find(a => a.id === selectedAreas[0])?.name || 'Company'}
         sourceDashboards={sourceDashboards}
         onSettingsClick={() => setShowAISettings(true)}
-      />
+      /> */}
 
-      {/* Metric Scorecard Tables */}
-      <div className="space-y-4">
+      {/* Company/Top-line Metrics - Temporarily commented out */}
+      {/* <div className="space-y-4">
         {allAreas
           .filter(area => selectedAreas.includes(area.id))
           .map(area => (
@@ -171,7 +173,7 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
               onCustomize={() => setShowCustomization(true)}
             />
           ))}
-      </div>
+      </div> */}
 
       {/* Modals */}
       {selectedMetric && (

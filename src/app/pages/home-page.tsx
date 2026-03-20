@@ -1,41 +1,58 @@
 import { useState } from 'react';
-import { Input } from '../components/ui/input';
-import { Card } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Sparkles, MessageSquare, Layers, BookOpen, Send, ChevronLeft, Star, Clock, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { AnalysisResponse } from '../components/analysis-response';
+import { Sparkles, ChevronLeft } from 'lucide-react';
+import { GradientOrb } from '../components/hero/gradient-orb';
+import { HeroPanel } from '../components/hero/hero-panel';
+import { RecentWorkCard, type RecentWorkItem } from '../components/home/recent-work-card';
+import { DiscoveryCard } from '../components/home/discovery-card';
+import { CreateCard } from '../components/home/create-card';
 import { ExecutiveScorecard } from '../components/ExecutiveScorecard';
-import { goldenDashboards } from '../data/mock-data';
-import { recommendations, favoriteAssets } from '../data/mock/home-data';
-import { chartData, summaryData } from '../data/mock/analysis-data';
-import { staggerContainer, staggerItem } from '@/app/lib/motion';
+import { AnalysisResponse } from '../components/analysis-response';
+import { Input } from '../components/ui/input';
+import { MessageSquare, Layers, BookOpen, Send } from 'lucide-react';
 import { appConfig } from '@/config/app.config';
-import companyDashboardPreview from '../../assets/company-dashboard-preview.png';
-import progressVsPlanPreview from '../../assets/progress-vs-plan-preview.png';
+import { discoveryFeed, createActions } from '../data/mock/home-data';
+import { recentWork } from '../data/mock/recent-work-data';
+import { quickPrompts } from '../data/mock/quick-prompts-data';
+import { chartData, summaryData } from '../data/mock/analysis-data';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
 export function HomePage() {
-  const [searchTerm, setSearchTerm] = useState('I want to run a deep-dive analysis on Dashpass growth for the past 60 days.');
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
   const [agentMode, setAgentMode] = useState<'chat' | 'hybrid' | 'notebook'>('chat');
   const [agentPurpose, setAgentPurpose] = useState<'analysis' | 'exploration' | 'reporting'>('analysis');
   const [isChatCentered, setIsChatCentered] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [quickAccessTab, setQuickAccessTab] = useState<'recent' | 'favorites'>('recent');
-  const [hoveredRecommendation, setHoveredRecommendation] = useState<string | null>(null);
 
   const hasMessages = messages.length > 0;
 
-  const handleAgentSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchTerm.trim()) submitPrompt();
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
   };
 
-  const submitPrompt = () => {
-    if (!searchTerm.trim()) return;
+  const handlePromptClick = (prompt: string) => {
+    setSearchTerm(prompt);
+    setIsChatCentered(true);
+    setTimeout(() => submitPrompt(prompt), 100);
+  };
+
+  const handleHeroSearch = (query: string) => {
+    setSearchTerm(query);
+    setIsChatCentered(true);
+    setTimeout(() => submitPrompt(query), 100);
+  };
+
+  const submitPrompt = (customPrompt?: string) => {
+    const userMessage = customPrompt || searchTerm;
+    if (!userMessage.trim()) return;
     if (!isChatCentered) setIsChatCentered(true);
-    const userMessage = searchTerm;
     setMessages([{ role: 'user', content: userMessage }]);
     setIsLoading(true);
     setSearchTerm('');
@@ -48,25 +65,36 @@ export function HomePage() {
     }, 2000);
   };
 
-  const handleChatClick = () => setIsChatCentered(true);
+  const handleAgentSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchTerm.trim()) submitPrompt();
+  };
 
   const handleBackClick = () => {
     setIsChatCentered(false);
     setMessages([]);
-    setSearchTerm('I want to run a deep-dive analysis on Dashpass growth for the past 60 days.');
+    setSearchTerm('');
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+  const handleRecentWorkClick = (item: RecentWorkItem) => {
+    navigate(item.route);
+  };
+
+  const handleCreateAction = (action: typeof createActions[0]) => {
+    if (action.route) {
+      navigate(action.route);
+    }
+  };
+
+  const handleDiscoveryItemClick = (item: typeof discoveryFeed.recommendations[0]) => {
+    if (item.route) {
+      navigate(item.route);
+    }
   };
 
   const chatBox = (
     <div
-      className="bg-white border border-border/60 rounded-2xl shadow-card p-6 transition-shadow hover:shadow-card-hover"
-      onClick={!isChatCentered ? handleChatClick : undefined}
+      className="glass-panel border border-border/60 rounded-2xl p-6 transition-shadow hover:shadow-card-hover"
+      onClick={!isChatCentered ? () => setIsChatCentered(true) : undefined}
       style={{ cursor: isChatCentered ? 'default' : 'pointer' }}
     >
       <div className="relative mb-4">
@@ -76,7 +104,7 @@ export function HomePage() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={handleAgentSearch}
-          onClick={!isChatCentered ? handleChatClick : undefined}
+          onClick={!isChatCentered ? () => setIsChatCentered(true) : undefined}
           className="pl-12 h-12 text-base border-border"
         />
         <Send
@@ -92,7 +120,7 @@ export function HomePage() {
               key={mode}
               onClick={(e) => { e.stopPropagation(); setAgentMode(mode); }}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                agentMode === mode ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                agentMode === mode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {mode === 'chat' && <MessageSquare className="w-4 h-4" />}
@@ -115,8 +143,8 @@ export function HomePage() {
               onClick={(e) => { e.stopPropagation(); setAgentPurpose(purpose); }}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize ${
                 agentPurpose === purpose
-                  ? 'bg-gray-900 text-white border-gray-900'
-                  : 'bg-white text-foreground border-border hover:bg-accent/40'
+                  ? 'bg-foreground text-background border-foreground'
+                  : 'bg-background text-foreground border-border hover:bg-accent/40'
               }`}
             >
               {purpose}
@@ -128,18 +156,21 @@ export function HomePage() {
   );
 
   return (
-    <div className="h-full bg-white overflow-hidden relative flex flex-col">
-      {/*
-        Single scrollable container — the chat box is always the SAME element.
-        When isChatCentered: content above/below collapses & fades, a spacer
-        pushes the chat box to vertical center, so it *moves* there naturally.
-      */}
+    <div className="min-h-screen bg-background overflow-hidden relative">
+      {/* Background gradient overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+
+      {/* Gradient Orbs - Theme-aware background decoration */}
+      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
+      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
+      <GradientOrb variant="primary" className="left-[60%] top-[600px]" />
+
       <div
-        className="flex-1 overflow-auto"
+        className="relative z-10"
         style={{ display: hasMessages && isChatCentered ? 'none' : undefined }}
       >
-        <div className="p-8">
-          <div className="max-w-7xl mx-auto">
+        <div className="overflow-auto h-screen">
+          <div className="max-w-[1600px] mx-auto p-8">
             {/* Back button — appears when centered */}
             <AnimatePresence>
               {isChatCentered && !hasMessages && (
@@ -157,49 +188,13 @@ export function HomePage() {
               )}
             </AnimatePresence>
 
-            {/* Greeting */}
-            <motion.h1
-              animate={{
-                fontSize: isChatCentered ? '30px' : '24px',
-                marginBottom: isChatCentered ? '32px' : '24px',
-              }}
-              transition={{ duration: 0.5, ease }}
-              className="text-foreground"
-            >
-              {getGreeting()}, {appConfig.user.name}
-            </motion.h1>
-
-            {/* Spacer — grows to push chat box to ~center when in chat mode */}
+            {/* Spacer — grows to push content to center when in chat mode */}
             <motion.div
-              animate={{ height: isChatCentered && !hasMessages ? 'calc(40vh - 160px)' : 0 }}
+              animate={{ height: isChatCentered && !hasMessages ? 'calc(20vh)' : 0 }}
               transition={{ duration: 0.5, ease }}
             />
 
-            {/* THE chat box — same element, same DOM position always */}
-            <motion.div
-              layout
-              transition={{ duration: 0.5, ease }}
-              className="mb-8"
-            >
-              {chatBox}
-            </motion.div>
-
-            {/* Helper text — only when centered */}
-            <AnimatePresence>
-              {isChatCentered && !hasMessages && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                  className="text-center text-muted-foreground text-sm -mt-4 mb-8"
-                >
-                  Start typing to explore your data with AI
-                </motion.p>
-              )}
-            </AnimatePresence>
-
-            {/* Discover content — collapses & fades when chat is centered */}
+            {/* Main content - collapses when chat is centered */}
             <motion.div
               animate={{
                 opacity: isChatCentered ? 0 : 1,
@@ -208,146 +203,66 @@ export function HomePage() {
               transition={{ duration: 0.4, ease }}
               style={{ overflow: 'hidden', pointerEvents: isChatCentered ? 'none' : 'auto' }}
             >
-              <div className="mb-4">
-                <h2 className="text-lg text-foreground">Discover</h2>
-                <p className="text-sm text-muted-foreground mt-1">Curated insights, trends, and dashboards relevant to you</p>
+              {/* Row 1: Hero Panel + Create Card */}
+              <div className="grid xl:grid-cols-[1.4fr_0.6fr] gap-5 mb-5">
+                <HeroPanel
+                  userName={appConfig.user.name}
+                  greeting={getGreeting()}
+                  prompts={quickPrompts}
+                  onPromptClick={handlePromptClick}
+                  onSearch={handleHeroSearch}
+                />
+                <CreateCard actions={createActions} onActionClick={handleCreateAction} />
               </div>
 
-              <div className="mb-8">
-                <ExecutiveScorecard
-                  userRole="business-executive"
-                  onOpenChat={(query) => {
-                    setSearchTerm(query);
-                    setIsChatCentered(true);
-                  }}
+              {/* Row 2: Recent Work + Discovery */}
+              <div className="grid xl:grid-cols-[0.84fr_1.16fr] gap-5 mb-5">
+                <RecentWorkCard items={recentWork} onItemClick={handleRecentWorkClick} />
+                <DiscoveryCard
+                  {...discoveryFeed}
+                  onItemClick={handleDiscoveryItemClick}
                 />
               </div>
 
-              {/* Recommendations */}
-              <div className="mb-8">
-                <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
-                  Recommended for You
-                </h2>
-                <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid gap-3 grid-cols-1 lg:grid-cols-2">
-                  {recommendations.map((rec) => (
-                    <motion.div key={rec.id} variants={staggerItem} className="relative">
-                      <Card
-                        className="p-5 hover:shadow-card-hover transition-all cursor-pointer border-purple-200 bg-purple-50/30 h-full"
-                        onClick={() => {
-                          if (rec.id === 'rec-1') window.open(appConfig.externalUrls.companyDashboard, '_blank');
-                          else if (rec.id === 'rec-2') window.open(appConfig.externalUrls.progressVsPlan, '_blank');
-                        }}
-                        onMouseEnter={() => setHoveredRecommendation(rec.id)}
-                        onMouseLeave={() => setHoveredRecommendation(null)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="font-semibold mb-1 line-clamp-1">{rec.title}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{rec.reason}</p>
-                          </div>
-                          <Badge variant="outline" className="text-xs ml-2 shrink-0">{rec.type}</Badge>
-                        </div>
-                      </Card>
-                      {hoveredRecommendation === rec.id && rec.id === 'rec-1' && (
-                        <div className="absolute top-full left-0 mt-2 z-50 w-full pointer-events-none">
-                          <Card className="p-4 shadow-2xl border-2 border-purple-400 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-                            <div className="mb-3">
-                              <p className="text-sm font-semibold text-purple-600">Dashboard Preview</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{rec.title}</p>
-                            </div>
-                            <div className="rounded-lg overflow-hidden border-2 border-purple-100 shadow-lg">
-                              <img src={companyDashboardPreview} alt="Company Dashboard Preview" className="w-full" />
-                            </div>
-                          </Card>
-                        </div>
-                      )}
-                      {hoveredRecommendation === rec.id && rec.id === 'rec-2' && (
-                        <div className="absolute top-full left-0 mt-2 z-50 w-full pointer-events-none">
-                          <Card className="p-4 shadow-2xl border-2 border-purple-400 bg-white animate-in fade-in slide-in-from-top-2 duration-200">
-                            <div className="mb-3">
-                              <p className="text-sm font-semibold text-purple-600">Dashboard Preview</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{rec.title}</p>
-                            </div>
-                            <div className="rounded-lg overflow-hidden border-2 border-purple-100 shadow-lg">
-                              <img src={progressVsPlanPreview} alt="Progress vs Plan Preview" className="w-full" />
-                            </div>
-                          </Card>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </div>
-
-              {/* Quick Access */}
-              <div className="mb-8">
-                <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
-                  <Star className="h-5 w-5 text-yellow-500 fill-yellow-500" />
-                  Quick Access
-                </h2>
-                <div className="flex gap-2 mb-4 border-b">
-                  <button
-                    onClick={() => setQuickAccessTab('recent')}
-                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'recent' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                  >
-                    <div className="flex items-center gap-1.5"><Clock className="h-4 w-4" /> Recently Viewed</div>
-                  </button>
-                  <button
-                    onClick={() => setQuickAccessTab('favorites')}
-                    className={`pb-2 px-3 text-sm font-medium border-b-2 transition-colors ${quickAccessTab === 'favorites' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-                  >
-                    <div className="flex items-center gap-1.5"><Star className="h-4 w-4" /> Favorites</div>
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {quickAccessTab === 'recent' ? (
-                    goldenDashboards['business-executive'].map((dashboard) => (
-                      <Card key={dashboard.id} className="p-4 hover:shadow-card-hover transition-all cursor-pointer hover:border-yellow-500/50"
-                        onClick={() => { if (dashboard.id === 'gd-be-4') window.open(appConfig.externalUrls.cpdProjector, '_blank'); }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-2xl">{dashboard.icon}</div>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{dashboard.title}</div>
-                              <div className="text-xs text-muted-foreground">{dashboard.description}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="text-xs">Dashboard</Badge>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
-                          </div>
-                        </div>
-                      </Card>
-                    ))
-                  ) : (
-                    favoriteAssets.map((asset) => (
-                      <Card key={asset.id} className="p-4 hover:shadow-card-hover transition-all cursor-pointer hover:border-yellow-500/50">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-4 flex-1">
-                            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 flex items-center justify-center text-2xl">{asset.icon}</div>
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{asset.name}</div>
-                              <div className="text-xs text-muted-foreground">{asset.type}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="text-xs">{asset.type}</Badge>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground/60" />
-                          </div>
-                        </div>
-                      </Card>
-                    ))
-                  )}
-                </div>
+              {/* Executive Scorecard - PRESERVED */}
+              <div className="mt-8">
+                <ExecutiveScorecard
+                  userRole={appConfig.user.role}
+                  onOpenChat={(query) => {
+                    setSearchTerm(query);
+                    setIsChatCentered(true);
+                    setTimeout(() => submitPrompt(query), 100);
+                  }}
+                />
               </div>
             </motion.div>
+
+            {/* Chat box when centered without messages */}
+            <AnimatePresence>
+              {isChatCentered && !hasMessages && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {chatBox}
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.3 }}
+                    className="text-center text-muted-foreground text-sm mt-4"
+                  >
+                    Start typing to explore your data with AI
+                  </motion.p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
 
-      {/* ── Messages view (chat box at bottom) ── */}
+      {/* Messages view - chat box at bottom */}
       <AnimatePresence>
         {isChatCentered && hasMessages && (
           <motion.div
@@ -356,7 +271,7 @@ export function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-20 bg-white flex flex-col"
+            className="absolute inset-0 z-20 bg-background flex flex-col"
           >
             <div className="px-8 py-6 border-b border-border/60">
               <div className="max-w-7xl mx-auto">
@@ -405,7 +320,7 @@ export function HomePage() {
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, ease }}
-              className="border-t border-border/60 bg-white px-8 py-4"
+              className="border-t border-border/60 bg-background px-8 py-4"
             >
               <div className="max-w-7xl mx-auto">
                 {chatBox}
