@@ -31,12 +31,12 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-dd-primary">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-600 dark:bg-violet-500">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">Completed in 3 minutes and 4 seconds</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">High confidence</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-medium">High confidence</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -118,11 +118,11 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 </thead>
                 <tbody>
                   {summaryData.map((row, i) => (
-                    <tr key={row.region} className={`border-b border-border/40 ${i === 0 ? 'bg-orange-50/40 font-medium' : 'hover:bg-accent/40'}`}>
+                    <tr key={row.region} className={`border-b border-border/40 ${i === 0 ? 'bg-violet-50/40 dark:bg-violet-950/20 font-medium' : 'hover:bg-accent/40'}`}>
                       <td className="px-5 py-3 text-foreground">{row.region}</td>
                       <td className="px-5 py-3 text-right text-foreground">{row.subs}</td>
                       <td className="px-5 py-3 text-right">
-                        <span className="inline-flex items-center gap-1 text-green-700">
+                        <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400">
                           <TrendingUp className="w-3 h-3" />
                           {row.growth}
                         </span>
@@ -184,8 +184,8 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                   <defs>
                     <linearGradient id="subscriberGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="var(--dd-primary)" stopOpacity={0.15} />
-                      <stop offset="95%" stopColor="var(--dd-primary)" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.15} />
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -195,7 +195,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '13px' }}
                     formatter={(value) => [`${value}M`, '']}
                   />
-                  <Area type="monotone" dataKey="subscribers" stroke="var(--dd-primary)" strokeWidth={2.5} fill="url(#subscriberGradient)" name="Actual" />
+                  <Area type="monotone" dataKey="subscribers" stroke="#7c3aed" strokeWidth={2.5} fill="url(#subscriberGradient)" name="Actual" />
                   <Line type="monotone" dataKey="target" stroke="#9ca3af" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target" />
                 </AreaChart>
               </ResponsiveContainer>
@@ -237,7 +237,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                     key={item.q}
                     className="flex items-start gap-3 p-3.5 rounded-xl border border-border/60 hover:border-border-strong hover:bg-accent/40 transition-all text-left group/item"
                   >
-                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-dd-primary" />
+                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-violet-600 dark:text-violet-400" />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-foreground group-hover/item:text-foreground">{item.q}</div>
                       <div className="text-xs text-muted-foreground/60 mt-1">{item.tag}</div>

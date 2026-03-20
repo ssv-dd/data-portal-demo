@@ -98,7 +98,7 @@ export function HomePage() {
       style={{ cursor: isChatCentered ? 'default' : 'pointer' }}
     >
       <div className="relative mb-4">
-        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dd-primary" />
+        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-600 dark:text-violet-400" />
         <Input
           placeholder="Prompt to explore your data"
           value={searchTerm}
@@ -108,7 +108,7 @@ export function HomePage() {
           className="pl-12 h-12 text-base border-border"
         />
         <Send
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-dd-primary"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
           onClick={(e) => { e.stopPropagation(); submitPrompt(); }}
         />
       </div>
@@ -300,7 +300,7 @@ export function HomePage() {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-dd-primary">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-violet-600 dark:bg-violet-500">
                         <Sparkles className="w-5 h-5 text-white" />
                       </div>
                       <div className="bg-muted/50 rounded-lg px-4 py-3">
