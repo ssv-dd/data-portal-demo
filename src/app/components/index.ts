@@ -1,6 +1,7 @@
 export { ExecutiveScorecard } from './ExecutiveScorecard';
 export { ScorecardCustomization } from './ScorecardCustomization';
 export { MetricDetailModal } from './MetricDetailModal';
+export { Sparkline, FeatureBadge, ScorecardContextBar, AIExecutiveSummary, MetricTable } from './scorecard';
 export { AIOverviewSection } from './AIOverviewSection';
 export { AIOverviewSettingsModal, defaultAIOverviewSettings } from './AIOverviewSettingsModal';
 export { AskAIPromptModal } from './AskAIPromptModal';

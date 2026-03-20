@@ -226,7 +226,7 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
             <Badge className="bg-purple-100 text-purple-700 border-purple-200">
               Confidence: {metric.aiInsight.confidence}%
             </Badge>
-            <Badge className="bg-gray-100 text-gray-700 border-gray-200">
+            <Badge className="bg-muted text-foreground border-border/60">
               Last updated: 5 mins ago
             </Badge>
             {metric.status === 'excellent' && (
@@ -259,7 +259,7 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
                   🎯 {analysis.what.title}
                 </h3>
                 <p className="text-sm text-muted-foreground mb-2">{analysis.what.description}</p>
-                <div className={`text-sm font-medium ${analysis.what.assessment.includes('POSITIVE') ? 'text-green-600' : 'text-gray-700'}`}>
+                <div className={`text-sm font-medium ${analysis.what.assessment.includes('POSITIVE') ? 'text-green-600' : 'text-foreground'}`}>
                   ✅ {analysis.what.assessment}
                 </div>
               </Card>
@@ -290,7 +290,7 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
                 <div>
                   <div className="text-sm font-medium mb-2">Secondary Factors (28% of the change):</div>
                   {analysis.why.secondaryFactors.map((factor, idx) => (
-                    <div key={idx} className="mb-2 pl-4 border-l-2 border-gray-300">
+                    <div key={idx} className="mb-2 pl-4 border-l-2 border-border">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-sm">{idx + 3}. {factor.name}</span>
                         <Badge variant="outline" className="text-xs">{factor.contribution}%</Badge>

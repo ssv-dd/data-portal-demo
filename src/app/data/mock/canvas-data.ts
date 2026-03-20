@@ -1,4 +1,7 @@
 import type { Canvas } from '@/types';
+import { appConfig } from '@/config/app.config';
+
+const { name: owner } = appConfig.user;
 
 export const mockCanvases: Canvas[] = [
   {
@@ -7,7 +10,7 @@ export const mockCanvases: Canvas[] = [
     description: 'Key operational metrics for Q1 review',
     lastEdited: '2 hours ago',
     metrics: 12,
-    owner: 'Tony',
+    owner,
     shared: false,
   },
   {
@@ -16,7 +19,7 @@ export const mockCanvases: Canvas[] = [
     description: 'Dasher and delivery latency metrics',
     lastEdited: '1 day ago',
     metrics: 8,
-    owner: 'Tony',
+    owner,
     shared: true,
   },
   {
@@ -25,7 +28,7 @@ export const mockCanvases: Canvas[] = [
     description: 'CX metrics and NPS tracking',
     lastEdited: '3 days ago',
     metrics: 15,
-    owner: 'Tony',
+    owner,
     shared: false,
   },
   {
@@ -34,7 +37,7 @@ export const mockCanvases: Canvas[] = [
     description: 'Subscription growth, retention, and churn metrics',
     lastEdited: '5 hours ago',
     metrics: 9,
-    owner: 'Tony',
+    owner,
     shared: true,
   },
   {
@@ -43,7 +46,7 @@ export const mockCanvases: Canvas[] = [
     description: 'Supply/demand balance, merchant metrics, and order volume',
     lastEdited: '2 days ago',
     metrics: 18,
-    owner: 'Tony',
+    owner,
     shared: false,
   },
   {
@@ -52,7 +55,7 @@ export const mockCanvases: Canvas[] = [
     description: 'WBR deck metrics: revenue, orders, new users, CSAT',
     lastEdited: '6 hours ago',
     metrics: 22,
-    owner: 'Tony',
+    owner,
     shared: true,
   },
 ];

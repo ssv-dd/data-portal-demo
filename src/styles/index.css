@@ -3,3 +3,51 @@
 
 @import 'tw-animate-css';
 @import './theme.css';
+
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+@utility shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+@utility shadow-popover {
+  box-shadow: var(--shadow-popover);
+}
+
+@utility shadow-xs {
+  box-shadow: var(--shadow-xs);
+}
+
+/* Premium glass panel surfaces */
+@utility glass-panel {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+@utility glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.03), 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* Accent glow for primary action buttons */
+@utility glow-primary {
+  box-shadow: 0 0 20px rgba(255, 58, 0, 0.25), 0 2px 8px rgba(255, 58, 0, 0.15);
+}
+
+@utility glow-primary-hover {
+  box-shadow: 0 0 32px rgba(255, 58, 0, 0.35), 0 4px 16px rgba(255, 58, 0, 0.2);
+}
+
+/* AI chat panel — cool-toned surface */
+@utility glass-panel-chat {
+  background: linear-gradient(165deg, rgba(245, 243, 255, 0.88) 0%, rgba(238, 240, 255, 0.82) 50%, rgba(243, 240, 255, 0.78) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 2px 24px rgba(99, 82, 175, 0.06), 0 0 1px rgba(99, 82, 175, 0.1);
+}

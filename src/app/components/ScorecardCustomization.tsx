@@ -654,7 +654,7 @@ export function ScorecardCustomization({
             {/* Search Bar */}
             <div className="mb-6">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                 <Input
                   type="text"
                   placeholder="Search metrics..."
@@ -668,7 +668,7 @@ export function ScorecardCustomization({
             {/* Search Results */}
             {searchQuery.trim() && (
               <div className="mb-6">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">
                   Search Results ({getSearchResults().length})
                 </p>
                 <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -681,11 +681,11 @@ export function ScorecardCustomization({
                         <button
                           key={metric.id}
                           onClick={() => handleToggleMetric(metric.areaId, metric.id)}
-                          className="w-full flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md transition-all text-left"
+                          className="w-full flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-card-hover transition-all text-left"
                         >
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{metric.name}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">{metric.areaName} • {metric.category}</p>
+                            <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
+                            <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.areaName} • {metric.category}</p>
                           </div>
                           <Badge className={isSelected ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-xs" : "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 text-xs"}>
                             {isSelected ? '✓ Added' : '+ Add'}
@@ -694,7 +694,7 @@ export function ScorecardCustomization({
                       );
                     })
                   ) : (
-                    <p className="text-sm text-gray-500 text-center py-4">No metrics found</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">No metrics found</p>
                   )}
                 </div>
               </div>
@@ -703,18 +703,18 @@ export function ScorecardCustomization({
             {/* Current Metrics - Only show when not searching */}
             {!searchQuery.trim() && totalMetrics > 0 && (
               <div className="mb-6">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">
                   Current Metrics ({totalMetrics})
                 </p>
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {getAllSelectedMetrics().map((metric) => (
                     <div
                       key={`${metric.areaId}-${metric.id}`}
-                      className="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600 transition-all"
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-border-strong dark:hover:border-gray-600 transition-all"
                     >
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{metric.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{metric.areaName}</p>
+                        <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
+                        <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.areaName}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Button
@@ -756,17 +756,17 @@ export function ScorecardCustomization({
             {/* Quick Add - Popular Metrics - Only show when not searching */}
             {!searchQuery.trim() && getPopularMetricsForQuickAdd().length > 0 && (
               <div className="mb-6">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Quick Add:</p>
+                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">Quick Add:</p>
                 <div className="space-y-2">
                   {getPopularMetricsForQuickAdd().map((metric) => (
                     <button
                       key={metric.id}
                       onClick={() => handleAddPopularMetric(metric.areaId, metric.id)}
-                      className="w-full flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-md transition-all"
+                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-card-hover transition-all"
                     >
                       <div className="flex-1 text-left">
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{metric.name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{productAreaLabels[metric.areaId]}</p>
+                        <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
+                        <p className="text-xs text-muted-foreground dark:text-gray-400">{productAreaLabels[metric.areaId]}</p>
                       </div>
                       <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 text-xs">
                         + Add
@@ -780,16 +780,16 @@ export function ScorecardCustomization({
             {/* Product Areas - Only show when not searching */}
             {!searchQuery.trim() && (
               <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Product Areas:</p>
+                <p className="text-sm font-medium text-foreground dark:text-gray-300">Product Areas:</p>
                 
                 {config.map((area) => {
                   const availableMetrics = availableMetricsByArea[area.id] || [];
                   const isExpanded = expandedArea === area.id;
                   
                   return (
-                    <div key={area.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div key={area.id} className="border border-border/60 dark:border-gray-700 rounded-xl overflow-hidden">
                       {/* Area Header */}
-                      <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50">
+                      <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-gray-800/50">
                         <div className="flex items-center gap-3 flex-1">
                           <button
                             onClick={() => handleToggleArea(area.id)}
@@ -798,13 +798,13 @@ export function ScorecardCustomization({
                             {area.enabled ? (
                               <CheckCircle2 className="h-5 w-5 text-purple-600" />
                             ) : (
-                              <Circle className="h-5 w-5 text-gray-400" />
+                              <Circle className="h-5 w-5 text-muted-foreground/60" />
                             )}
                           </button>
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{area.name}</p>
+                            <p className="text-sm font-medium text-foreground dark:text-gray-100">{area.name}</p>
                             {area.enabled && area.selectedMetrics.length > 0 && (
-                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                              <p className="text-xs text-muted-foreground dark:text-gray-400">
                                 {area.selectedMetrics.length} {area.selectedMetrics.length === 1 ? 'metric' : 'metrics'} selected
                               </p>
                             )}
@@ -837,18 +837,18 @@ export function ScorecardCustomization({
                               <button
                                 key={metric.id}
                                 onClick={() => handleToggleMetric(area.id, metric.id)}
-                                className="w-full flex items-start gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                                className="w-full flex items-start gap-3 p-2 rounded hover:bg-accent/40 dark:hover:bg-gray-800 transition-colors text-left"
                               >
                                 <div className="shrink-0 mt-0.5">
                                   {isSelected ? (
                                     <CheckCircle2 className="h-4 w-4 text-purple-600" />
                                   ) : (
-                                    <Circle className="h-4 w-4 text-gray-400" />
+                                    <Circle className="h-4 w-4 text-muted-foreground/60" />
                                   )}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{metric.name}</p>
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{metric.description}</p>
+                                  <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
+                                  <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.description}</p>
                                 </div>
                                 {metric.popular && (
                                   <Badge variant="outline" className="text-[10px] shrink-0">
@@ -878,7 +878,7 @@ export function ScorecardCustomization({
           </div>
 
           {/* Footer Actions */}
-          <div className="px-6 py-4 border-t bg-gray-50 dark:bg-gray-800/50 flex items-center justify-between gap-3">
+          <div className="px-6 py-4 border-t bg-muted/50 dark:bg-gray-800/50 flex items-center justify-between gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -920,17 +920,17 @@ export function ScorecardCustomization({
           >
             <div className="absolute inset-0 bg-black/50" />
             <div 
-              className="relative bg-white dark:bg-gray-900 rounded-lg shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
+              className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
               <div className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">
+                    <h3 className="font-semibold text-lg text-foreground dark:text-gray-100">
                       {selectedMetricInfo.name}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-muted-foreground dark:text-gray-400 mt-1">
                       {productAreaLabels[selectedMetricInfo.areaId]}
                     </p>
                   </div>
@@ -962,8 +962,8 @@ export function ScorecardCustomization({
 
                   {/* Description */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Description</h4>
+                    <p className="text-sm text-muted-foreground dark:text-gray-400">
                       {selectedMetricInfo.description}
                     </p>
                   </div>
@@ -971,8 +971,8 @@ export function ScorecardCustomization({
                   {/* Definition */}
                   {selectedMetricInfo.definition && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Definition</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Definition</h4>
+                      <p className="text-sm text-muted-foreground dark:text-gray-400 leading-relaxed">
                         {selectedMetricInfo.definition}
                       </p>
                     </div>
@@ -982,9 +982,9 @@ export function ScorecardCustomization({
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     {/* Owner */}
                     {selectedMetricInfo.owner && (
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Owner</p>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
+                        <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1">Owner</p>
+                        <p className="text-sm font-medium text-foreground dark:text-gray-100">
                           {selectedMetricInfo.owner}
                         </p>
                       </div>
@@ -992,9 +992,9 @@ export function ScorecardCustomization({
 
                     {/* Last Updated */}
                     {selectedMetricInfo.lastUpdated && (
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Last Updated</p>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
+                        <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1">Last Updated</p>
+                        <p className="text-sm font-medium text-foreground dark:text-gray-100">
                           {new Date(selectedMetricInfo.lastUpdated).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric', 
@@ -1008,9 +1008,9 @@ export function ScorecardCustomization({
                   {/* Data Source */}
                   {selectedMetricInfo.source && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Source</h4>
-                      <div className="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-                        <code className="text-xs text-gray-700 dark:text-gray-300 font-mono">
+                      <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Data Source</h4>
+                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
+                        <code className="text-xs text-foreground dark:text-gray-300 font-mono">
                           {selectedMetricInfo.source}
                         </code>
                       </div>
@@ -1020,7 +1020,7 @@ export function ScorecardCustomization({
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-4 border-t bg-gray-50 dark:bg-gray-800/50 flex justify-end">
+              <div className="px-6 py-4 border-t bg-muted/50 dark:bg-gray-800/50 flex justify-end">
                 <Button
                   variant="outline"
                   size="sm"

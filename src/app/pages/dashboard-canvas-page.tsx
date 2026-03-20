@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { motion } from 'motion/react';
+import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Share2, Settings, Eye, Plus, GripVertical, MoreVertical, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -15,17 +17,17 @@ export function DashboardCanvasPage() {
       case 'kpi':
         return (
           <div className="flex flex-col justify-center h-full">
-            <div className="text-3xl font-bold text-gray-900 mb-2">{widget.kpiValue}</div>
+            <div className="text-3xl font-bold text-foreground mb-2">{widget.kpiValue}</div>
             <div className="flex items-center gap-1.5">
               {widget.kpiTrend === 'up' && <TrendingUp className="w-4 h-4 text-green-600" />}
               {widget.kpiTrend === 'down' && <TrendingDown className="w-4 h-4 text-green-600" />}
-              {widget.kpiTrend === 'flat' && <Minus className="w-4 h-4 text-gray-400" />}
+              {widget.kpiTrend === 'flat' && <Minus className="w-4 h-4 text-muted-foreground/60" />}
               <span className={`text-sm font-medium ${
-                widget.kpiTrend === 'flat' ? 'text-gray-500' : 'text-green-600'
+                widget.kpiTrend === 'flat' ? 'text-muted-foreground' : 'text-green-600'
               }`}>
                 {widget.kpiChange}
               </span>
-              <span className="text-xs text-gray-400">vs prev period</span>
+              <span className="text-xs text-muted-foreground/60">vs prev period</span>
             </div>
           </div>
         );
@@ -99,63 +101,68 @@ export function DashboardCanvasPage() {
   return (
     <div className="h-full flex">
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="border-b border-gray-200 bg-white px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl text-gray-900">Q1 Operations Dashboard</h1>
-              <p className="text-sm text-gray-500">Last edited 2 hours ago · 8 widgets</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" className="gap-2 text-sm">
-                <Plus className="w-4 h-4" />
-                Add Widget
-              </Button>
-              <Button variant="outline" className="gap-2 text-sm">
-                <Eye className="w-4 h-4" />
-                Preview
-              </Button>
-              <Button variant="outline" className="gap-2 text-sm">
-                <Settings className="w-4 h-4" />
-                Settings
-              </Button>
-              <Button
-                className="bg-dd-primary text-white gap-2 text-sm"
-                onClick={() => setShowPublishModal(true)}
-              >
-                <Share2 className="w-4 h-4" />
-                Publish
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto bg-gray-50 p-8">
-          <div className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
-            {widgets.map((widget) => (
-              <div
-                key={widget.id}
-                className={`bg-white border border-gray-200 rounded-lg overflow-hidden group ${
-                  widget.span === 2 ? 'col-span-2' : 'col-span-1'
-                }`}
-              >
-                <div className="flex items-center justify-between px-4 pt-4 pb-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <GripVertical className="w-4 h-4 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0" />
-                    <div className="min-w-0">
-                      <h4 className="text-sm font-medium text-gray-900 truncate">{widget.title}</h4>
-                      <p className="text-xs text-gray-500 truncate">{widget.subtitle}</p>
-                    </div>
-                  </div>
-                  <button className="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className={widget.type === 'kpi' ? 'px-4 pb-4 h-24' : 'px-2 pb-3 h-48'}>
-                  {renderChart(widget)}
-                </div>
+        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+          <div className="border-b border-border/60 bg-white px-8 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl text-foreground">Q1 Operations Dashboard</h1>
+                <p className="text-sm text-muted-foreground">Last edited 2 hours ago · 8 widgets</p>
               </div>
-            ))}
+              <div className="flex items-center gap-2">
+                <Button variant="outline" className="gap-2 text-sm">
+                  <Plus className="w-4 h-4" />
+                  Add Widget
+                </Button>
+                <Button variant="outline" className="gap-2 text-sm">
+                  <Eye className="w-4 h-4" />
+                  Preview
+                </Button>
+                <Button variant="outline" className="gap-2 text-sm">
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </Button>
+                <Button
+                  className="bg-dd-primary text-white gap-2 text-sm"
+                  onClick={() => setShowPublishModal(true)}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Publish
+                </Button>
+              </div>
+            </div>
           </div>
+        </motion.div>
+
+        <div className="flex-1 overflow-auto bg-muted/50 p-8">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="max-w-7xl mx-auto grid grid-cols-4 gap-4">
+            {widgets.map((widget) => (
+              <motion.div
+                key={widget.id}
+                variants={staggerItem}
+                className={widget.span === 2 ? 'col-span-2' : 'col-span-1'}
+              >
+                <div
+                  className="bg-white border border-border/60 rounded-2xl overflow-hidden group h-full"
+                >
+                  <div className="flex items-center justify-between px-4 pt-4 pb-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <GripVertical className="w-4 h-4 text-muted-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab shrink-0" />
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-medium text-foreground truncate">{widget.title}</h4>
+                        <p className="text-xs text-muted-foreground truncate">{widget.subtitle}</p>
+                      </div>
+                    </div>
+                    <button className="text-muted-foreground/60 hover:text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className={widget.type === 'kpi' ? 'px-4 pb-4 h-24' : 'px-2 pb-3 h-48'}>
+                    {renderChart(widget)}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </div>
 
@@ -179,9 +186,9 @@ export function DashboardCanvasPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="text-sm text-gray-900 font-medium mb-1">Q1 Operations Dashboard</div>
-              <div className="text-xs text-gray-500">8 widgets · 4 verified metrics</div>
+            <div className="bg-muted/50 rounded-2xl p-4">
+              <div className="text-sm text-foreground font-medium mb-1">Q1 Operations Dashboard</div>
+              <div className="text-xs text-muted-foreground">8 widgets · 4 verified metrics</div>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowPublishModal(false)}>

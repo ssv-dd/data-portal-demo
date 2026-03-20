@@ -84,7 +84,7 @@ export function CommentModal({
         </DialogHeader>
 
         {/* Selected Text Preview */}
-        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+        <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl">
           <p className="text-sm text-muted-foreground mb-1">Commenting on:</p>
           <p className="text-sm font-medium line-clamp-3">"{selectedText}"</p>
         </div>
@@ -111,7 +111,7 @@ export function CommentModal({
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute bottom-full left-0 right-0 mb-2 bg-white border-2 border-purple-200 rounded-lg shadow-xl max-h-48 overflow-y-auto z-10"
+                  className="absolute bottom-full left-0 right-0 mb-2 bg-white border-2 border-purple-200 rounded-xl shadow-xl max-h-48 overflow-y-auto z-10"
                 >
                   {filteredMembers.length > 0 ? (
                     <div className="p-1">

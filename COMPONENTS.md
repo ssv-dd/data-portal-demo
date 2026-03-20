@@ -61,7 +61,14 @@ Copy `src/styles/theme.css` — contains CSS variables used by all UI primitives
 Full-featured executive metrics scorecard with AI summaries, metric tables, sparklines, and drill-down modals.
 
 ### Files to copy
-- `src/app/components/ExecutiveScorecard.tsx`
+- `src/app/components/ExecutiveScorecard.tsx` (orchestrator, ~170 lines)
+- `src/app/components/scorecard/` (sub-components):
+  - `ScorecardContextBar.tsx` — product area selector + time range
+  - `AIExecutiveSummary.tsx` — AI overview with highlights, concerns, sources
+  - `MetricTable.tsx` — collapsible metric table per area
+  - `Sparkline.tsx` — reusable SVG sparkline chart
+  - `FeatureBadge.tsx` — dismissible feature announcement
+  - `index.ts` — barrel export
 - `src/app/components/ScorecardCustomization.tsx`
 - `src/app/components/MetricDetailModal.tsx`
 - `src/app/components/AIOverviewSection.tsx`

@@ -3,13 +3,14 @@ import {
   Play, Pause, CheckCircle, AlertCircle,
   Mail, Database, BarChart3, FileText, GitBranch, RefreshCw,
 } from 'lucide-react';
+import { appConfig } from '@/config/app.config';
 
 export const mockWorkflows: Workflow[] = [
-  { id: '1', title: 'Weekly Business Review Generator', description: 'Auto-generates WBR slides from key metrics every Monday at 8am', status: 'active', schedule: 'Every Monday 8:00 AM', lastRun: '3 days ago', nextRun: 'Tomorrow 8:00 AM', owner: 'Tony', shared: true, steps: 5, successRate: '98%' },
-  { id: '2', title: 'DashPass Churn Alert', description: 'Monitors churn rate and alerts Slack when threshold exceeded', status: 'active', schedule: 'Every 6 hours', lastRun: '2 hours ago', nextRun: 'In 4 hours', owner: 'Tony', shared: false, steps: 3, successRate: '100%' },
+  { id: '1', title: 'Weekly Business Review Generator', description: 'Auto-generates WBR slides from key metrics every Monday at 8am', status: 'active', schedule: 'Every Monday 8:00 AM', lastRun: '3 days ago', nextRun: 'Tomorrow 8:00 AM', owner: appConfig.user.name, shared: true, steps: 5, successRate: '98%' },
+  { id: '2', title: 'DashPass Churn Alert', description: 'Monitors churn rate and alerts Slack when threshold exceeded', status: 'active', schedule: 'Every 6 hours', lastRun: '2 hours ago', nextRun: 'In 4 hours', owner: appConfig.user.name, shared: false, steps: 3, successRate: '100%' },
   { id: '3', title: 'Merchant Onboarding Report', description: 'Daily report on new merchant signups, activation rates, and first-order metrics', status: 'paused', schedule: 'Daily 9:00 AM', lastRun: '5 days ago', owner: 'A. Patel', shared: true, steps: 4, successRate: '95%' },
   { id: '4', title: 'Data Quality Scorecard', description: 'Runs data quality checks across critical tables and publishes scorecard', status: 'active', schedule: 'Daily 6:00 AM', lastRun: '18 hours ago', nextRun: 'Tomorrow 6:00 AM', owner: 'M. Chen', shared: true, steps: 6, successRate: '92%' },
-  { id: '5', title: 'Revenue Anomaly Detection', description: 'ML-based anomaly detection on hourly revenue streams', status: 'failed', schedule: 'Hourly', lastRun: '45 min ago', owner: 'Tony', shared: false, steps: 4, successRate: '87%' },
+  { id: '5', title: 'Revenue Anomaly Detection', description: 'ML-based anomaly detection on hourly revenue streams', status: 'failed', schedule: 'Hourly', lastRun: '45 min ago', owner: appConfig.user.name, shared: false, steps: 4, successRate: '87%' },
   { id: '6', title: 'Courier Supply Forecast', description: 'Generates 7-day courier supply forecast by zone', status: 'completed', schedule: 'Daily 5:00 AM', lastRun: '12 hours ago', nextRun: 'Tomorrow 5:00 AM', owner: 'S. Lee', shared: true, steps: 7, successRate: '96%' },
 ];
 

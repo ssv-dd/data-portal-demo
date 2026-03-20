@@ -67,7 +67,7 @@ export function GoldenDashboardCard({ dashboard, onClick, compact = false }: Gol
 
   return (
     <Card 
-      className={`${compact ? 'p-4' : 'p-6'} hover:shadow-lg transition-all cursor-pointer group ${compact ? 'border hover:border-purple-500/30' : 'border-2 hover:border-purple-500/50'}`}
+      className={`${compact ? 'p-4' : 'p-6'} hover:shadow-card-hover transition-all cursor-pointer group ${compact ? 'border hover:border-purple-500/30' : 'border-2 hover:border-purple-500/50'}`}
       onClick={onClick}
     >
       <div className={compact ? 'space-y-2' : 'space-y-4'}>

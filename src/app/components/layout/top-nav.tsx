@@ -25,15 +25,15 @@ export function TopNav() {
   };
 
   return (
-    <nav className="h-16 border-b border-gray-200 bg-white flex items-center px-6 gap-6">
+    <nav className="h-14 border-b border-border/60 bg-white/80 backdrop-blur-md flex items-center px-6 gap-6 sticky top-0 z-40">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-dd-primary">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-dd-primary">
           <span className="text-white font-bold text-lg">D</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-lg font-medium" style={{ color: '#1a1a1a' }}>DoorDash</span>
-          <span className="text-gray-400">|</span>
-          <span className="text-lg text-gray-600">Data Portal</span>
+          <span className="text-lg font-semibold text-foreground">DoorDash</span>
+          <span className="text-muted-foreground/40">|</span>
+          <span className="text-lg text-muted-foreground">Data Portal</span>
         </div>
       </div>
 
@@ -42,26 +42,25 @@ export function TopNav() {
           <Link
             key={tab.path}
             to={tab.path}
-            className={`px-4 py-2 rounded-md transition-colors text-sm ${
+            className={`px-3.5 py-1.5 rounded-lg transition-all duration-200 text-sm font-medium ${
               isActive(tab.path)
-                ? 'text-white'
-                : 'text-gray-700 hover:bg-gray-100'
+                ? 'bg-foreground text-background shadow-sm'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
             }`}
-            style={isActive(tab.path) ? { backgroundColor: 'var(--dd-primary)' } : undefined}
           >
             {tab.name}
           </Link>
         ))}
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="relative">
-              <Bell className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-900" />
+            <button className="relative p-2 rounded-lg hover:bg-accent/60 transition-colors duration-150">
+              <Bell className="w-5 h-5 text-muted-foreground" />
               <Badge
                 variant="destructive"
-                className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center text-xs"
+                className="absolute top-1 right-1 w-4 h-4 p-0 flex items-center justify-center text-xs"
               >
                 2
               </Badge>
@@ -71,19 +70,19 @@ export function TopNav() {
             <DropdownMenuItem>
               <div className="flex flex-col gap-1">
                 <span className="text-sm">Asset pending verification</span>
-                <span className="text-xs text-gray-500">delivery_latency_by_zone.sql</span>
+                <span className="text-xs text-muted-foreground">delivery_latency_by_zone.sql</span>
               </div>
             </DropdownMenuItem>
             <DropdownMenuItem>
               <div className="flex flex-col gap-1">
                 <span className="text-sm">Dashboard shared with you</span>
-                <span className="text-xs text-gray-500">Operations Dashboard by Ops Team</span>
+                <span className="text-xs text-muted-foreground">Operations Dashboard by Ops Team</span>
               </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300">
-          <User className="w-4 h-4 text-gray-600" />
+        <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center cursor-pointer hover:bg-accent transition-colors duration-150">
+          <User className="w-4 h-4 text-muted-foreground" />
         </div>
       </div>
     </nav>

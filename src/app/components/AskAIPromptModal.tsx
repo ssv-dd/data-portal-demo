@@ -106,7 +106,7 @@ export function AskAIPromptModal({
         </DialogHeader>
 
         {/* Selected Text Preview */}
-        <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+        <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
           <p className="text-sm text-muted-foreground mb-1">Selected text:</p>
           <p className="text-sm font-medium line-clamp-3">"{selectedText}"</p>
         </div>
@@ -117,7 +117,7 @@ export function AskAIPromptModal({
           {prompts.map((prompt, idx) => (
             <motion.button
               key={idx}
-              className="w-full text-left p-4 rounded-lg border-2 transition-all hover:border-purple-400 hover:bg-purple-50"
+              className="w-full text-left p-4 rounded-xl border-2 transition-all hover:border-purple-400 hover:bg-purple-50"
               style={{
                 borderColor: hoveredPrompt === idx ? '#a855f7' : '#e5e7eb'
               }}

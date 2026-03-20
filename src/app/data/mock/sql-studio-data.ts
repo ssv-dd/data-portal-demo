@@ -1,12 +1,15 @@
 import type { SavedQuery, QueryHistoryItem, CatalogItem } from '@/types';
+import { appConfig } from '@/config/app.config';
+
+const { name: owner } = appConfig.user;
 
 export const mockSavedQueries: SavedQuery[] = [
-  { id: '1', title: 'Revenue by region and product', description: 'Aggregated revenue metrics by region', lastEdited: '2 hours ago', owner: 'Tony', shared: false },
-  { id: '2', title: 'Customer churn analysis', description: 'Monthly customer retention metrics', lastEdited: '1 day ago', owner: 'Tony', shared: true },
-  { id: '3', title: 'Delivery performance KPIs', description: 'Dasher efficiency and on-time metrics', lastEdited: '3 days ago', owner: 'Tony', shared: false },
-  { id: '4', title: 'DashPass conversion funnel', description: 'Free trial → paid subscription rates', lastEdited: '5 hours ago', owner: 'Tony', shared: true },
-  { id: '5', title: 'Merchant GMV ranking', description: 'Top merchants by gross merchandise value', lastEdited: '1 day ago', owner: 'Tony', shared: false },
-  { id: '6', title: 'Weekly order volume', description: 'Order counts by day of week', lastEdited: '4 days ago', owner: 'Tony', shared: true },
+  { id: '1', title: 'Revenue by region and product', description: 'Aggregated revenue metrics by region', lastEdited: '2 hours ago', owner, shared: false },
+  { id: '2', title: 'Customer churn analysis', description: 'Monthly customer retention metrics', lastEdited: '1 day ago', owner, shared: true },
+  { id: '3', title: 'Delivery performance KPIs', description: 'Dasher efficiency and on-time metrics', lastEdited: '3 days ago', owner, shared: false },
+  { id: '4', title: 'DashPass conversion funnel', description: 'Free trial → paid subscription rates', lastEdited: '5 hours ago', owner, shared: true },
+  { id: '5', title: 'Merchant GMV ranking', description: 'Top merchants by gross merchandise value', lastEdited: '1 day ago', owner, shared: false },
+  { id: '6', title: 'Weekly order volume', description: 'Order counts by day of week', lastEdited: '4 days ago', owner, shared: true },
 ];
 
 export const queryHistory: QueryHistoryItem[] = [

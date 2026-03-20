@@ -30,10 +30,10 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
           {shortcuts.map((shortcut) => (
             <div
               key={shortcut.key}
-              className="flex items-center justify-between py-2 border-b border-gray-100"
+              className="flex items-center justify-between py-2 border-b border-border/40"
             >
-              <span className="text-sm text-gray-900">{shortcut.description}</span>
-              <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs text-gray-700">
+              <span className="text-sm text-foreground">{shortcut.description}</span>
+              <kbd className="px-2 py-1 bg-muted border border-border rounded text-xs text-foreground">
                 {shortcut.key}
               </kbd>
             </div>
