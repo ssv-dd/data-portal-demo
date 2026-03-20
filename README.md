@@ -1,73 +1,155 @@
-# React + TypeScript + Vite
+# Data Portal - AI-Native Analytics Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An AI-native data portal UI built from Figma designs, featuring intelligent data exploration, SQL editing, and interactive dashboards.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This project is a modern data analytics platform that integrates AI capabilities directly into the user experience. It provides:
 
-## React Compiler
+- **AI-Powered Discovery** - Natural language interface for data exploration
+- **SQL Studio** - Monaco-based SQL editor with AI assistance
+- **Executive Scorecard** - Role-based metric dashboards
+- **Interactive Dashboards** - Canvas-based visualization builder
+- **Notebooks** - Collaborative analysis workspace
+- **AI Workflows** - Automated data pipelines
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **React 19** with TypeScript
+- **Vite 7** for build tooling
+- **React Router 7** (hash routing)
+- **Tailwind CSS v4** with custom design system
+- **Radix UI** for accessible components
+- **Monaco Editor** for SQL editing
+- **Motion** (Framer Motion) for animations
+- **Recharts** for data visualization
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js (v18 or higher recommended)
+- npm or yarn
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Installation
+
+```bash
+# Install dependencies
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Start development server (runs on http://localhost:5180)
+npm run dev
 ```
+
+The dev server will automatically open in your browser. By default, it runs on port 5180 (configurable via `VITE_PORT` environment variable).
+
+### Build
+
+```bash
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Linting
+
+```bash
+# Run ESLint
+npm run lint
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── pages/              # Page-level components
+│   ├── components/         # Reusable components
+│   │   ├── ui/            # Radix UI primitives
+│   │   ├── layout/        # Layout components
+│   │   └── scorecard/     # Scorecard components
+│   ├── data/              # Mock data
+│   ├── lib/               # Utilities (motion, etc.)
+│   └── routes.tsx         # Route configuration
+├── config/
+│   └── app.config.ts      # App configuration
+├── types/                 # TypeScript types
+├── styles/                # Global styles & theme
+└── main.tsx              # Entry point
+```
+
+## Configuration
+
+### App Configuration
+
+Edit `src/config/app.config.ts` to customize:
+- Brand colors
+- User settings
+- External dashboard URLs
+- Feature flags
+
+### Environment Variables
+
+- `VITE_BASE_PATH` - Base path for routing (default: `/Data-Portal-AI-Native/`)
+- `VITE_PORT` - Dev server port (default: `5180`)
+
+### Path Aliases
+
+The project uses path aliases for cleaner imports:
+```typescript
+import { appConfig } from '@/config/app.config'
+```
+
+`@/` maps to `./src`
+
+## Features
+
+### Home Page
+- AI chat interface with multiple modes (chat, hybrid, notebook)
+- Executive scorecard with role-based metrics
+- Personalized recommendations
+- Quick access to recent and favorite assets
+
+### SQL Studio
+- Full-featured SQL editor with Monaco
+- AI assistant for query help
+- Query history and folders
+- Schema browsing and search
+- Multiple knowledge bases
+
+### Dashboards
+- Canvas-based dashboard builder
+- Golden dashboards by role
+- Interactive visualizations
+- Real-time collaboration
+
+### Design System
+
+The project uses a custom design system built on Tailwind CSS v4:
+- DoorDash brand colors (`--dd-primary: #FF3A00`)
+- Custom shadow utilities (`shadow-card`, `shadow-card-hover`)
+- Glassmorphism effects (`glass-panel`, `glass-panel-chat`)
+- Motion animation variants
+
+See `src/styles/theme.css` for design tokens.
+
+## Development Notes
+
+- Currently uses mock data (see `src/app/data/`)
+- Backend integration not yet implemented
+- All routes use hash routing for compatibility
+- Keyboard shortcuts available (press `?` in app)
+
+## For AI Assistants
+
+See [CLAUDE.md](./CLAUDE.md) for detailed development guidance and architectural documentation.
+
+## License
+
+Private project - All rights reserved
