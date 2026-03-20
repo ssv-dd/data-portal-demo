@@ -64,10 +64,12 @@ The eng refactor nailed architecture (componentization, theme system, data separ
 
 **Why it matters:** For the target persona (business executive like Tony), the scorecard IS the reason to open this portal every morning. Burying it says "this portal is about browsing," not "this portal gives you answers."
 
+**Context (from PM):** The scorecard is NOT role-gated — it's personalized for every user based on their role and product area. Teams work in XFN pods (PM + S&O + DS + Designer) within product areas. The scorecard proactively surfaces metrics for the pod's domain so teams can track and decide together.
+
 **Feature ideas:**
-- **F4a: Role-based layout.** For `business-executive` users, flip the hierarchy: Scorecard at top, AI chat as an overlay/sidebar, discovery below. For `data-scientist` users, keep the current layout with AI chat prominent.
+- **F4a: Role-aware layout.** Adapt the page hierarchy by role: execs see scorecard first, builders see AI chat + recent work first. The scorecard itself is available to everyone, just positioned differently.
 - **F4b: "Morning brief" scorecard summary.** Show a 1-line AI summary above the fold: "3 metrics moved significantly overnight — GOV up 2.1%, HQDR down 0.3%." Clicking it expands or scrolls to the full scorecard.
-- **F4c: Scorecard as a pinned widget.** Let users pin the scorecard to always show at the top of their home page, regardless of role.
+- **F4c: Pod-aware scorecard defaults.** Auto-configure the scorecard to the user's product area (Consumer, Merchant, Dasher, etc.) so it's useful from day one without manual setup.
 
 **Prior component to reference:** `ExecutiveScorecard.tsx` — already exists and is feature-rich. The issue is placement, not implementation.
 
@@ -79,14 +81,12 @@ The eng refactor nailed architecture (componentization, theme system, data separ
 
 **Why it matters:** An exec isn't going to create a SQL query. Showing them builder tools signals "this portal isn't for you," which is the opposite of what we want.
 
+**Context (from PM):** Users span execs, S&O, PMs, Finance, Marketing (consumers) and DS, DE, MLEs (builders). S&O folks can be quite technical and write SQL. Personalization across these roles is a must.
+
 **Feature ideas:**
-- **F5a: Role-adaptive Quick Actions.** For execs, replace "Quick Create" with "Quick Actions":
-  - "View this week's scorecard"
-  - "Ask AI about metric changes"
-  - "Share a dashboard with your team"
-  - "Schedule a recurring summary"
-- **F5b: "What changed" card.** Replace Quick Create (for execs) with a "Since you were last here" card showing: new dashboards shared with you, metrics that moved significantly, team activity.
-- **F5c: Keep Quick Create for analysts/builders.** Don't remove it — just conditionally render it based on `appConfig.user.role`.
+- **F5a: Role-adaptive Quick Actions.** For consumers (execs, S&O, PMs), show actions like "View scorecard," "Ask AI about metric changes," "Share a dashboard." For builders (DS, DE, MLEs), show "New SQL Query," "Create Notebook," "Build Workflow."
+- **F5b: "What changed" card.** For all roles, add a "Since you were last here" card showing: new dashboards shared with you, metrics that moved significantly, pod activity.
+- **F5c: Hybrid for S&O.** S&O users are a blend — they consume dashboards AND write SQL. Their Quick Actions should include both "View scorecard" and "New SQL Query."
 
 **Prior component to reference:** `appConfig.user.role` in `config/app.config.ts` already supports role-based logic. `CreateCard` just needs a role-aware variant.
 
@@ -112,7 +112,7 @@ The eng refactor nailed architecture (componentization, theme system, data separ
 | Priority | Feedback | Feature | Effort | Impact |
 |----------|----------|---------|--------|--------|
 | **P0** | #1 AI Identity | F1a: Restore AI prompt as hero | Medium | High |
-| **P0** | #4 Scorecard placement | F4a: Role-based layout | Medium | High |
+| **P0** | #4 Scorecard placement | F4a: Role-aware layout | Medium | High |
 | **P1** | #6 Temporal awareness | F6a: Overnight changes bar | Low | High |
 | **P1** | #2 Recommendation context | F2b: Social proof badges | Low | Medium |
 | **P1** | #5 Persona mismatch | F5a: Role-adaptive actions | Medium | Medium |
@@ -131,6 +131,20 @@ The eng refactor nailed architecture (componentization, theme system, data separ
 3. "For execs, the scorecard should be above the fold. Can we do role-based layout without major rework?"
 4. "Quick win: bring back the pre-filled prompt and social proof badges on recommendations. Low effort, high signal."
 5. "Bigger bet: 'What changed since yesterday' — this is what makes execs open the portal daily instead of weekly."
+
+---
+
+---
+
+## Open Questions Resolved
+
+| Question | Answer |
+|----------|--------|
+| Is the persona only "business executive"? | No — Data Portal serves all data users: consumers (execs, S&O, PM, Finance, Marketing) and builders (DS, DE, MLEs). Personalization is required. |
+| Should the scorecard be role-gated? | No — it's personalized for every user based on role and product area. Teams work in XFN pods (PM + S&O + DS + Designer) per product area. |
+| Plan for real data / Sigma URLs? | In-house solutions are the goal. Looker/Mode being deprecated. ThoughtSpot onboarding as AI-Native BI tool, embedded via iframe. Exact approach TBD with eng. |
+
+*See `context/product-context.md` for the full product context document.*
 
 ---
 
