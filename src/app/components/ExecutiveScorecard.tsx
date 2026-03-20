@@ -57,7 +57,7 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
   const [selectionContext, setSelectionContext] = useState<'highlight' | 'concern' | null>(null);
   const [showAskAIModal, setShowAskAIModal] = useState(false);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const [showNewFeatureBadge, setShowNewFeatureBadge] = useState(true);
+  const [showNewFeatureBadge, setShowNewFeatureBadge] = useState(false);
 
   // Sort productAreas based on desired order
   const areaOrder = ['company', 'us-marketplace', 'us-nv', 'ads-promos', 'dd-commerce', 'canz', 'dasher'];
