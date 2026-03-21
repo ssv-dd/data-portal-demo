@@ -4,14 +4,14 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ChevronLeft, Send, MessageSquare, Layers, BookOpen } from 'lucide-react';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { HeroPanel } from '../components/hero/hero-panel';
-import { RecentWorkCard, type RecentWorkItem } from '../components/home/recent-work-card';
+import { YourWorkCard, type RecentWorkItem, type QuickAction } from '../components/home/your-work-card';
 import { DiscoveryCard } from '../components/home/discovery-card';
-import { CreateCard } from '../components/home/create-card';
-import { ExecutiveScorecard } from '../components/ExecutiveScorecard';
+import { WatchlistTeaser } from '../components/home/watchlist-teaser';
+import { productAreaWatchlists, defaultExecAreas } from '../data/mock/watchlist-data';
 import { AnalysisResponse } from '../components/analysis-response';
 import { Input } from '../components/ui/input';
 import { appConfig } from '@/config/app.config';
-import { discoveryFeed, createActions } from '../data/mock/home-data';
+import { discoveryFeed, quickActions } from '../data/mock/home-data';
 import { recentWork } from '../data/mock/recent-work-data';
 import { quickPrompts } from '../data/mock/quick-prompts-data';
 import { chartData, summaryData } from '../data/mock/analysis-data';
@@ -70,13 +70,13 @@ export function HomePage() {
     navigate(item.route);
   };
 
-  const handleCreateAction = (action: typeof createActions[0]) => {
+  const handleQuickAction = (action: QuickAction) => {
     if (action.route) {
       navigate(action.route);
     }
   };
 
-  const handleDiscoveryItemClick = (item: typeof discoveryFeed.recommendations[0]) => {
+  const handleDiscoveryItemClick = (item: typeof discoveryFeed.team[0]) => {
     if (item.route) {
       navigate(item.route);
     }
@@ -196,25 +196,27 @@ export function HomePage() {
                 />
               </div>
 
-              {/* Row 2: Recent Work + Quick Create + Discovery */}
-              <div className="grid xl:grid-cols-[1fr_0.55fr_1.2fr] gap-5 mb-5">
-                <RecentWorkCard items={recentWork} onItemClick={handleRecentWorkClick} />
-                <CreateCard actions={createActions} onActionClick={handleCreateAction} />
-                <DiscoveryCard
-                  {...discoveryFeed}
-                  onItemClick={handleDiscoveryItemClick}
+              {/* Row 2: Your Watchlist */}
+              <div className="mb-5">
+                <WatchlistTeaser
+                  areas={productAreaWatchlists}
+                  selectedAreaIds={defaultExecAreas}
+                  onViewFull={() => navigate('/dashboards')}
                 />
               </div>
 
-              {/* Row 3: Executive Scorecard */}
-              <div className="mt-8">
-                <ExecutiveScorecard
-                  userRole={appConfig.user.role}
-                  onOpenChat={(query) => {
-                    setSearchTerm(query);
-                    setIsChatCentered(true);
-                    setTimeout(() => submitPrompt(query), 100);
-                  }}
+              {/* Row 3: Your Work + Discover */}
+              <div className="grid xl:grid-cols-[0.85fr_1.15fr] gap-5">
+                <YourWorkCard
+                  recentItems={recentWork}
+                  quickActions={quickActions}
+                  onItemClick={handleRecentWorkClick}
+                  onActionClick={handleQuickAction}
+                  variant="A"
+                />
+                <DiscoveryCard
+                  {...discoveryFeed}
+                  onItemClick={handleDiscoveryItemClick}
                 />
               </div>
             </motion.div>

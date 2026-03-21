@@ -45,34 +45,34 @@ export function HeroPanel({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="glass-hero rounded-2xl p-8 border border-border/60 dark:border-white/10"
+      className="glass-hero rounded-2xl px-6 py-5 border border-border/60 dark:border-white/10"
     >
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-500/20">
-          <Sparkles className="w-6 h-6 text-white" />
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-500/20">
+          <Sparkles className="w-5 h-5 text-white" />
         </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold text-foreground">
             {greeting}, {userName}
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             What would you like to explore today?
           </p>
         </div>
       </div>
 
-      <div className="relative mb-4">
+      <div className="relative mb-3">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
           className={cn(
-            'w-full pl-5 pr-12 h-12 rounded-xl',
+            'w-full pl-4 pr-11 h-12 rounded-xl text-base',
             'bg-background/50 border border-violet-300/40 dark:border-violet-500/30',
             'text-foreground placeholder:text-muted-foreground/60',
             'focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/40',
-            'transition-all duration-200 text-base',
+            'transition-all duration-200',
             'ai-glow'
           )}
           placeholder="Ask anything about your data..."
@@ -80,45 +80,45 @@ export function HeroPanel({
         <button
           onClick={onSubmit}
           className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center transition-all',
+            'absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all',
             searchTerm.trim()
               ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
               : 'text-muted-foreground/40 cursor-default'
           )}
           disabled={!searchTerm.trim()}
         >
-          <Send className="w-4 h-4" />
+          <Send className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg">
           {(['chat', 'hybrid', 'notebook'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => onAgentModeChange(mode)}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                 agentMode === mode
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              {mode === 'chat' && <MessageSquare className="w-4 h-4" />}
-              {mode === 'hybrid' && <Layers className="w-4 h-4" />}
-              {mode === 'notebook' && <BookOpen className="w-4 h-4" />}
+              {mode === 'chat' && <MessageSquare className="w-3.5 h-3.5" />}
+              {mode === 'hybrid' && <Layers className="w-3.5 h-3.5" />}
+              {mode === 'notebook' && <BookOpen className="w-3.5 h-3.5" />}
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => (
             <button
               key={purpose}
               onClick={() => onAgentPurposeChange(purpose)}
               className={cn(
-                'px-3 py-1.5 rounded-full text-sm font-medium border transition-all capitalize',
+                'px-2.5 py-1 rounded-full text-xs font-medium border transition-all capitalize',
                 agentPurpose === purpose
                   ? 'bg-foreground text-background border-foreground'
                   : 'bg-background text-foreground border-border hover:bg-accent/40'
@@ -130,7 +130,7 @@ export function HeroPanel({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5">
         {prompts.map((prompt, index) => (
           <motion.button
             key={index}
@@ -139,7 +139,7 @@ export function HeroPanel({
             transition={{ delay: index * 0.05 }}
             onClick={() => onPromptClick?.(prompt)}
             className={cn(
-              'px-3.5 py-2 rounded-lg text-sm',
+              'px-3 py-1.5 rounded-md text-xs',
               'bg-muted/60 border border-border/40',
               'text-foreground/80 hover:text-foreground',
               'hover:bg-accent/60 hover:border-border/60',
