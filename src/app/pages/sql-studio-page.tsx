@@ -3,10 +3,16 @@ import { motion } from 'motion/react';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ChevronRight, ChevronDown, ChevronUp, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Send, Sparkles, X, BookOpen, ArrowUp, Folder, FolderOpen, FilePlus, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, ChevronUp, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Send, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, FilePlus, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { mockSavedQueries, sampleResults, DEFAULT_SQL } from '../data/mock/sql-studio-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
+
+const knowledgeBases = [
+  { id: 'default', name: 'Default SQL Skills', description: 'Core SQL syntax, joins, aggregations, window functions' },
+  { id: 'analytics', name: 'Analytics SQL Skills', description: 'DoorDash analytics patterns, metric definitions, reporting' },
+  { id: 'wolt', name: 'Wolt SQL Skills', description: 'Wolt-specific schemas, tables, and query patterns' },
+];
 
 const queryHistoryGrouped = {
   recent: [
@@ -174,6 +180,8 @@ export function SQLStudioPage() {
   const [catalogSearch, setCatalogSearch] = useState('');
   const [expandedHistoryFolders, setExpandedHistoryFolders] = useState<Record<string, boolean>>({});
   const [expandedChatFolders, setExpandedChatFolders] = useState<Record<string, boolean>>({});
+  const [kbDropdownOpen, setKbDropdownOpen] = useState(false);
+  const [selectedKb, setSelectedKb] = useState(knowledgeBases[0]);
   const [chatInput, setChatInput] = useState('');
   const [centerExpanded, setCenterExpanded] = useState<'none' | 'editor' | 'results'>('none');
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -205,6 +213,8 @@ export function SQLStudioPage() {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTabName, setEditingTabName] = useState('');
   const editInputRef = useRef<HTMLInputElement>(null);
+  const kbDropdownRef = useRef<HTMLDivElement>(null);
+  const kbButtonRef = useRef<HTMLButtonElement>(null);
 
   // Focus input when editing a tab name
   useEffect(() => {
@@ -264,6 +274,23 @@ export function SQLStudioPage() {
       setEditingTabId(null);
     }
   }, [editingTabId, editingTabName]);
+
+  // Close KB dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        kbDropdownRef.current && !kbDropdownRef.current.contains(target) &&
+        kbButtonRef.current && !kbButtonRef.current.contains(target)
+      ) {
+        setKbDropdownOpen(false);
+      }
+    }
+    if (kbDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [kbDropdownOpen]);
 
   const filteredQueries = mockSavedQueries.filter((query) => {
     const matchesSearch = query.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -855,38 +882,32 @@ export function SQLStudioPage() {
       {rightPanelOpen ? (
         <div className="w-[440px] rounded-2xl glass-panel-chat flex flex-col overflow-hidden relative transition-all duration-200">
           {/* Header */}
-          <div className="px-4 py-3 border-b border-border/60 dark:border-white/10 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium text-foreground dark:text-white">SQL Assistant</h3>
-              <span className="rounded-xl border border-violet-400/20 dark:border-violet-400/30 bg-violet-500/10 dark:bg-violet-500/15 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-200">
-                SQL aware
-              </span>
-            </div>
-            <button
-              onClick={() => setRightPanelOpen(false)}
-              className="p-1.5 rounded-lg hover:bg-accent/60 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <PanelRightClose className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="px-4 py-3 border-b border-border/40 dark:border-white/10">
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
+          <div className="h-12 flex items-center justify-between px-3 shrink-0">
+            <div className="flex items-center gap-1 p-1 rounded-full bg-[#6352af]/[0.06]">
               {(['chat', 'past'] as const).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setRightPanelTab(tab)}
-                  className={`flex-1 px-3 py-2 text-xs font-semibold rounded-xl capitalize transition-all duration-200 ${
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
                     rightPanelTab === tab
-                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'bg-white/90 text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {tab === 'chat' ? 'Chat' : 'Past Chats'}
+                  {tab === 'chat' ? (
+                    <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Chat</span>
+                  ) : (
+                    <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3" /> Past Chats</span>
+                  )}
                 </button>
               ))}
             </div>
+            <button
+              onClick={() => setRightPanelOpen(false)}
+              className="p-1.5 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground hover:text-foreground transition-all duration-200"
+            >
+              <PanelRightClose className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -894,50 +915,123 @@ export function SQLStudioPage() {
             <div className="flex-1 flex flex-col min-h-0">
               {/* Chat Messages Area */}
               <div className="flex-1 overflow-auto px-4 py-6 flex flex-col">
-                <div className="mb-6">
-                  <p className="text-muted-foreground dark:text-slate-400 text-sm leading-relaxed">
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6352af]/15 to-[#8b7fd4]/8 flex items-center justify-center mb-4">
+                    <Sparkles className="w-5 h-5 text-[#6352af]" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">SQL Assistant</h3>
+                  <p className="text-xs text-muted-foreground/70 text-center max-w-[240px] leading-relaxed mb-6">
                     I can help you write SQL queries, explain code, and search for tables and metrics.
                   </p>
-                </div>
-
-                {/* Suggestion Chips */}
-                <div className="grid grid-cols-2 gap-3 mb-auto">
-                  {[
-                    'Write a revenue query by region',
-                    'Explain the current SQL',
-                    'Find customer-related tables',
-                    'Optimize my query performance',
-                  ].map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setChatInput(suggestion)}
-                      className="px-4 py-3 rounded-xl border border-border/60 dark:border-white/10 bg-background/40 dark:bg-white/[0.04] text-foreground dark:text-slate-200 text-sm flex items-center gap-2 hover:bg-accent/60 dark:hover:bg-white/[0.07] hover:border-border dark:hover:border-violet-400/20 transition-all hover:shadow-sm"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      <span>{suggestion}</span>
-                    </button>
-                  ))}
+                  <div className="w-full space-y-2">
+                    {[
+                      'Write a revenue query by region',
+                      'Explain the current SQL',
+                      'Find customer-related tables',
+                      'Optimize my query performance',
+                    ].map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setChatInput(suggestion)}
+                        className="w-full px-4 py-3 rounded-xl bg-white/50 border border-[#6352af]/[0.06] text-foreground text-xs text-left hover:bg-white/80 hover:border-[#6352af]/[0.12] hover:-translate-y-[1px] hover:shadow-sm transition-all duration-200"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
+              {/* Knowledge base dropdown */}
+              {kbDropdownOpen && (
+                <div ref={kbDropdownRef} className="absolute bottom-20 left-3 right-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
+                  <div className="px-4 py-3">
+                    <span className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Knowledge Bases</span>
+                  </div>
+                  {knowledgeBases.map((kb) => (
+                    <button
+                      key={kb.id}
+                      onClick={() => {
+                        setSelectedKb(kb);
+                        setKbDropdownOpen(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3 ${
+                        selectedKb.id === kb.id ? 'bg-foreground/[0.03]' : ''
+                      }`}
+                    >
+                      <BookOpen className="w-4 h-4 text-muted-foreground/50 mt-0.5 shrink-0" />
+                      <div>
+                        <div className="text-xs font-medium text-foreground">{kb.name}</div>
+                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">{kb.description}</div>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="border-t border-foreground/[0.04]">
+                    <button className="w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3">
+                      <Plus className="w-4 h-4 text-muted-foreground/50 shrink-0 mt-0.5" />
+                      <div>
+                        <div className="text-xs font-medium text-dd-primary">Add Custom SQL Skills</div>
+                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">Import .cursorrules, .mdc files, or paste custom SQL patterns</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Input Area */}
-              <div className="px-4 pb-4 relative">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="@ for objects, / for commands, ↕ for history"
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-border dark:border-white/10 text-foreground dark:text-slate-200 text-sm bg-background/50 dark:bg-slate-950/70 placeholder-muted-foreground/60 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 focus:border-violet-400/40 transition-all"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      setChatInput('');
-                    }
-                  }}
-                />
-                <button className="absolute right-6 top-1/2 -translate-y-1/2 p-2 text-muted-foreground/60 dark:text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
-                  <Send className="w-4 h-4" />
-                </button>
+              <div className="px-3 pb-3">
+                <div className="rounded-2xl bg-white/50 border border-[#6352af]/[0.08] focus-within:border-[#6352af]/[0.2] focus-within:shadow-[0_0_0_3px_rgba(99,82,175,0.06)] transition-all duration-200">
+                  {/* Text input */}
+                  <textarea
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    placeholder="Ask about SQL, tables, or metrics..."
+                    rows={2}
+                    className="w-full px-3 pt-3 pb-2 text-sm text-foreground bg-transparent placeholder-muted-foreground/40 focus:outline-none resize-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        setChatInput('');
+                      }
+                    }}
+                  />
+
+                  {/* Bottom toolbar */}
+                  <div className="px-3 pb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        ref={kbButtonRef}
+                        onClick={() => setKbDropdownOpen(!kbDropdownOpen)}
+                        className="p-2 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
+                        title="Add knowledge base"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#6352af]/[0.07] text-xs text-foreground">
+                        <BookOpen className="w-3 h-3 text-muted-foreground/60" />
+                        <span>{selectedKb.name}</span>
+                        <button
+                          onClick={() => setSelectedKb(knowledgeBases[0])}
+                          className="text-muted-foreground/40 hover:text-muted-foreground ml-0.5 transition-colors duration-200"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <button
+                      className={`p-2 rounded-xl transition-all duration-200 ${
+                        chatInput.trim()
+                          ? 'bg-[#6352af] text-white hover:bg-[#5646a0] shadow-sm shadow-[#6352af]/20'
+                          : 'bg-[#6352af]/[0.06] text-muted-foreground/30'
+                      }`}
+                      disabled={!chatInput.trim()}
+                      onClick={() => setChatInput('')}
+                    >
+                      <ArrowUp className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
@@ -945,34 +1039,34 @@ export function SQLStudioPage() {
             <div className="flex-1 overflow-auto">
               <div className="p-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
                   <input
                     type="text"
                     placeholder="Search conversations..."
-                    className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
+                    className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-white/50 placeholder-muted-foreground/50 focus:outline-none focus:bg-white/70 transition-colors duration-200 border border-[#6352af]/[0.06]"
                   />
                 </div>
               </div>
               <div className="p-2">
                 <div className="px-2 pt-2 pb-1.5">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Recent</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Recent</span>
                 </div>
                 {pastConversationsGrouped.recent.map((conv) => (
                   <div
                     key={conv.id}
-                    className="px-3 py-3 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150"
+                    className="px-3 py-3 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150"
                   >
                     <div className="flex items-start justify-between mb-0.5">
-                      <div className="text-xs font-medium text-slate-900 dark:text-slate-200 truncate pr-2">{conv.title}</div>
-                      <span className="text-[10px] text-slate-500 dark:text-slate-500 shrink-0">{conv.timestamp}</span>
+                      <div className="text-xs font-medium text-foreground truncate pr-2">{conv.title}</div>
+                      <span className="text-[10px] text-muted-foreground/50 shrink-0">{conv.timestamp}</span>
                     </div>
-                    <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">{conv.preview}</div>
+                    <div className="text-[11px] text-muted-foreground/60 truncate">{conv.preview}</div>
                   </div>
                 ))}
 
                 <div className="px-2 pt-5 pb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Folders</span>
-                  <button className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 transition-all duration-200" title="New folder">
+                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Folders</span>
+                  <button className="p-1 rounded-lg hover:bg-white/40 text-muted-foreground/40 hover:text-muted-foreground transition-all duration-200" title="New folder">
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
@@ -980,28 +1074,28 @@ export function SQLStudioPage() {
                   <div key={folder.id}>
                     <button
                       onClick={() => setExpandedChatFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer transition-all duration-150"
                     >
                       {expandedChatFolders[folder.id]
-                        ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                        : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
+                        ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                       }
-                      <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{folder.name}</span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{folder.items.length}</span>
+                      <span className="text-xs font-medium text-foreground">{folder.name}</span>
+                      <span className="text-[10px] text-muted-foreground/40 ml-auto">{folder.items.length}</span>
                       {expandedChatFolders[folder.id]
-                        ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                        : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                        ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
+                        : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
                       }
                     </button>
                     {expandedChatFolders[folder.id] && (
-                      <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
+                      <div className="ml-5 pl-3 border-l border-[#6352af]/[0.08]">
                         {folder.items.map((item) => (
-                          <div key={item.id} className="px-2 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
+                          <div key={item.id} className="px-2 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
                             <div className="flex items-start justify-between mb-0.5">
-                              <div className="text-xs text-slate-900 dark:text-slate-200 truncate pr-2">{item.title}</div>
-                              <span className="text-[10px] text-slate-500 dark:text-slate-500 shrink-0">{item.timestamp}</span>
+                              <div className="text-xs text-foreground truncate pr-2">{item.title}</div>
+                              <span className="text-[10px] text-muted-foreground/50 shrink-0">{item.timestamp}</span>
                             </div>
-                            <div className="text-[11px] text-slate-600 dark:text-slate-400 truncate">{item.preview}</div>
+                            <div className="text-[11px] text-muted-foreground/60 truncate">{item.preview}</div>
                           </div>
                         ))}
                       </div>
