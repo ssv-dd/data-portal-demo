@@ -1,27 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ChevronLeft } from 'lucide-react';
+import { Sparkles, ChevronLeft, Send, MessageSquare, Layers, BookOpen } from 'lucide-react';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { HeroPanel } from '../components/hero/hero-panel';
-import { RecentWorkCard, type RecentWorkItem } from '../components/home/recent-work-card';
+import { YourWorkCard, type RecentWorkItem, type QuickAction } from '../components/home/your-work-card';
 import { DiscoveryCard } from '../components/home/discovery-card';
-import { CreateCard } from '../components/home/create-card';
-import { ExecutiveScorecard } from '../components/ExecutiveScorecard';
+import { WatchlistTable } from '../components/home/watchlist-table';
+import { productAreas } from '../data/mock/scorecard-data';
 import { AnalysisResponse } from '../components/analysis-response';
 import { Input } from '../components/ui/input';
-import { MessageSquare, Layers, BookOpen, Send } from 'lucide-react';
 import { appConfig } from '@/config/app.config';
-import { discoveryFeed, createActions } from '../data/mock/home-data';
+import { discoveryFeed, quickActions } from '../data/mock/home-data';
 import { recentWork } from '../data/mock/recent-work-data';
 import { quickPrompts } from '../data/mock/quick-prompts-data';
 import { chartData, summaryData } from '../data/mock/analysis-data';
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
+const EXAMPLE_PROMPT = 'I want to run a deep-dive analysis on Dashpass growth for the past 60 days.';
+
 export function HomePage() {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(EXAMPLE_PROMPT);
   const [agentMode, setAgentMode] = useState<'chat' | 'hybrid' | 'notebook'>('chat');
   const [agentPurpose, setAgentPurpose] = useState<'analysis' | 'exploration' | 'reporting'>('analysis');
   const [isChatCentered, setIsChatCentered] = useState(false);
@@ -43,12 +44,6 @@ export function HomePage() {
     setTimeout(() => submitPrompt(prompt), 100);
   };
 
-  const handleHeroSearch = (query: string) => {
-    setSearchTerm(query);
-    setIsChatCentered(true);
-    setTimeout(() => submitPrompt(query), 100);
-  };
-
   const submitPrompt = (customPrompt?: string) => {
     const userMessage = customPrompt || searchTerm;
     if (!userMessage.trim()) return;
@@ -65,51 +60,42 @@ export function HomePage() {
     }, 2000);
   };
 
-  const handleAgentSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchTerm.trim()) submitPrompt();
-  };
-
   const handleBackClick = () => {
     setIsChatCentered(false);
     setMessages([]);
-    setSearchTerm('');
+    setSearchTerm(EXAMPLE_PROMPT);
   };
 
   const handleRecentWorkClick = (item: RecentWorkItem) => {
     navigate(item.route);
   };
 
-  const handleCreateAction = (action: typeof createActions[0]) => {
+  const handleQuickAction = (action: QuickAction) => {
     if (action.route) {
       navigate(action.route);
     }
   };
 
-  const handleDiscoveryItemClick = (item: typeof discoveryFeed.recommendations[0]) => {
+  const handleDiscoveryItemClick = (item: typeof discoveryFeed.team[0]) => {
     if (item.route) {
       navigate(item.route);
     }
   };
 
   const chatBox = (
-    <div
-      className="glass-panel border border-border/60 rounded-2xl p-6 transition-shadow hover:shadow-card-hover"
-      onClick={!isChatCentered ? () => setIsChatCentered(true) : undefined}
-      style={{ cursor: isChatCentered ? 'default' : 'pointer' }}
-    >
+    <div className="glass-panel border border-border/60 rounded-2xl p-6 transition-shadow hover:shadow-card-hover">
       <div className="relative mb-4">
         <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-600 dark:text-violet-400" />
         <Input
           placeholder="Prompt to explore your data"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleAgentSearch}
-          onClick={!isChatCentered ? () => setIsChatCentered(true) : undefined}
+          onKeyDown={(e) => { if (e.key === 'Enter' && searchTerm.trim()) submitPrompt(); }}
           className="pl-12 h-12 text-base border-border"
         />
         <Send
           className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-          onClick={(e) => { e.stopPropagation(); submitPrompt(); }}
+          onClick={() => submitPrompt()}
         />
       </div>
 
@@ -118,7 +104,7 @@ export function HomePage() {
           {(['chat', 'hybrid', 'notebook'] as const).map((mode) => (
             <button
               key={mode}
-              onClick={(e) => { e.stopPropagation(); setAgentMode(mode); }}
+              onClick={() => setAgentMode(mode)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 agentMode === mode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
@@ -131,16 +117,11 @@ export function HomePage() {
           ))}
         </div>
 
-        <motion.div
-          animate={{ opacity: isChatCentered ? 0 : 1 }}
-          transition={{ duration: 0.3 }}
-          style={{ pointerEvents: isChatCentered ? 'none' : 'auto' }}
-          className="flex items-center gap-2"
-        >
+        <div className="flex items-center gap-2">
           {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => (
             <button
               key={purpose}
-              onClick={(e) => { e.stopPropagation(); setAgentPurpose(purpose); }}
+              onClick={() => setAgentPurpose(purpose)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize ${
                 agentPurpose === purpose
                   ? 'bg-foreground text-background border-foreground'
@@ -150,17 +131,15 @@ export function HomePage() {
               {purpose}
             </button>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
-      {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
 
-      {/* Gradient Orbs - Theme-aware background decoration */}
       <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
       <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
       <GradientOrb variant="primary" className="left-[60%] top-[600px]" />
@@ -171,7 +150,6 @@ export function HomePage() {
       >
         <div className="overflow-auto h-screen">
           <div className="max-w-[1600px] mx-auto p-8">
-            {/* Back button — appears when centered */}
             <AnimatePresence>
               {isChatCentered && !hasMessages && (
                 <motion.button
@@ -188,13 +166,11 @@ export function HomePage() {
               )}
             </AnimatePresence>
 
-            {/* Spacer — grows to push content to center when in chat mode */}
             <motion.div
               animate={{ height: isChatCentered && !hasMessages ? 'calc(20vh)' : 0 }}
               transition={{ duration: 0.5, ease }}
             />
 
-            {/* Main content - collapses when chat is centered */}
             <motion.div
               animate={{
                 opacity: isChatCentered ? 0 : 1,
@@ -203,41 +179,49 @@ export function HomePage() {
               transition={{ duration: 0.4, ease }}
               style={{ overflow: 'hidden', pointerEvents: isChatCentered ? 'none' : 'auto' }}
             >
-              {/* Row 1: Hero Panel + Create Card */}
-              <div className="grid xl:grid-cols-[1.4fr_0.6fr] gap-5 mb-5">
+              {/* Row 1: AI Hero — Full Width */}
+              <div className="mb-5">
                 <HeroPanel
                   userName={appConfig.user.name}
                   greeting={getGreeting()}
                   prompts={quickPrompts}
+                  searchTerm={searchTerm}
+                  onSearchTermChange={setSearchTerm}
+                  onSubmit={() => submitPrompt()}
                   onPromptClick={handlePromptClick}
-                  onSearch={handleHeroSearch}
+                  agentMode={agentMode}
+                  onAgentModeChange={setAgentMode}
+                  agentPurpose={agentPurpose}
+                  onAgentPurposeChange={setAgentPurpose}
                 />
-                <CreateCard actions={createActions} onActionClick={handleCreateAction} />
               </div>
 
-              {/* Row 2: Recent Work + Discovery */}
-              <div className="grid xl:grid-cols-[0.84fr_1.16fr] gap-5 mb-5">
-                <RecentWorkCard items={recentWork} onItemClick={handleRecentWorkClick} />
+              {/* Row 2: Your Watchlist */}
+              <div className="mb-2">
+                <WatchlistTable
+                  areas={productAreas}
+                  selectedAreaIds={['company']}
+                  maxRows={5}
+                  onViewFull={() => navigate('/dashboards')}
+                />
+              </div>
+
+              {/* Row 3: Your Work + Discover */}
+              <div className="grid xl:grid-cols-[0.85fr_1.15fr] gap-2">
+                <YourWorkCard
+                  recentItems={recentWork}
+                  quickActions={quickActions}
+                  onItemClick={handleRecentWorkClick}
+                  onActionClick={handleQuickAction}
+                  variant="A"
+                />
                 <DiscoveryCard
                   {...discoveryFeed}
                   onItemClick={handleDiscoveryItemClick}
                 />
               </div>
-
-              {/* Executive Scorecard - PRESERVED */}
-              <div className="mt-8">
-                <ExecutiveScorecard
-                  userRole={appConfig.user.role}
-                  onOpenChat={(query) => {
-                    setSearchTerm(query);
-                    setIsChatCentered(true);
-                    setTimeout(() => submitPrompt(query), 100);
-                  }}
-                />
-              </div>
             </motion.div>
 
-            {/* Chat box when centered without messages */}
             <AnimatePresence>
               {isChatCentered && !hasMessages && (
                 <motion.div
@@ -262,7 +246,6 @@ export function HomePage() {
         </div>
       </div>
 
-      {/* Messages view - chat box at bottom */}
       <AnimatePresence>
         {isChatCentered && hasMessages && (
           <motion.div

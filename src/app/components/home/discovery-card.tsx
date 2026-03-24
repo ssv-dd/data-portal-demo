@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
-import { Sparkles, Star, Clock, ChevronRight, type LucideIcon } from 'lucide-react';
+import { Users, TrendingUp, Zap, ChevronRight, type LucideIcon } from 'lucide-react';
 import { cn } from '../ui/utils';
 
 export interface DiscoveryItem {
@@ -13,72 +13,77 @@ export interface DiscoveryItem {
 }
 
 interface DiscoveryCardProps {
-  recommendations: DiscoveryItem[];
-  favorites: DiscoveryItem[];
+  team: DiscoveryItem[];
+  trending: DiscoveryItem[];
   recent: DiscoveryItem[];
   onItemClick?: (item: DiscoveryItem) => void;
 }
 
-type TabKey = 'recommendations' | 'favorites' | 'recent';
+type TabKey = 'team' | 'trending' | 'recent';
 
 const tabs = [
-  { key: 'recommendations' as TabKey, label: 'For you', icon: Sparkles },
-  { key: 'favorites' as TabKey, label: 'Favorites', icon: Star },
-  { key: 'recent' as TabKey, label: 'Recent', icon: Clock },
+  { key: 'team' as TabKey, label: 'Your team', icon: Users },
+  { key: 'trending' as TabKey, label: 'Trending', icon: TrendingUp },
+  { key: 'recent' as TabKey, label: 'Recently published', icon: Zap },
 ];
 
 export function DiscoveryCard({
-  recommendations,
-  favorites,
+  team,
+  trending,
   recent,
   onItemClick,
 }: DiscoveryCardProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>('recommendations');
+  const [activeTab, setActiveTab] = useState<TabKey>('team');
+  const defaultCount = 4;
+  const [showAll, setShowAll] = useState(false);
 
-  const getItems = () => {
+  const getAllItems = () => {
     switch (activeTab) {
-      case 'recommendations':
-        return recommendations;
-      case 'favorites':
-        return favorites;
+      case 'team':
+        return team;
+      case 'trending':
+        return trending;
       case 'recent':
         return recent;
     }
   };
 
-  const items = getItems();
+  const allItems = getAllItems();
+  const items = showAll ? allItems : allItems.slice(0, defaultCount);
+  const hasMore = allItems.length > defaultCount;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="glass-panel rounded-2xl p-6 border border-border/60 dark:border-white/10"
+      className="glass-panel rounded-2xl p-5 border border-border/60 dark:border-white/10 flex flex-col"
     >
-      <h3 className="text-lg font-semibold text-foreground mb-4">Discover</h3>
-
-      <div className="flex gap-1 mb-4 p-1 bg-muted/40 rounded-lg">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200',
-                activeTab === tab.key
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              {tab.label}
-            </button>
-          );
-        })}
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold text-foreground">Trending in your org</h3>
+        <div className="flex gap-0.5 p-0.5 bg-muted/40 rounded-lg">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => { setActiveTab(tab.key); setShowAll(false); }}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200',
+                  activeTab === tab.key
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1">
         {items.map((item, index) => {
           const Icon = item.icon;
           return (
@@ -89,8 +94,8 @@ export function DiscoveryCard({
               transition={{ delay: index * 0.05 }}
               onClick={() => onItemClick?.(item)}
               className={cn(
-                'w-full p-4 rounded-xl',
-                'flex items-start gap-3',
+                'w-full px-3 py-2 rounded-lg',
+                'flex items-center gap-2.5',
                 'bg-background/40 border border-border/40',
                 'dark:bg-white/[0.04] dark:border-white/10',
                 'hover:bg-accent/60 hover:border-border/60',
@@ -99,25 +104,32 @@ export function DiscoveryCard({
                 'group text-left'
               )}
             >
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500/20 to-cyan-400/20 dark:from-violet-500/30 dark:to-cyan-400/30 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 text-violet-600 dark:text-violet-300" />
+              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-violet-500/20 to-cyan-400/20 dark:from-violet-500/30 dark:to-cyan-400/30 flex items-center justify-center flex-shrink-0">
+                <Icon className="w-4 h-4 text-violet-600 dark:text-violet-300" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="text-sm font-medium text-foreground">{item.title}</p>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                <p className="text-[11px] text-muted-foreground truncate">
                   {item.description}
                 </p>
-                <span className="inline-block px-2 py-1 text-xs rounded-md bg-muted/60 text-muted-foreground">
-                  {item.category}
-                </span>
               </div>
+              <span className="px-1.5 py-0.5 text-[10px] rounded-md bg-muted/60 text-muted-foreground flex-shrink-0">
+                {item.category}
+              </span>
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
             </motion.button>
           );
         })}
       </div>
+
+      {hasMore && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-2 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors text-left"
+        >
+          {showAll ? 'See less' : 'See more'}
+        </button>
+      )}
     </motion.div>
   );
 }

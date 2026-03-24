@@ -69,6 +69,32 @@
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.08), 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
+/* AI ambient glow — pulsing border for the prompt area */
+@keyframes ai-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.15), 0 0 2px rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(139, 92, 246, 0.25), 0 0 4px rgba(34, 211, 238, 0.15);
+    border-color: rgba(139, 92, 246, 0.4);
+  }
+}
+
+@utility ai-glow {
+  animation: ai-pulse 3s ease-in-out infinite;
+}
+
+/* Sparkle icon shimmer */
+@keyframes shimmer {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.5)); }
+}
+
+@utility ai-shimmer {
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
 /* Dark mode glass panel variants */
 .dark {
   & .glass-panel {
@@ -99,5 +125,20 @@
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     box-shadow: 0 20px 100px rgba(76, 29, 149, 0.25), 0 0 1px rgba(139, 92, 246, 0.2);
+  }
+
+  & .ai-glow {
+    animation: ai-pulse-dark 3s ease-in-out infinite;
+  }
+}
+
+@keyframes ai-pulse-dark {
+  0%, 100% {
+    box-shadow: 0 0 16px rgba(139, 92, 246, 0.25), 0 0 3px rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(139, 92, 246, 0.4), 0 0 6px rgba(34, 211, 238, 0.2);
+    border-color: rgba(139, 92, 246, 0.55);
   }
 }

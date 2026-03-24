@@ -1,0 +1,123 @@
+,,,
+,,,
+Product Area,Metric Category,Metric,Notes
+Company / Top-line,Financial,GOV (Gross Order Value),TotalCo / USMP
+Company / Top-line,Financial,Revenue (Net / by product / region),
+Company / Top-line,Financial,Contribution Profit / Contribution Margin (total & per-order),
+Company / Top-line,Operational,MAUs (L28D EOP),
+Company / Top-line,Operational,Order Frequency (L28D),
+Company / Top-line,Adoption,DashPass: paid subs,"Paid subs, signups, churn"
+Company / Top-line,Adoption,DashPass signups,
+Company / Top-line,Operational,DashPass churn,
+Company / Top-line,Operational,Local market GOV (Top Metro / Tier breakdown),Top Metro / Tier 4–5 GOV
+Company / Top-line,Financial,VP / order (unit economics),
+Company / Top-line,Operational,QTD vs Plan,Primary OKR pacing
+Company / Top-line,Operational,Full-quarter Forecast vs AOP,Primary OKR forecasting
+US Marketplace / Rx,Financial,USMP GOV,
+US Marketplace / Rx,Financial,USMP Revenue,
+US Marketplace / Rx,Financial,USMP Contribution Profit,
+US Marketplace / Rx,Financial,US Rx GOV,
+US Marketplace / Rx,Financial,US Rx Revenue,
+US Marketplace / Rx,Financial,US Rx Contribution Profit,
+US Marketplace / Rx,Operational,MAUs (L28D EOP),
+US Marketplace / Rx,Operational,Cx Order Frequency (L28D),
+US Marketplace / Rx,Operational,US Rx subtotal (AOV / subtotal per order),
+US Marketplace / Rx,Adoption,DashPass metrics,"Paid subs, signups, churn, DashPass GOV"
+US Marketplace / Rx,Operational,Top Metro GOV,
+US Marketplace / Rx,Operational,Tier 4–5 GOV,
+US Marketplace / Rx,Selection,US Rx Cx pTAM,Selection coverage
+US Marketplace / Rx,Selection,Top Mx Signs (#),
+US Marketplace / Rx,Financial,VP/order in Reg Markets,Unit economics
+US New Verticals (NV),Financial,US NV GOV,
+US New Verticals (NV),Financial,NV Revenue,
+US New Verticals (NV),Financial,NV Operational Adj. Gross Profit,
+US New Verticals (NV),Financial,3P Conv GOV,3P conversion GOV
+US New Verticals (NV),Financial,3P Grocery GOV,
+US New Verticals (NV),Financial,3P Alcohol GOV,
+US New Verticals (NV),Financial,3P Retail GOV,
+US New Verticals (NV),Financial,DashMart GOV,
+US New Verticals (NV),Financial,3P Digital Gift Cards GOV,
+US New Verticals (NV),Operational,L28D NV MAU (M),
+US New Verticals (NV),Operational,NV pMAU (%),
+US New Verticals (NV),Operational,NV DP MAU (M) and NV DP pMAU (%),DashPass NV metrics
+US New Verticals (NV),Operational,Monthly NV GOV per MAU,
+US New Verticals (NV),Adoption,NV Power Users (M),
+US New Verticals (NV),Selection,Retail Shoppable SKUs (M),Selection coverage
+US New Verticals (NV),Quality,HQFR (quality),
+US New Verticals (NV),Quality,Retail OIR,Out-of-stock / inventory rate
+US New Verticals (NV),Financial,DashMart VP/Delivery,Unit economics of DashMart
+US New Verticals (NV),Operational,DashMart DFS Volume,
+US New Verticals (NV),Operational,NV Drive Volume & Gross CM,Drive volume and CM
+Ads & Promos (A&P),Financial,Total A&P Revenue,Includes Ads & Promo P&L
+Ads & Promos (A&P),Financial,US Rx Ads Revenue,Breakouts: ENT / SMB
+Ads & Promos (A&P),Financial,US Rx ENT / US Rx SMB,
+Ads & Promos (A&P),Financial,US CPG Ads / Core / Food Service,
+Ads & Promos (A&P),Financial,NV Mx / CANZ Ads / Symbiosys / Offsite Ads,
+Ads & Promos (A&P),Financial,iGOV (Mx-funded promo GOV),"Total and by category (US Rx, CANZ, etc.)"
+Ads & Promos (A&P),Savings,Total Cx Savings and breakdowns,"US Rx Cx Savings, US Rx ENT/SMB, US CPG Cx Savings"
+Ads & Promos (A&P),Signal,Incrementality metrics,"Holdout incrementality, uplift %"
+Ads & Promos (A&P),Receivables,AR Balance >90D and >120D,AR delinquency
+DoorDash Commerce Platform (DCP),Financial,DCP Volume,
+DoorDash Commerce Platform (DCP),Financial,DCP Net Revenue,
+DoorDash Commerce Platform (DCP),Financial,DCP Contribution Margin (CM),
+DoorDash Commerce Platform (DCP),Financial,Digital Ordering Revenue & CM,
+DoorDash Commerce Platform (DCP),Financial,Drive Revenue & CM,
+DoorDash Commerce Platform (DCP),Financial,Parcel Revenue & CM,Parcel often negative CM
+DoorDash Commerce Platform (DCP),Operational,Parcel OTD (On-Time Delivery),Operational quality
+DoorDash Commerce Platform (DCP),Operational,Parcel Loss Rate,
+DoorDash Commerce Platform (DCP),Operational,Pathfinder: Total Stores / New Store ARPU,Pathfinder BHAG metrics
+DoorDash Commerce Platform (DCP),Operational,Monthly Churn (Pathfinder),
+DoorDash Commerce Platform (DCP),Operational,SMB DO: Paid SaaS ARPU / Total Paid SaaS Stores,SaaS adoption & unit economics
+DoorDash Commerce Platform (DCP),Operational,Pro new stores signs / Pro new store monthly ASP,
+DoorDash Commerce Platform (DCP),DemandGen,MQL/PQL - Boost & Pro / Paid store signs from inbound,Demand metrics
+DoorDash Commerce Platform (DCP),AR,DCP Balance >60D (% of L90D Rev),Aging AR
+In-Store (Going Out),Operational,Active Stores,
+In-Store (Going Out),Adoption,GO Rewards MAU (L28D),
+In-Store (Going Out),Operational,Order Frequency (L28D),
+In-Store (Going Out),Operational,In-Store Visits,
+In-Store (Going Out),Operational,% Active Visits,
+In-Store (Going Out),Adoption,% of DP Subs Cardlinked / % of CL Cx with in-store visits,Cardlinking adoption
+SevenRooms (SaaS),Financial,ARR / Revenue / EBITDA,ARR and revenue health
+SevenRooms (SaaS),Operational,Total Live Venues (Global / NAM / Intl),
+SevenRooms (SaaS),Monetization,Total ARPU / Core Platform ARPU / Add-On ARPU / Payments ARPU,
+SevenRooms (SaaS),Sales,New Signed Venue SaaS ARPU (Global),
+SevenRooms (SaaS),Retention,Software NRR,Net revenue retention
+DD Reservations Marketplace,Operational,Total Bookings / Standardized Bookings,Includes fraud/exclusions
+DD Reservations Marketplace,Operational,% of 7R Rx demand booked via DDRM,
+DD Reservations Marketplace,Quality,Late Cancellation rate,
+DD Reservations Marketplace,Quality,No-show rate,
+DD Reservations Marketplace,Operational,Key product experiments & launch metrics,"e.g., City Picker, Web launch metrics"
+DDfB (DoorDash for Business),Financial,Corporate GOV,
+DDfB (DoorDash for Business),Financial,Meal Manager & Catering GOV,
+DDfB (DoorDash for Business),Adoption,New Corporate DashPass Subs,
+DDfB (DoorDash for Business),Sales,Total Fortune 1000 Logos,Number of signed enterprise logos
+DDfB (DoorDash for Business),Operational,$200+ Rx GFOT performance,Order-level metric
+CANZ (Canada / AUS / NZ),Financial,Canada GOV / Net Revenue / CM,Canada P&L
+CANZ (Canada / AUS / NZ),Operational,Canada Rx VP per Order,Unit economics
+CANZ (Canada / AUS / NZ),Operational,MAUs / New + Resurrected Cx / DashPass Paid Subscribers,Consumer signals
+CANZ (Canada / AUS / NZ),Operational,NV GOV (Canada),NV contribution
+CANZ (Canada / AUS / NZ),Quality,Dx Fraud (cents) / CAN Contact Rate / Rx Net Cx Fee excl. promo,Defect & contact metrics
+CANZ (Australia / NZ),Financial,AUS GOV / AUS Rx GOV / AUS NV GOV,AUS P&L
+CANZ (Australia / NZ),Operational,AUS VP ($/order) / AUS CM / NZD GOV & CM,
+CANZ (Australia / NZ),Operational,MAUs / Rx pMAU / NV pMAU / DP Paid Subscribers,Consumer & DashPass signals
+Dasher / Logistics,Cost,Dx Cost ($ / order),Delivery cost per order
+Dasher / Logistics,Operational,ASAP (minutes),Time to delivery
+Dasher / Logistics,Quality,EUD (%),EUD performance metric
+Dasher / Logistics,Operational,New Dx AR (Accept Rate),New Dasher acceptance rate
+Dasher / Logistics,Revenue,Dasher Tasks Revenue ($K),Additional Dasher revenue lines
+Merchant,Acquisition,Cx pTAM Added (%),Merchant acquisition input
+Merchant,Onboarding,Onboarding 1D Setup (%),Time-to-setup metric
+Merchant,Quality,Good New Mx (F28D) (%),Quality of new merchants
+Merchant,Product,Menu Video Coverage (% of Biz),Content coverage for merchants
+Merchant,Support,High Quality Resolution Rate / Speed to Response (P90),Support quality metrics
+Merchant,Operational,Group Buying (Weekly Active Stores) / Smart Scales Deployed,Merchant programs and tech deployment
+Merchant,Finance,Support Payment Resolution Rate,Finance support performance
+CXI (Customer Experience & Investigations),Cost,Total CXI Cost (cUE) / CXI Ops Costs,Cost per unit equivalent metrics
+CXI (Customer Experience & Investigations),Cost,Fraud Cost (cents) / C&R (Non-Fraud) cUE,Fraud & C&R cost
+CXI (Customer Experience & Investigations),Operational,Tx DWR (%) / Defect Ratio / MTO,Operational quality & throughput
+CXI (Customer Experience & Investigations),Breakouts,"Defect Ratio Subcomponents (DxLx DR, Mx DR, NV DR, CXI Seamless DR, Account/Other)",Sub-team defect breakdowns
+Money (Payments & Capital),Payments,Payments Cost (% of GOV) / Payment Cost Savings ($),Payment cost and savings
+Money (Payments & Capital),Capital,Mx Capital $ Net Revenue / $ Capital Deployed (originations),Mx capital P&L
+Money (Payments & Capital),Gift Cards,DD Gift Card Sales ($) / 3P Digital Gift Card GOV / # New Gift Card Trials,Gift card performance
+Money (Payments & Capital),Users,Crimson: # monthly users with >$200 outside deposits,High-balance user metric
+Money (Payments & Capital),Finance,FinEng Daily Cash Recon Coverage (% of transactional GMMV),Reconciliation metric

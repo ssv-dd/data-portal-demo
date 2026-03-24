@@ -1,5 +1,5 @@
-import { LayoutDashboard, FileCode2, GitBranch, Database } from 'lucide-react';
-import type { RecentWorkItem } from '@/app/components/home/recent-work-card';
+import { LayoutDashboard, FileCode2, GitBranch, Database, BarChart3 } from 'lucide-react';
+import type { RecentWorkItem } from '@/app/components/home/your-work-card';
 
 export const recentWork: RecentWorkItem[] = [
   {
@@ -33,5 +33,53 @@ export const recentWork: RecentWorkItem[] = [
     status: 'Saved',
     icon: Database,
     route: '/sql-studio',
+  },
+  {
+    id: '5',
+    title: 'DashPass Retention Analysis',
+    meta: 'Last edited last week',
+    status: 'Published',
+    icon: BarChart3,
+    route: '/notebooks',
+  },
+  {
+    id: '6',
+    title: 'Merchant Quality Deep Dive',
+    meta: 'Last edited 2 weeks ago',
+    status: 'Draft',
+    icon: FileCode2,
+    route: '/notebooks',
+  },
+  {
+    id: '7',
+    title: 'Weekly KPI Tracker',
+    meta: 'Last edited 2 weeks ago',
+    status: 'Published',
+    icon: LayoutDashboard,
+    route: '/dashboards',
+  },
+  {
+    id: '8',
+    title: 'NV GOV Forecast Model',
+    meta: 'Last edited 3 weeks ago',
+    status: 'Saved',
+    icon: Database,
+    route: '/sql-studio',
+  },
+  {
+    id: '9',
+    title: 'Ads Incrementality Pipeline',
+    meta: 'Last edited 3 weeks ago',
+    status: 'Running',
+    icon: GitBranch,
+    route: '/ai-workflows',
+  },
+  {
+    id: '10',
+    title: 'CANZ Market Expansion Report',
+    meta: 'Last edited last month',
+    status: 'Published',
+    icon: BarChart3,
+    route: '/dashboards',
   },
 ];
