@@ -1,5 +1,8 @@
+import styled from 'styled-components';
 import { Card } from './ui/card';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, ResponsiveContainer } from 'recharts';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
 
 export interface GoldenDashboard {
   id: string;
@@ -16,6 +19,49 @@ interface GoldenDashboardCardProps {
   onClick?: () => void;
   compact?: boolean;
 }
+
+const DashboardTitle = styled.h3<{ $compact: boolean }>`
+  font-size: ${({ $compact }) => ($compact ? Theme.usage.fontSize.xSmall : Theme.usage.fontSize.small)};
+  font-weight: ${({ $compact }) => ($compact ? '400' : '600')};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+  transition: color 150ms;
+`;
+
+const Description = styled.p<{ $compact: boolean }>`
+  font-size: ${({ $compact }) => ($compact ? Theme.usage.fontSize.xxSmall : Theme.usage.fontSize.xSmall)};
+  color: ${colors.mutedForeground};
+`;
+
+const StyledCard = styled(Card)<{ $compact: boolean }>`
+  padding: ${({ $compact }) => ($compact ? Theme.usage.space.medium : Theme.usage.space.large)};
+  transition: all 200ms;
+  cursor: pointer;
+  border-width: ${({ $compact }) => ($compact ? '1px' : '2px')};
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+    border-color: ${({ $compact }) =>
+      $compact ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.5)'};
+  }
+
+  &:hover ${DashboardTitle} {
+    color: ${colors.purple600};
+  }
+`;
+
+const ContentWrapper = styled.div<{ $compact: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ $compact }) => ($compact ? Theme.usage.space.xSmall : Theme.usage.space.medium)};
+`;
+
+const ChartThumbnail = styled.div<{ $compact: boolean }>`
+  width: 100%;
+  background: linear-gradient(to bottom right, ${colors.purple50}, #eff6ff);
+  border-radius: ${radius.lg};
+  overflow: hidden;
+  height: ${({ $compact }) => ($compact ? '100px' : '160px')};
+`;
 
 export function GoldenDashboardCard({ dashboard, onClick, compact = false }: GoldenDashboardCardProps) {
   const renderChart = () => {
@@ -66,26 +112,19 @@ export function GoldenDashboardCard({ dashboard, onClick, compact = false }: Gol
   };
 
   return (
-    <Card 
-      className={`${compact ? 'p-4' : 'p-6'} hover:shadow-card-hover transition-all cursor-pointer group ${compact ? 'border hover:border-purple-500/30' : 'border-2 hover:border-purple-500/50'}`}
-      onClick={onClick}
-    >
-      <div className={compact ? 'space-y-2' : 'space-y-4'}>
+    <StyledCard $compact={compact} onClick={onClick}>
+      <ContentWrapper $compact={compact}>
         <div>
-          <h3 className={`${compact ? 'text-sm' : 'font-semibold'} mb-1 group-hover:text-purple-600 transition-colors`}>
+          <DashboardTitle $compact={compact}>
             {dashboard.title}
-          </h3>
-          <p className={`${compact ? 'text-xs' : 'text-sm'} text-muted-foreground`}>{dashboard.description}</p>
+          </DashboardTitle>
+          <Description $compact={compact}>{dashboard.description}</Description>
         </div>
         
-        {/* Chart Thumbnail */}
-        <div 
-          className={`w-full bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg overflow-hidden`} 
-          style={{ width: '100%', height: compact ? '100px' : '160px' }}
-        >
+        <ChartThumbnail $compact={compact}>
           {renderChart()}
-        </div>
-      </div>
-    </Card>
+        </ChartThumbnail>
+      </ContentWrapper>
+    </StyledCard>
   );
 }

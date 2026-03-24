@@ -1,5 +1,7 @@
-import { LayoutDashboard, Clock, Users, Star } from 'lucide-react';
-import { cn } from '../ui/utils';
+import { LayoutDashboard } from 'lucide-react';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 
 interface DashboardItem {
   id: string;
@@ -30,6 +32,64 @@ const sharedDashboards: DashboardItem[] = [
   { id: 's2', title: 'Marketing Metrics', type: 'Shared by Marketing' },
 ];
 
+const ListWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ItemButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+`;
+
+const IconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  background: rgba(236, 236, 240, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TextContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ItemTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ItemType = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 export function DashboardLibraryPanel({
   activeTab,
   onDashboardClick,
@@ -50,31 +110,21 @@ export function DashboardLibraryPanel({
   const dashboards = getDashboards();
 
   return (
-    <div className="space-y-2">
+    <ListWrapper>
       {dashboards.map((dashboard) => (
-        <button
+        <ItemButton
           key={dashboard.id}
           onClick={() => onDashboardClick?.(dashboard)}
-          className={cn(
-            'w-full p-3 rounded-lg',
-            'flex items-start gap-3',
-            'bg-background/40 border border-border/40',
-            'hover:bg-accent/60 hover:border-border/60',
-            'transition-all duration-200',
-            'group text-left'
-          )}
         >
-          <div className="w-8 h-8 rounded-lg bg-muted/60 flex items-center justify-center flex-shrink-0">
-            <LayoutDashboard className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {dashboard.title}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">{dashboard.type}</p>
-          </div>
-        </button>
+          <IconBox>
+            <LayoutDashboard style={{ width: 16, height: 16, color: colors.mutedForeground }} />
+          </IconBox>
+          <TextContent>
+            <ItemTitle>{dashboard.title}</ItemTitle>
+            <ItemType>{dashboard.type}</ItemType>
+          </TextContent>
+        </ItemButton>
       ))}
-    </div>
+    </ListWrapper>
   );
 }

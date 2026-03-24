@@ -152,6 +152,7 @@ export interface WorkflowStatusConfig {
   label: string;
   color: string;
   bg: string;
+  borderColor: string;
 }
 
 // Dashboard Canvas types

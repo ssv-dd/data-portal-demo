@@ -1,5 +1,7 @@
-import { FileCode2, Clock, Users, Star } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { FileCode2 } from 'lucide-react';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 
 interface NotebookItem {
   id: string;
@@ -30,6 +32,64 @@ const sharedNotebooks: NotebookItem[] = [
   { id: 's2', title: 'Customer Churn Model', type: 'Shared by Data Science' },
 ];
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const NotebookButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 200ms;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+`;
+
+const IconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  background: rgba(236, 236, 240, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TextContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const NotebookTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const NotebookType = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 export function NotebookTemplatesPanel({
   activeTab,
   onNotebookClick,
@@ -50,33 +110,21 @@ export function NotebookTemplatesPanel({
   const notebooks = getNotebooks();
 
   return (
-    <div className="space-y-2">
+    <Container>
       {notebooks.map((notebook) => (
-        <button
+        <NotebookButton
           key={notebook.id}
           onClick={() => onNotebookClick?.(notebook)}
-          className={cn(
-            'w-full p-3 rounded-lg',
-            'flex items-start gap-3',
-            'bg-background/40 border border-border/40',
-            'hover:bg-accent/60 hover:border-border/60',
-            'transition-all duration-200',
-            'group text-left'
-          )}
         >
-          <div className="w-8 h-8 rounded-lg bg-muted/60 flex items-center justify-center flex-shrink-0">
-            <FileCode2 className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
-              {notebook.title}
-            </p>
-            <p className="text-xs text-muted-foreground truncate">
-              {notebook.type}
-            </p>
-          </div>
-        </button>
+          <IconBox>
+            <FileCode2 style={{ width: '16px', height: '16px', color: colors.mutedForeground }} />
+          </IconBox>
+          <TextContent>
+            <NotebookTitle>{notebook.title}</NotebookTitle>
+            <NotebookType>{notebook.type}</NotebookType>
+          </TextContent>
+        </NotebookButton>
       ))}
-    </div>
+    </Container>
   );
 }

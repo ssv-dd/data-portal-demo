@@ -1,14 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
+import styled from 'styled-components';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Theme } from '@doordash/prism-react';
+import { colors } from '@/styles/theme';
 
 interface TextSelectionToolbarProps {
   onAskAI: (selectedText: string) => void;
   onComment: (selectedText: string) => void;
   containerRef: React.RefObject<HTMLElement>;
 }
+
+const ToolbarCard = styled(Card)`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xxSmall};
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border: 2px solid ${colors.purple200};
+`;
 
 export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextSelectionToolbarProps) {
   const [selection, setSelection] = useState<{
@@ -29,12 +41,10 @@ export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextS
 
       const text = selectedText.toString().trim();
 
-      // Only show toolbar if text is selected and it's within our container
       if (text.length > 0 && containerRef.current) {
         const range = selectedText.getRangeAt(0);
         const container = containerRef.current;
 
-        // Check if selection is within our container
         if (container.contains(range.commonAncestorContainer)) {
           const rect = range.getBoundingClientRect();
 
@@ -44,11 +54,9 @@ export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextS
           });
           setIsVisible(true);
 
-          // Add highlight styling to selected text
           const selectionRange = selectedText.getRangeAt(0);
           if (selectionRange) {
-            // This creates a visual effect (browsers handle this automatically)
-            // We just need to make sure it's visible
+            // browsers handle highlight styling automatically
           }
         } else {
           setIsVisible(false);
@@ -58,10 +66,8 @@ export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextS
       }
     };
 
-    // Handle selection changes
     document.addEventListener('selectionchange', handleSelectionChange);
 
-    // Handle clicks outside to dismiss
     const handleClickOutside = (e: MouseEvent) => {
       if (toolbarRef.current && !toolbarRef.current.contains(e.target as Node)) {
         const selectedText = window.getSelection();
@@ -97,7 +103,6 @@ export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextS
 
   if (!isVisible || !selection?.rect) return null;
 
-  // Calculate position (above the selection)
   const top = selection.rect.top + window.scrollY - 50;
   const left = selection.rect.left + window.scrollX + (selection.rect.width / 2);
 
@@ -109,32 +114,43 @@ export function TextSelectionToolbar({ onAskAI, onComment, containerRef }: TextS
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 5 }}
         transition={{ duration: 0.15 }}
-        className="fixed z-50"
         style={{
+          position: 'fixed',
+          zIndex: 50,
           top: `${top}px`,
           left: `${left}px`,
           transform: 'translateX(-50%)'
         }}
       >
-        <Card className="flex items-center gap-2 p-1.5 shadow-xl border-2 border-purple-200">
+        <ToolbarCard>
           <Button
             size="sm"
-            className="h-8 gap-1.5 bg-purple-600 hover:bg-purple-700 text-white"
+            style={{
+              height: '32px',
+              gap: '4px',
+              backgroundColor: colors.purple600,
+              color: colors.white,
+            }}
             onClick={handleAskAI}
           >
-            <Sparkles className="h-3.5 w-3.5" />
+            <Sparkles style={{ height: '14px', width: '14px' }} />
             Ask AI
           </Button>
           <Button
             size="sm"
             variant="outline"
-            className="h-8 gap-1.5 border-purple-200 hover:bg-purple-50 text-purple-700"
+            style={{
+              height: '32px',
+              gap: '4px',
+              borderColor: colors.purple200,
+              color: colors.purple700,
+            }}
             onClick={handleComment}
           >
-            <MessageSquare className="h-3.5 w-3.5" />
+            <MessageSquare style={{ height: '14px', width: '14px' }} />
             Comment
           </Button>
-        </Card>
+        </ToolbarCard>
       </motion.div>
     </AnimatePresence>
   );

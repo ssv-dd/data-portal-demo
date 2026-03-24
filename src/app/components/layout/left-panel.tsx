@@ -1,7 +1,9 @@
 import { motion } from 'motion/react';
 import { Search, ChevronLeft, ChevronRight, type LucideIcon } from 'lucide-react';
-import { cn } from '../ui/utils';
 import { useState } from 'react';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows, glassPanel, glassPanelSubtle } from '@/styles/theme';
 
 export interface LeftPanelTab {
   key: string;
@@ -21,6 +23,162 @@ interface LeftPanelProps {
   className?: string;
 }
 
+const PanelContainer = styled(motion.div)<{ $collapsed: boolean }>`
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: ${radius['2xl']};
+  overflow: hidden;
+  ${({ $collapsed }) => $collapsed ? glassPanelSubtle : glassPanel}
+`;
+
+const HeaderBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const HeaderTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const CollapseButton = styled.button<{ $centered?: boolean }>`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.lg};
+  transition: background-color 150ms;
+  color: ${colors.mutedForeground};
+  ${({ $centered }) => $centered && 'margin: 0 auto;'}
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const SearchContainer = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const SearchWrapper = styled.div`
+  position: relative;
+`;
+
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: ${colors.mutedForeground};
+  pointer-events: none;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xxLarge};
+  border-radius: ${radius.lg};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  color: ${colors.foreground};
+  transition: all 200ms;
+
+  &::placeholder {
+    color: ${colors.mutedForeground};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 58, 0, 0.1);
+    border-color: rgba(255, 58, 0, 0.4);
+  }
+`;
+
+const TabsContainer = styled.div<{ $collapsed: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xSmall};
+  ${({ $collapsed }) => $collapsed && 'align-items: center;'}
+`;
+
+const TabButton = styled.button<{ $active: boolean; $collapsed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  transition: all 200ms;
+  position: relative;
+  ${({ $collapsed }) => $collapsed && 'justify-content: center;'}
+
+  ${({ $active }) =>
+    $active
+      ? `
+    background-color: ${colors.accent};
+    color: ${colors.foreground};
+    box-shadow: ${shadows.sm};
+  `
+      : `
+    color: ${colors.mutedForeground};
+    &:hover {
+      color: ${colors.foreground};
+      background-color: rgba(0, 0, 0, 0.03);
+    }
+  `}
+
+  svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+`;
+
+const TabLabel = styled(motion.span)`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  white-space: nowrap;
+`;
+
+const CollapsedTooltip = styled.div`
+  position: absolute;
+  left: 100%;
+  margin-left: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.xSmall};
+  background: ${colors.foreground};
+  color: ${colors.background};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.small};
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 50;
+  transition: opacity 150ms;
+`;
+
+const TabButtonWrapper = styled.div`
+  position: relative;
+  &:hover ${CollapsedTooltip} {
+    opacity: 1;
+  }
+`;
+
+const ContentArea = styled(motion.div)`
+  flex: 1;
+  overflow: auto;
+  padding: ${Theme.usage.space.small};
+`;
+
 export function LeftPanel({
   tabs,
   activeTab,
@@ -30,127 +188,90 @@ export function LeftPanel({
   children,
   searchPlaceholder = 'Search...',
   showSearch = false,
-  className,
 }: LeftPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
   return (
-    <motion.div
-      animate={{
-        width: collapsed ? 72 : 320,
-      }}
+    <PanelContainer
+      $collapsed={collapsed}
+      animate={{ width: collapsed ? 72 : 320 }}
       transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className={cn(
-        'flex flex-col border border-border/60 rounded-2xl overflow-hidden',
-        collapsed ? 'glass-panel-subtle' : 'glass-panel',
-        className
-      )}
     >
-      {/* Header with collapse toggle */}
-      <div className="flex items-center justify-between p-3 border-b border-border/40">
+      <HeaderBar>
         {!collapsed && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="flex-1"
+            style={{ flex: 1 }}
           >
-            <h3 className="text-sm font-semibold text-foreground">Navigation</h3>
+            <HeaderTitle>Navigation</HeaderTitle>
           </motion.div>
         )}
-        <button
+        <CollapseButton
           onClick={onToggleCollapse}
-          className={cn(
-            'p-2 rounded-lg hover:bg-accent/60 transition-colors',
-            collapsed && 'mx-auto'
-          )}
+          $centered={collapsed}
           aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
         >
-          {collapsed ? (
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-          )}
-        </button>
-      </div>
+          {collapsed ? <ChevronRight /> : <ChevronLeft />}
+        </CollapseButton>
+      </HeaderBar>
 
-      {/* Search box - only when expanded and showSearch is true */}
       {!collapsed && showSearch && (
-        <div className="p-3 border-b border-border/40">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-            <input
+        <SearchContainer>
+          <SearchWrapper>
+            <SearchIcon />
+            <SearchInput
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className={cn(
-                'w-full pl-9 pr-3 py-2 rounded-lg text-sm',
-                'bg-background/50 border border-border/40',
-                'text-foreground placeholder:text-muted-foreground',
-                'focus:outline-none focus:ring-1 focus:ring-dd-primary/20 focus:border-dd-primary/40',
-                'transition-all duration-200'
-              )}
             />
-          </div>
-        </div>
+          </SearchWrapper>
+        </SearchContainer>
       )}
 
-      {/* Tabs */}
-      <div className={cn('flex flex-col gap-1 p-2', collapsed && 'items-center')}>
+      <TabsContainer $collapsed={collapsed}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
           return (
-            <button
-              key={tab.key}
-              onClick={() => onTabChange(tab.key)}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200',
-                'group relative',
-                isActive
-                  ? 'bg-accent text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/40',
-                collapsed && 'justify-center'
-              )}
-              title={collapsed ? tab.label : undefined}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{ opacity: 1, width: 'auto' }}
-                  exit={{ opacity: 0, width: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-sm font-medium whitespace-nowrap"
-                >
-                  {tab.label}
-                </motion.span>
-              )}
-              {/* Tooltip for collapsed state */}
-              {collapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-foreground text-background text-xs rounded-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                  {tab.label}
-                </div>
-              )}
-            </button>
+            <TabButtonWrapper key={tab.key}>
+              <TabButton
+                $active={isActive}
+                $collapsed={collapsed}
+                onClick={() => onTabChange(tab.key)}
+                title={collapsed ? tab.label : undefined}
+              >
+                <Icon />
+                {!collapsed && (
+                  <TabLabel
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {tab.label}
+                  </TabLabel>
+                )}
+              </TabButton>
+              {collapsed && <CollapsedTooltip>{tab.label}</CollapsedTooltip>}
+            </TabButtonWrapper>
           );
         })}
-      </div>
+      </TabsContainer>
 
-      {/* Content area */}
       {!collapsed && (
-        <motion.div
+        <ContentArea
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15, delay: 0.05 }}
-          className="flex-1 overflow-auto p-3"
         >
           {children}
-        </motion.div>
+        </ContentArea>
       )}
-    </motion.div>
+    </PanelContainer>
   );
 }

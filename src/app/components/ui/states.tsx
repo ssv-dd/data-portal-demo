@@ -1,92 +1,100 @@
-import { motion } from 'motion/react';
-import { Loader2, Inbox, AlertCircle } from 'lucide-react';
+import React from 'react';
+import styled, { keyframes } from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 import { Button } from './button';
-import { fadeInUp } from '@/app/lib/motion';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
-interface StateContainerProps {
-  className?: string;
-  children: React.ReactNode;
-}
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
 
-function StateContainer({ className = '', children }: StateContainerProps) {
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: ${Theme.usage.space.xxxLarge} ${Theme.usage.space.large};
+  text-align: center;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const SpinnerIcon = styled(Loader2)`
+  width: 32px;
+  height: 32px;
+  color: ${colors.mutedForeground};
+  animation: ${spin} 1s linear infinite;
+`;
+
+const ErrorBox = styled.div`
+  padding: ${Theme.usage.space.medium};
+  border-radius: ${radius.lg};
+  background-color: rgba(212, 24, 61, 0.1);
+  color: ${colors.destructive};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+export function LoadingState({ message = 'Loading...' }: { message?: string; className?: string }) {
   return (
-    <motion.div
-      variants={fadeInUp}
-      initial="hidden"
-      animate="visible"
-      className={`flex flex-col items-center justify-center py-16 px-8 text-center ${className}`}
-    >
-      {children}
-    </motion.div>
+    <Container>
+      <SpinnerIcon />
+      <p style={{ color: colors.mutedForeground, fontSize: '14px' }}>{message}</p>
+    </Container>
   );
 }
 
-interface LoadingStateProps {
-  message?: string;
-  className?: string;
-}
-
-export function LoadingState({ message = 'Loading...', className }: LoadingStateProps) {
-  return (
-    <StateContainer className={className}>
-      <div className="w-10 h-10 rounded-2xl bg-muted flex items-center justify-center mb-4">
-        <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-      </div>
-      <p className="text-sm text-muted-foreground">{message}</p>
-    </StateContainer>
-  );
-}
-
-interface EmptyStateProps {
-  icon?: React.ReactNode;
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon?: React.ComponentType<any>;
   title: string;
   description?: string;
   action?: { label: string; onClick: () => void };
   className?: string;
-}
-
-export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
+}) {
   return (
-    <StateContainer className={className}>
-      <div className="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-4">
-        {icon || <Inbox className="w-6 h-6 text-muted-foreground" />}
-      </div>
-      <h3 className="text-base font-medium text-foreground mb-1">{title}</h3>
-      {description && <p className="text-sm text-muted-foreground max-w-sm mb-4">{description}</p>}
+    <Container>
+      {Icon && <Icon style={{ width: '40px', height: '40px', color: colors.mutedForeground }} />}
+      <h3 style={{ fontSize: '16px', fontWeight: 600 }}>{title}</h3>
+      {description && <p style={{ color: colors.mutedForeground, fontSize: '14px' }}>{description}</p>}
       {action && (
-        <Button onClick={action.onClick} className="mt-2">
+        <Button variant="outline" onClick={action.onClick}>
           {action.label}
         </Button>
       )}
-    </StateContainer>
+    </Container>
   );
-}
-
-interface ErrorStateProps {
-  title?: string;
-  description?: string;
-  onRetry?: () => void;
-  className?: string;
 }
 
 export function ErrorState({
   title = 'Something went wrong',
-  description = 'An unexpected error occurred. Please try again.',
+  description,
   onRetry,
-  className,
-}: ErrorStateProps) {
+}: {
+  title?: string;
+  description?: string;
+  onRetry?: () => void;
+  className?: string;
+}) {
   return (
-    <StateContainer className={className}>
-      <div className="w-12 h-12 rounded-2xl bg-destructive/10 flex items-center justify-center mb-4">
-        <AlertCircle className="w-6 h-6 text-destructive" />
-      </div>
-      <h3 className="text-base font-medium text-foreground mb-1">{title}</h3>
-      <p className="text-sm text-muted-foreground max-w-sm mb-4">{description}</p>
+    <Container>
+      <ErrorBox>
+        <AlertCircle style={{ width: '20px', height: '20px' }} />
+        {title}
+      </ErrorBox>
+      {description && <p style={{ color: colors.mutedForeground, fontSize: '14px' }}>{description}</p>}
       {onRetry && (
         <Button variant="outline" onClick={onRetry}>
-          Try again
+          Retry
         </Button>
       )}
-    </StateContainer>
+    </Container>
   );
 }

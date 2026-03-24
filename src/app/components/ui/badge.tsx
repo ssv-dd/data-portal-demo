@@ -1,45 +1,67 @@
-import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import React from 'react';
+import styled, { css } from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 
-import { cn } from "./utils";
+type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
 
-const badgeVariants = cva(
-  "inline-flex items-center justify-center rounded-lg border px-2.5 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden",
-  {
-    variants: {
-      variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
-        destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-);
-
-function Badge({
-  className,
-  variant,
-  asChild = false,
-  ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : "span";
-  return (
-    <Comp
-      data-slot="badge"
-      className={cn(badgeVariants({ variant }), className)}
-      {...props}
-    />
-  );
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: BadgeVariant;
 }
 
-export { Badge, badgeVariants };
+const variantStyles: Record<BadgeVariant, ReturnType<typeof css>> = {
+  default: css`
+    border-color: transparent;
+    background-color: ${colors.primary};
+    color: ${colors.primaryForeground};
+  `,
+  secondary: css`
+    border-color: transparent;
+    background-color: ${colors.secondary};
+    color: ${colors.secondaryForeground};
+  `,
+  destructive: css`
+    border-color: transparent;
+    background-color: ${colors.destructive};
+    color: ${colors.white};
+  `,
+  outline: css`
+    color: ${colors.foreground};
+    border-color: ${colors.border};
+  `,
+};
+
+const StyledBadge = styled.span<{ $variant: BadgeVariant }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${radius.lg};
+  border: 1px solid;
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  width: fit-content;
+  white-space: nowrap;
+  flex-shrink: 0;
+  gap: ${Theme.usage.space.xxSmall};
+  overflow: hidden;
+  transition: color 150ms, box-shadow 150ms;
+
+  svg {
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+  }
+
+  ${({ $variant }) => variantStyles[$variant]}
+`;
+
+export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
+  ({ variant = 'default', className, style, ...props }, ref) => {
+    return (
+      <StyledBadge ref={ref} $variant={variant} className={className} style={style} {...props} />
+    );
+  }
+);
+
+Badge.displayName = 'Badge';

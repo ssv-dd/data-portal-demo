@@ -4,6 +4,9 @@ import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Cartesia
 import { Button } from './ui/button';
 import { X, MoreVertical, BarChart3, Table2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import styled, { css, keyframes } from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
 import { WidgetOptionsMenu } from './WidgetOptionsMenu';
 import { MetricDefinitionModal } from './MetricDefinitionModal';
 import { SourceDataTableModal } from './SourceDataTableModal';
@@ -27,16 +30,200 @@ interface ChartWidgetProps {
   id?: string;
 }
 
+const wiggle = keyframes`
+  0%, 100% { transform: rotate(-0.5deg); }
+  50% { transform: rotate(0.5deg); }
+`;
+
+const WidgetWrapper = styled(motion.div)`
+  position: relative;
+  height: 100%;
+`;
+
+const DragContainer = styled.div`
+  height: 100%;
+`;
+
+const StyledCard = styled(Card)<{ $isCustomizing: boolean; $isNew: boolean }>`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.lg};
+  }
+
+  ${({ $isCustomizing }) =>
+    $isCustomizing &&
+    css`
+      animation: ${wiggle} 0.3s ease-in-out infinite alternate;
+    `}
+
+  ${({ $isNew }) =>
+    $isNew &&
+    css`
+      box-shadow: 0 0 0 2px ${colors.background}, 0 0 0 4px ${colors.primary};
+    `}
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const TitleArea = styled.div`
+  flex: 1;
+`;
+
+const FiltersRow = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xxSmall};
+  margin-top: ${Theme.usage.space.xxSmall};
+  flex-wrap: wrap;
+`;
+
+const FilterBadge = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  background-color: ${colors.muted};
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${radius.sm};
+`;
+
+const ActionsArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  flex-shrink: 0;
+`;
+
+const ViewToggle = styled.div`
+  display: flex;
+  align-items: center;
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.md};
+`;
+
+const ToggleButtonLeft = styled(Button)`
+  height: 28px;
+  width: 28px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 1px solid ${colors.border};
+`;
+
+const ToggleButtonRight = styled(Button)`
+  height: 28px;
+  width: 28px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+`;
+
+const StyledCardContent = styled(CardContent)`
+  flex: 1;
+  min-height: 0;
+`;
+
+const ChartArea = styled.div`
+  width: 100%;
+  height: 300px;
+`;
+
+const TableArea = styled.div`
+  width: 100%;
+  height: 300px;
+  overflow: auto;
+`;
+
+const DataTable = styled.table`
+  width: 100%;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const TableHead = styled.thead`
+  position: sticky;
+  top: 0;
+  background: rgba(236, 236, 240, 0.5);
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const Th = styled.th<{ $align?: string }>`
+  text-align: ${({ $align }) => $align || 'left'};
+  padding: ${Theme.usage.space.xSmall};
+  font-weight: 500;
+`;
+
+const Tr = styled.tr`
+  border-bottom: 1px solid ${colors.border};
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgba(236, 236, 240, 0.3);
+  }
+`;
+
+const Td = styled.td<{ $align?: string }>`
+  padding: ${Theme.usage.space.xSmall};
+  text-align: ${({ $align }) => $align || 'left'};
+  ${({ $align }) =>
+    $align === 'right' &&
+    css`
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    `}
+`;
+
+const TooltipBox = styled.div`
+  background-color: ${colors.card};
+  border: 1px solid ${colors.border};
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.lg};
+  box-shadow: ${shadows.lg};
+`;
+
+const TooltipLabel = styled.span`
+  color: ${colors.mutedForeground};
+`;
+
+const DeleteButton = styled(Button)`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  height: 24px;
+  width: 24px;
+  border-radius: ${Theme.usage.borderRadius.full};
+  box-shadow: ${shadows.lg};
+  z-index: 10;
+`;
+
+const NewIndicator = styled(motion.div)`
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  z-index: 20;
+`;
+
+const NewBadge = styled.div`
+  background-color: ${colors.primary};
+  color: ${colors.primaryForeground};
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  box-shadow: ${shadows.lg};
+`;
+
 export function ChartWidget({ title, data, type = 'area', dataKey = 'value', valueFormatter, isCustomizing = false, onDelete, isNew = false, id }: ChartWidgetProps) {
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>(type);
   const [viewMode, setViewMode] = useState<'chart' | 'table'>('chart');
-  const [timePeriod, setTimePeriod] = useState(0); // 0: L7, 1: L28, 2: YoY
+  const [timePeriod, setTimePeriod] = useState(0);
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [optionsMenuOpen, setOptionsMenuOpen] = useState(false);
   const [definitionModalOpen, setDefinitionModalOpen] = useState(false);
   const [sourceDataModalOpen, setSourceDataModalOpen] = useState(false);
 
-  // Drag functionality
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'metric',
     item: { 
@@ -53,20 +240,19 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
     if (active && payload && payload.length) {
       const value = payload[0].value;
       return (
-        <div className="bg-card border border-border p-2 rounded-lg shadow-lg">
-          <p className="text-sm">
-            <span className="text-muted-foreground">{payload[0].payload.name}: </span>
+        <TooltipBox>
+          <p style={{ fontSize: '14px' }}>
+            <TooltipLabel>{payload[0].payload.name}: </TooltipLabel>
             <span>{valueFormatter ? valueFormatter(value) : value.toLocaleString()}</span>
           </p>
-        </div>
+        </TooltipBox>
       );
     }
     return null;
   };
 
   return (
-    <motion.div 
-      className="relative h-full"
+    <WidgetWrapper
       style={{ opacity: isDragging ? 0.5 : 1, cursor: 'grab' }}
       initial={isNew ? { scale: 0.95, opacity: 0 } : false}
       animate={isNew ? { 
@@ -78,65 +264,57 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
         ease: "easeOut"
       }}
     >
-      <div ref={drag as unknown as RefCallback<HTMLDivElement>} className="h-full">
-        <Card className={`hover:shadow-lg transition-shadow h-full flex flex-col ${isCustomizing ? 'widget-wiggle' : ''} ${isNew ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''}`}>
+      <DragContainer ref={drag as unknown as RefCallback<HTMLDivElement>}>
+        <StyledCard $isCustomizing={isCustomizing} $isNew={isNew}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
+            <HeaderRow>
+              <TitleArea>
                 <CardTitle>{title}</CardTitle>
-                {/* Show active filters and time period */}
                 {(selectedFilters.length > 0 || timePeriod !== 0) && (
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {timePeriod === 1 && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">L7</span>
-                    )}
-                    {timePeriod === 2 && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">L28</span>
-                    )}
+                  <FiltersRow>
+                    {timePeriod === 1 && <FilterBadge>L7</FilterBadge>}
+                    {timePeriod === 2 && <FilterBadge>L28</FilterBadge>}
                     {selectedFilters.length > 0 && (
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">
+                      <FilterBadge>
                         {selectedFilters.length} filter{selectedFilters.length > 1 ? 's' : ''}
-                      </span>
+                      </FilterBadge>
                     )}
-                  </div>
+                  </FiltersRow>
                 )}
-              </div>
-              <div className="flex items-center gap-1 shrink-0">
-                {/* View Toggle Buttons */}
-                <div className="flex items-center border border-border rounded-md">
-                  <Button
+              </TitleArea>
+              <ActionsArea>
+                <ViewToggle>
+                  <ToggleButtonLeft
                     variant={viewMode === 'chart' ? 'secondary' : 'ghost'}
                     size="icon"
-                    className="h-7 w-7 rounded-r-none border-r"
                     onClick={() => setViewMode('chart')}
                     title="Chart view"
                   >
-                    <BarChart3 className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
+                    <BarChart3 style={{ width: 14, height: 14 }} />
+                  </ToggleButtonLeft>
+                  <ToggleButtonRight
                     variant={viewMode === 'table' ? 'secondary' : 'ghost'}
                     size="icon"
-                    className="h-7 w-7 rounded-l-none"
                     onClick={() => setViewMode('table')}
                     title="Table view"
                   >
-                    <Table2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                    <Table2 style={{ width: 14, height: 14 }} />
+                  </ToggleButtonRight>
+                </ViewToggle>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8"
+                  style={{ height: 32, width: 32 }}
                   onClick={() => setOptionsMenuOpen(true)}
                 >
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical style={{ width: 16, height: 16 }} />
                 </Button>
-              </div>
-            </div>
+              </ActionsArea>
+            </HeaderRow>
           </CardHeader>
-          <CardContent className="flex-1 min-h-0">
+          <StyledCardContent>
             {viewMode === 'chart' ? (
-              <div className="w-full h-[300px]">
+              <ChartArea>
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
                     <LineChart data={data} margin={{ left: 10, right: 10 }}>
@@ -164,62 +342,52 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
                     </AreaChart>
                   )}
                 </ResponsiveContainer>
-              </div>
+              </ChartArea>
             ) : (
-              <div className="w-full h-[300px] overflow-auto">
-                <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-muted/50 backdrop-blur-sm border-b">
+              <TableArea>
+                <DataTable>
+                  <TableHead>
                     <tr>
-                      <th className="text-left p-2 font-medium">Name</th>
-                      <th className="text-right p-2 font-medium">Value</th>
+                      <Th>Name</Th>
+                      <Th $align="right">Value</Th>
                     </tr>
-                  </thead>
+                  </TableHead>
                   <tbody>
                     {data.map((row, index) => (
-                      <tr 
-                        key={index} 
-                        className="border-b hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="p-2">{row.name}</td>
-                        <td className="p-2 text-right font-medium tabular-nums">
+                      <Tr key={index}>
+                        <Td>{row.name}</Td>
+                        <Td $align="right">
                           {(row[dataKey] as number).toLocaleString()}
-                        </td>
-                      </tr>
+                        </Td>
+                      </Tr>
                     ))}
                   </tbody>
-                </table>
-              </div>
+                </DataTable>
+              </TableArea>
             )}
-          </CardContent>
-        </Card>
+          </StyledCardContent>
+        </StyledCard>
         
-        {/* Delete button in customization mode */}
         {isCustomizing && onDelete && (
-          <Button
+          <DeleteButton
             size="icon"
             variant="destructive"
-            className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-lg z-10"
             onClick={onDelete}
           >
-            <X className="h-3 w-3" />
-          </Button>
+            <X style={{ width: 12, height: 12 }} />
+          </DeleteButton>
         )}
 
-        {/* New widget indicator */}
         {isNew && (
-          <motion.div
-            className="absolute -top-1 -right-1 z-20"
+          <NewIndicator
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 500, damping: 30 }}
           >
-            <div className="bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-xs shadow-lg">
-              New
-            </div>
-          </motion.div>
+            <NewBadge>New</NewBadge>
+          </NewIndicator>
         )}
 
-        {/* Widget Options Menu */}
         <WidgetOptionsMenu
           open={optionsMenuOpen}
           onOpenChange={setOptionsMenuOpen}
@@ -239,12 +407,10 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
           }}
         />
 
-        {/* Metric Definition Modal */}
         <MetricDefinitionModal
           open={definitionModalOpen}
           onOpenChange={(open) => {
             setDefinitionModalOpen(open);
-            // When closing the definition modal, re-open the widget options menu
             if (!open) {
               setOptionsMenuOpen(true);
             }
@@ -253,12 +419,10 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
           metricId={id}
         />
 
-        {/* Source Data Table Modal */}
         <SourceDataTableModal
           open={sourceDataModalOpen}
           onOpenChange={(open) => {
             setSourceDataModalOpen(open);
-            // When closing the source data modal, re-open the widget options menu
             if (!open) {
               setOptionsMenuOpen(true);
             }
@@ -266,7 +430,7 @@ export function ChartWidget({ title, data, type = 'area', dataKey = 'value', val
           metricTitle={title}
           chartData={data}
         />
-      </div>
-    </motion.div>
+      </DragContainer>
+    </WidgetWrapper>
   );
 }

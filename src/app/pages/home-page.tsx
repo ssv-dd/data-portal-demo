@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import styled, { css, keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, ChevronLeft, Send, MessageSquare, Layers, BookOpen } from 'lucide-react';
 import { GradientOrb } from '../components/hero/gradient-orb';
@@ -15,6 +16,305 @@ import { discoveryFeed, quickActions } from '../data/mock/home-data';
 import { recentWork } from '../data/mock/recent-work-data';
 import { quickPrompts } from '../data/mock/quick-prompts-data';
 import { chartData, summaryData } from '../data/mock/analysis-data';
+import { Theme } from '@doordash/prism-react';
+import { colors, glassPanel, shadows } from '@/styles/theme';
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background-color: ${colors.background};
+  overflow: hidden;
+  position: relative;
+`;
+
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+`;
+
+const ContentLayer = styled.div`
+  position: relative;
+  z-index: 10;
+`;
+
+const ScrollContainer = styled.div`
+  overflow: auto;
+  height: 100vh;
+`;
+
+const MaxWidthContainer = styled.div`
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: ${Theme.usage.space.xLarge};
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.medium};
+  transition: color 150ms, background-color 150ms;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+
+  &:hover {
+    color: ${colors.foreground};
+  }
+`;
+
+const BackText = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const SectionMarginBottom5 = styled.div`
+  margin-bottom: 20px;
+`;
+
+const SectionMarginBottom2 = styled.div`
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const BottomGrid = styled.div`
+  display: grid;
+  gap: ${Theme.usage.space.xSmall};
+
+  @media (min-width: 1280px) {
+    grid-template-columns: 0.85fr 1.15fr;
+  }
+`;
+
+const CenteredHint = styled.p`
+  text-align: center;
+  color: ${colors.mutedForeground};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  margin-top: ${Theme.usage.space.medium};
+`;
+
+const ChatBoxWrapper = styled.div`
+  ${glassPanel}
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: ${Theme.usage.space.large};
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const StyledSparklesIcon = styled(Sparkles)`
+  position: absolute;
+  left: ${Theme.usage.space.medium};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: ${colors.violet600};
+`;
+
+const StyledSendIcon = styled(Send)`
+  position: absolute;
+  right: ${Theme.usage.space.medium};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  color: ${colors.violet600};
+  transition: color 150ms, background-color 150ms;
+
+  &:hover {
+    color: ${colors.violet700 ?? '#6d28d9'};
+  }
+`;
+
+const ChatControls = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ModeToggleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  background-color: ${colors.muted};
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+`;
+
+const ModeButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  border-radius: ${Theme.usage.borderRadius.large};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: ${colors.background};
+    color: ${colors.foreground};
+    box-shadow: ${shadows.sm};
+  ` : css`
+    background: none;
+    color: ${colors.mutedForeground};
+    &:hover { color: ${colors.foreground}; }
+  `}
+`;
+
+const PurposeToggleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PurposeButton = styled.button<{ $active: boolean }>`
+  padding: ${Theme.usage.space.small};
+  padding-top: ${Theme.usage.space.xxSmall};
+  padding-bottom: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  border: 1px solid;
+  cursor: pointer;
+  transition: color 150ms, background-color 150ms;
+  text-transform: capitalize;
+
+  ${({ $active }) => $active ? css`
+    background-color: ${colors.foreground};
+    color: ${colors.background};
+    border-color: ${colors.foreground};
+  ` : css`
+    background-color: ${colors.background};
+    color: ${colors.foreground};
+    border-color: ${colors.border};
+    &:hover { background-color: rgba(233, 235, 239, 0.4); }
+  `}
+`;
+
+const ChatMessagesOverlay = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background-color: ${colors.background};
+  display: flex;
+  flex-direction: column;
+`;
+
+const ChatHeader = styled.div`
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.xLarge};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const ChatHeaderInner = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+`;
+
+const ChatTitle = styled.h1`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  color: ${colors.foreground};
+`;
+
+const ChatMessagesArea = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.xLarge};
+`;
+
+const ChatMessagesInner = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+`;
+
+const UserMessageRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const UserBubble = styled.div`
+  background-color: ${colors.muted};
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  max-width: 768px;
+`;
+
+const UserBubbleText = styled.p`
+  color: ${colors.foreground};
+`;
+
+const LoadingRow = styled.div`
+  display: flex;
+  justify-content: flex-start;
+`;
+
+const LoadingInner = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+`;
+
+const AvatarCircle = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${Theme.usage.borderRadius.full};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colors.violet600};
+`;
+
+const LoadingBubble = styled.div`
+  background-color: rgba(236, 236, 240, 0.5);
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+`;
+
+const DotsContainer = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const PulseDot = styled.div`
+  width: 4px;
+  height: 4px;
+  background-color: rgba(113, 113, 130, 0.4);
+  border-radius: ${Theme.usage.borderRadius.full};
+  animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+`;
+
+const ChatFooter = styled(motion.div)`
+  border-top: 1px solid ${colors.border};
+  background-color: ${colors.background};
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.xLarge};
+`;
+
+const ChatFooterInner = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+`;
 
 const ease = [0.4, 0, 0.2, 1] as const;
 
@@ -83,86 +383,76 @@ export function HomePage() {
   };
 
   const chatBox = (
-    <div className="glass-panel border border-border/60 rounded-2xl p-6 transition-shadow hover:shadow-card-hover">
-      <div className="relative mb-4">
-        <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-violet-600 dark:text-violet-400" />
+    <ChatBoxWrapper>
+      <InputWrapper>
+        <StyledSparklesIcon />
         <Input
           placeholder="Prompt to explore your data"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && searchTerm.trim()) submitPrompt(); }}
-          className="pl-12 h-12 text-base border-border"
+          style={{ paddingLeft: '48px', height: '48px', fontSize: '16px', borderColor: colors.border }}
         />
-        <Send
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 cursor-pointer text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-          onClick={() => submitPrompt()}
-        />
-      </div>
+        <StyledSendIcon onClick={() => submitPrompt()} />
+      </InputWrapper>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1 bg-muted p-1 rounded-2xl">
+      <ChatControls>
+        <ModeToggleGroup>
           {(['chat', 'hybrid', 'notebook'] as const).map((mode) => (
-            <button
+            <ModeButton
               key={mode}
+              $active={agentMode === mode}
               onClick={() => setAgentMode(mode)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                agentMode === mode ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-              }`}
             >
-              {mode === 'chat' && <MessageSquare className="w-4 h-4" />}
-              {mode === 'hybrid' && <Layers className="w-4 h-4" />}
-              {mode === 'notebook' && <BookOpen className="w-4 h-4" />}
+              {mode === 'chat' && <MessageSquare style={{ width: '16px', height: '16px' }} />}
+              {mode === 'hybrid' && <Layers style={{ width: '16px', height: '16px' }} />}
+              {mode === 'notebook' && <BookOpen style={{ width: '16px', height: '16px' }} />}
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </button>
+            </ModeButton>
           ))}
-        </div>
+        </ModeToggleGroup>
 
-        <div className="flex items-center gap-2">
+        <PurposeToggleGroup>
           {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => (
-            <button
+            <PurposeButton
               key={purpose}
+              $active={agentPurpose === purpose}
               onClick={() => setAgentPurpose(purpose)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors capitalize ${
-                agentPurpose === purpose
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-background text-foreground border-border hover:bg-accent/40'
-              }`}
             >
               {purpose}
-            </button>
+            </PurposeButton>
           ))}
-        </div>
-      </div>
-    </div>
+        </PurposeToggleGroup>
+      </ChatControls>
+    </ChatBoxWrapper>
   );
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+    <PageContainer>
+      <GradientOverlay />
 
-      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
-      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
-      <GradientOrb variant="primary" className="left-[60%] top-[600px]" />
+      <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
+      <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
+      <GradientOrb variant="primary" style={{ left: '60%', top: '600px' }} />
 
-      <div
-        className="relative z-10"
+      <ContentLayer
         style={{ display: hasMessages && isChatCentered ? 'none' : undefined }}
       >
-        <div className="overflow-auto h-screen">
-          <div className="max-w-[1600px] mx-auto p-8">
+        <ScrollContainer>
+          <MaxWidthContainer>
             <AnimatePresence>
               {isChatCentered && !hasMessages && (
-                <motion.button
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  onClick={handleBackClick}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="text-sm">Back to Home</span>
-                </motion.button>
+                  <BackButton onClick={handleBackClick}>
+                    <ChevronLeft style={{ width: '20px', height: '20px' }} />
+                    <BackText>Back to Home</BackText>
+                  </BackButton>
+                </motion.div>
               )}
             </AnimatePresence>
 
@@ -179,8 +469,7 @@ export function HomePage() {
               transition={{ duration: 0.4, ease }}
               style={{ overflow: 'hidden', pointerEvents: isChatCentered ? 'none' : 'auto' }}
             >
-              {/* Row 1: AI Hero — Full Width */}
-              <div className="mb-5">
+              <SectionMarginBottom5>
                 <HeroPanel
                   userName={appConfig.user.name}
                   greeting={getGreeting()}
@@ -194,20 +483,18 @@ export function HomePage() {
                   agentPurpose={agentPurpose}
                   onAgentPurposeChange={setAgentPurpose}
                 />
-              </div>
+              </SectionMarginBottom5>
 
-              {/* Row 2: Your Watchlist */}
-              <div className="mb-2">
+              <SectionMarginBottom2>
                 <WatchlistTable
                   areas={productAreas}
                   selectedAreaIds={['company']}
                   maxRows={5}
                   onViewFull={() => navigate('/dashboards')}
                 />
-              </div>
+              </SectionMarginBottom2>
 
-              {/* Row 3: Your Work + Discover */}
-              <div className="grid xl:grid-cols-[0.85fr_1.15fr] gap-2">
+              <BottomGrid>
                 <YourWorkCard
                   recentItems={recentWork}
                   quickActions={quickActions}
@@ -219,7 +506,7 @@ export function HomePage() {
                   {...discoveryFeed}
                   onItemClick={handleDiscoveryItemClick}
                 />
-              </div>
+              </BottomGrid>
             </motion.div>
 
             <AnimatePresence>
@@ -231,87 +518,86 @@ export function HomePage() {
                   transition={{ duration: 0.4 }}
                 >
                   {chatBox}
-                  <motion.p
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.3 }}
-                    className="text-center text-muted-foreground text-sm mt-4"
                   >
-                    Start typing to explore your data with AI
-                  </motion.p>
+                    <CenteredHint>
+                      Start typing to explore your data with AI
+                    </CenteredHint>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
-        </div>
-      </div>
+          </MaxWidthContainer>
+        </ScrollContainer>
+      </ContentLayer>
 
       <AnimatePresence>
         {isChatCentered && hasMessages && (
-          <motion.div
+          <ChatMessagesOverlay
             key="chat-messages"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-20 bg-background flex flex-col"
           >
-            <div className="px-8 py-6 border-b border-border/60">
-              <div className="max-w-7xl mx-auto">
-                <button onClick={handleBackClick} className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 transition-colors">
-                  <ChevronLeft className="w-5 h-5" />
-                  <span className="text-sm">Back to Home</span>
-                </button>
-                <h1 className="text-2xl text-foreground">{getGreeting()}, {appConfig.user.name}</h1>
-              </div>
-            </div>
+            <ChatHeader>
+              <ChatHeaderInner>
+                <BackButton onClick={handleBackClick}>
+                  <ChevronLeft style={{ width: '20px', height: '20px' }} />
+                  <BackText>Back to Home</BackText>
+                </BackButton>
+                <ChatTitle>{getGreeting()}, {appConfig.user.name}</ChatTitle>
+              </ChatHeaderInner>
+            </ChatHeader>
 
-            <div className="flex-1 overflow-auto px-8 py-6">
-              <div className="max-w-7xl mx-auto space-y-6">
+            <ChatMessagesArea>
+              <ChatMessagesInner>
                 {messages.map((message, index) => (
                   <div key={index}>
                     {message.role === 'user' && (
-                      <div className="flex justify-end mb-6">
-                        <div className="bg-muted rounded-lg px-4 py-3 max-w-3xl">
-                          <p className="text-foreground">{message.content}</p>
-                        </div>
-                      </div>
+                      <UserMessageRow>
+                        <UserBubble>
+                          <UserBubbleText>{message.content}</UserBubbleText>
+                        </UserBubble>
+                      </UserMessageRow>
                     )}
                     {message.role === 'assistant' && message.content === 'analysis' && <AnalysisResponse chartData={chartData} summaryData={summaryData} />}
                   </div>
                 ))}
                 {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-violet-600 dark:bg-violet-500">
-                        <Sparkles className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="bg-muted/50 rounded-lg px-4 py-3">
-                        <div className="flex gap-1">
-                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
-                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
-                          <div className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <LoadingRow>
+                    <LoadingInner>
+                      <AvatarCircle>
+                        <Sparkles style={{ width: '20px', height: '20px', color: colors.white }} />
+                      </AvatarCircle>
+                      <LoadingBubble>
+                        <DotsContainer>
+                          <PulseDot style={{ animationDelay: '0ms' }} />
+                          <PulseDot style={{ animationDelay: '150ms' }} />
+                          <PulseDot style={{ animationDelay: '300ms' }} />
+                        </DotsContainer>
+                      </LoadingBubble>
+                    </LoadingInner>
+                  </LoadingRow>
                 )}
-              </div>
-            </div>
+              </ChatMessagesInner>
+            </ChatMessagesArea>
 
-            <motion.div
+            <ChatFooter
               initial={{ y: 40, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, ease }}
-              className="border-t border-border/60 bg-background px-8 py-4"
             >
-              <div className="max-w-7xl mx-auto">
+              <ChatFooterInner>
                 {chatBox}
-              </div>
-            </motion.div>
-          </motion.div>
+              </ChatFooterInner>
+            </ChatFooter>
+          </ChatMessagesOverlay>
         )}
       </AnimatePresence>
-    </div>
+    </PageContainer>
   );
 }

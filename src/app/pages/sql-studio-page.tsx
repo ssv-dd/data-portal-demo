@@ -1,12 +1,1523 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import styled, { css, keyframes } from 'styled-components';
 import { motion } from 'motion/react';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ChevronRight, ChevronDown, ChevronUp, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Send, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, FilePlus, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { mockSavedQueries, sampleResults, DEFAULT_SQL } from '../data/mock/sql-studio-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
+import { Theme } from '@doordash/prism-react';
+import { colors, fonts, shadows, glassPanel, glassPanelSubtle, glassPanelChat } from '@/styles/theme';
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+`;
+
+/* ─── Shared page-level containers ──────────────────────────────────── */
+
+const PageContainer = styled.div`
+  height: 100%;
+  background-color: ${colors.background};
+  overflow: hidden;
+  position: relative;
+`;
+
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+`;
+
+/* ─── Landing page ──────────────────────────────────────────────────── */
+
+const LandingLayout = styled.div`
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+`;
+
+const LandingMain = styled.div`
+  flex: 1;
+  padding: ${Theme.usage.space.xLarge};
+  overflow: auto;
+`;
+
+const LandingInner = styled.div`
+  max-width: 1280px;
+  margin: 0 auto;
+`;
+
+const LandingHeader = styled.div`
+  margin-bottom: ${Theme.usage.space.xLarge};
+`;
+
+const LandingTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const LandingTitle = styled.h1`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  color: ${colors.ddPrimary};
+`;
+
+const LandingSubtitle = styled.p`
+  color: ${colors.mutedForeground};
+`;
+
+const LandingSearchBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const LandingSearchWrapper = styled.div`
+  flex: 1;
+  position: relative;
+`;
+
+const LandingFilterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const LandingGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${Theme.usage.space.large};
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const QueryCard = styled.div`
+  background-color: ${colors.white};
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: 20px;
+  cursor: pointer;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+
+const QueryCardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const QueryCardTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const QueryCardTitle = styled.h3`
+  font-weight: 500;
+  color: ${colors.slate900};
+`;
+
+const QueryCardDesc = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const QueryCardMeta = styled.div`
+  display: flex;
+  align-items: center;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate600};
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const LandingEmptyState = styled.div`
+  text-align: center;
+  padding: 64px 0;
+  background-color: rgba(236, 236, 240, 0.5);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+`;
+
+const LandingEmptyIcon = styled(Database)`
+  width: 48px;
+  height: 48px;
+  margin: 0 auto ${Theme.usage.space.medium};
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const LandingEmptyText = styled.p`
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+/* ─── Landing Right Panel ───────────────────────────────────────────── */
+
+const LandingRightPanel = styled.div`
+  width: 440px;
+  border-left: 1px solid ${colors.border};
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+`;
+
+const LandingRightHeader = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const LandingRightTitle = styled.h3`
+  font-weight: 600;
+  color: ${colors.slate900};
+`;
+
+const LandingRightBody = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
+const LandingRightContent = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.medium};
+  display: flex;
+  flex-direction: column;
+`;
+
+const LandingRightCenter = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const AssistantIconBox = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const AssistantTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.slate900};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const AssistantDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate600};
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.625;
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const SuggestionList = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SuggestionButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: 1px solid ${colors.slate200};
+  background-color: ${colors.white};
+  color: ${colors.slate900};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background-color: ${colors.slate50};
+  }
+`;
+
+const LandingInputArea = styled.div`
+  padding: ${Theme.usage.space.small};
+`;
+
+const LandingInputBox = styled.div`
+  border: 1px solid ${colors.slate200};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.white};
+  overflow: hidden;
+`;
+
+const LandingKbRow = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.small} 0;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const KbBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: ${colors.slate100};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate700};
+`;
+
+const LandingTextarea = styled.textarea`
+  width: 100%;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.slate900};
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+
+  &::placeholder {
+    color: ${colors.slate400};
+  }
+`;
+
+const LandingInputFooter = styled.div`
+  padding: 0 ${Theme.usage.space.small} ${Theme.usage.space.small};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SmallIconButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.small};
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: ${colors.slate500};
+  transition: background-color 150ms, color 150ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate900};
+  }
+`;
+
+const SendButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background-color: ${colors.slate100};
+  color: ${colors.slate400};
+  cursor: default;
+`;
+
+/* ─── Editor View ───────────────────────────────────────────────────── */
+
+const EditorLayout = styled.div`
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+  padding: ${Theme.usage.space.xSmall};
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+/* ── Left Panel ── */
+
+const LeftPanelContainer = styled.div`
+  width: 288px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  border: 1px solid ${colors.border};
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 200ms;
+`;
+
+const LeftPanelCollapsed = styled.div`
+  width: 44px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  border: 1px solid ${colors.border};
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: ${Theme.usage.space.small};
+  transition: all 200ms;
+`;
+
+const PanelHeader = styled.div`
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 ${Theme.usage.space.small};
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const PanelTabGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.slate100};
+  border: 1px solid rgba(226, 232, 240, 0.5);
+`;
+
+const PanelTab = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  border-radius: ${Theme.usage.borderRadius.large};
+  text-transform: capitalize;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: ${colors.white};
+    color: ${colors.slate900};
+    box-shadow: ${shadows.sm};
+    border: 1px solid rgba(226, 232, 240, 0.5);
+  ` : css`
+    background: none;
+    color: ${colors.slate600};
+    border: 1px solid transparent;
+    &:hover { color: ${colors.slate900}; }
+  `}
+`;
+
+const PanelToggleButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: ${colors.slate600};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate900};
+  }
+`;
+
+const PanelBody = styled.div`
+  flex: 1;
+  overflow: auto;
+`;
+
+const PanelSection = styled.div`
+  padding: ${Theme.usage.space.xSmall};
+`;
+
+const PanelSearchInput = styled.input`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  width: 100%;
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  background-color: ${colors.slate50};
+  color: ${colors.slate900};
+  border: 1px solid ${colors.slate200};
+  outline: none;
+  transition: background-color 200ms;
+
+  &::placeholder { color: ${colors.slate400}; }
+  &:focus { background-color: ${colors.slate100}; }
+`;
+
+const CatalogSearchWrapper = styled.div`
+  position: relative;
+  padding: ${Theme.usage.space.small};
+`;
+
+const CatalogSearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.large};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: ${colors.slate400};
+`;
+
+const CatalogSearchInput = styled.input`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  width: 100%;
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xLarge};
+  background-color: ${colors.slate50};
+  color: ${colors.slate900};
+  border: 1px solid ${colors.slate200};
+  outline: none;
+  transition: background-color 200ms;
+
+  &::placeholder { color: ${colors.slate400}; }
+  &:focus { background-color: ${colors.slate100}; }
+`;
+
+const SectionLabel = styled.span`
+  font-size: 10px;
+  font-weight: 600;
+  color: ${colors.slate500};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const SectionHeader = styled.div`
+  padding: ${Theme.usage.space.xSmall};
+  padding-top: ${Theme.usage.space.small};
+  padding-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const SectionHeaderWithAction = styled.div`
+  padding: ${Theme.usage.space.xSmall};
+  padding-top: 20px;
+  padding-bottom: ${Theme.usage.space.xxSmall};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const TreeItem = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  cursor: pointer;
+  margin-bottom: ${Theme.usage.space.xxxSmall};
+  transition: all 150ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+  }
+`;
+
+const TreeItemRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const TreeItemTitle = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate900};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const TreeItemTimestamp = styled.div`
+  font-size: 10px;
+  color: ${colors.slate500};
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const FolderButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+  transition: all 150ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+  }
+`;
+
+const FolderName = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.slate900};
+`;
+
+const FolderCount = styled.span`
+  font-size: 10px;
+  color: ${colors.slate400};
+  margin-left: auto;
+`;
+
+const FolderChildren = styled.div`
+  margin-left: 20px;
+  padding-left: ${Theme.usage.space.small};
+  border-left: 1px solid ${colors.slate200};
+`;
+
+const FolderChild = styled.div`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  cursor: pointer;
+  margin-bottom: ${Theme.usage.space.xxxSmall};
+  transition: all 150ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+  }
+`;
+
+const CatalogItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  cursor: pointer;
+  margin-bottom: ${Theme.usage.space.xxxSmall};
+  transition: all 150ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+  }
+`;
+
+const CatalogItemName = styled.span<{ $mono?: boolean }>`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate900};
+  ${({ $mono }) => $mono && css`font-family: ${fonts.mono};`}
+`;
+
+const NewFolderButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: ${colors.slate400};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate900};
+  }
+`;
+
+/* ── Center Panel ── */
+
+const CenterContainer = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  min-width: 0;
+  overflow: hidden;
+`;
+
+const EditorCard = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  ${glassPanel}
+  overflow: hidden;
+`;
+
+const TabBar = styled.div`
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 ${Theme.usage.space.medium};
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background-color: rgba(248, 250, 252, 0.5);
+`;
+
+const TabList = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  min-width: 0;
+  overflow-x: auto;
+`;
+
+const FileTab = styled.div<{ $active: boolean }>`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border-top-left-radius: ${Theme.usage.borderRadius.large};
+  border-top-right-radius: ${Theme.usage.borderRadius.large};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-family: ${fonts.mono};
+  cursor: pointer;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  transition: all 200ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: ${colors.white};
+    color: ${colors.slate900};
+    border-color: ${colors.slate200};
+  ` : css`
+    background: transparent;
+    color: ${colors.slate500};
+    &:hover { background-color: rgba(241, 245, 249, 0.5); }
+  `}
+`;
+
+const TabCloseButton = styled.button`
+  opacity: 0;
+  padding: ${Theme.usage.space.xxxSmall};
+  border-radius: ${Theme.usage.borderRadius.small};
+  border: none;
+  background: none;
+  color: ${colors.slate400};
+  cursor: pointer;
+  transition: all 150ms;
+  margin-right: -4px;
+
+  ${FileTab}:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate700};
+  }
+`;
+
+const TabName = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+`;
+
+const TabRenameInput = styled.input`
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-family: ${fonts.mono};
+  width: 120px;
+  padding: 0;
+`;
+
+const NewTabButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: ${colors.slate400};
+  cursor: pointer;
+  margin-left: ${Theme.usage.space.xxSmall};
+  flex-shrink: 0;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate700};
+  }
+`;
+
+const TabBarActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const EngineSelect = styled.select`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  background-color: ${colors.white};
+  color: ${colors.slate900};
+  border: 1px solid ${colors.slate200};
+  outline: none;
+  transition: all 200ms;
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+  }
+`;
+
+const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  height: 32px;
+  padding: 0 ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: 1px solid ${colors.slate200};
+  background-color: ${colors.white};
+  color: ${colors.slate700};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: ${colors.slate50};
+  }
+`;
+
+const ExpandButton = styled.button`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: ${colors.slate600};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: ${colors.slate100};
+    color: ${colors.slate900};
+  }
+`;
+
+const MonacoWrapper = styled.div<{ $dark?: boolean }>`
+  flex: 1;
+  min-height: 0;
+  background-color: ${({ $dark }) => $dark ? '#0b1220' : colors.white};
+`;
+
+/* ── Results Card ── */
+
+const ResultsCard = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  ${glassPanel}
+  overflow: hidden;
+`;
+
+const RecommendationBanner = styled.div`
+  margin: ${Theme.usage.space.small} ${Theme.usage.space.small} 0;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.rose50};
+  border: 1px solid ${colors.rose200};
+`;
+
+const BannerRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const BannerItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PulseDot = styled.span<{ $animate?: boolean }>`
+  width: 8px;
+  height: 8px;
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: ${colors.rose500};
+  ${({ $animate }) => $animate && css`animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;`}
+`;
+
+const BannerLabel = styled.span`
+  color: #881337;
+  font-weight: 600;
+`;
+
+const BannerDetail = styled.span`
+  color: #9f1239;
+`;
+
+const BannerCode = styled.code`
+  font-family: ${fonts.mono};
+  background-color: ${colors.rose50};
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.small};
+  color: #881337;
+`;
+
+const BannerAction = styled.button`
+  margin-left: auto;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.violet600};
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 200ms;
+
+  &:hover { color: ${colors.violet700 ?? '#6d28d9'}; }
+`;
+
+const ResultsTabBar = styled.div`
+  display: flex;
+  align-items: center;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const ResultsTabGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.slate100};
+  border: 1px solid rgba(226, 232, 240, 0.5);
+`;
+
+const ResultsTab = styled.button<{ $active: boolean }>`
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 600;
+  border-radius: ${Theme.usage.borderRadius.large};
+  text-transform: capitalize;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: ${colors.white};
+    color: ${colors.slate900};
+    box-shadow: ${shadows.sm};
+    border: 1px solid rgba(226, 232, 240, 0.5);
+  ` : css`
+    background: none;
+    color: ${colors.slate600};
+    border: 1px solid transparent;
+    &:hover { color: ${colors.slate900}; }
+  `}
+`;
+
+const ResultsActions = styled.div`
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+`;
+
+const ResultsMeta = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate500};
+  font-weight: 500;
+`;
+
+const RunButton = styled.button<{ $variant: 'run' | 'stop' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.small} 20px;
+  border-radius: ${Theme.usage.borderRadius.large};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: ${shadows.sm};
+  transition: all 200ms;
+
+  ${({ $variant }) => $variant === 'run' ? css`
+    background-color: ${colors.emerald500};
+    color: ${colors.white};
+    &:hover {
+      background-color: #059669;
+      transform: translateY(-1px);
+    }
+    &:active { transform: translateY(0); }
+    &:disabled {
+      opacity: 0.5;
+      &:hover { transform: translateY(0); }
+    }
+  ` : css`
+    background-color: ${colors.rose500};
+    color: ${colors.white};
+    &:hover {
+      background-color: #e11d48;
+      transform: translateY(-1px);
+    }
+    &:active { transform: translateY(0); }
+  `}
+`;
+
+const TableContainer = styled.div`
+  flex: 1;
+  overflow: auto;
+  margin: ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: 1px solid ${colors.slate200};
+`;
+
+const ResultsTable = styled.table`
+  width: 100%;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const TableHead = styled.thead`
+  position: sticky;
+  top: 0;
+  background-color: ${colors.slate50};
+  backdrop-filter: blur(4px);
+`;
+
+const TableTh = styled.th`
+  text-align: left;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  font-size: 11px;
+  font-weight: 600;
+  color: ${colors.slate500};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const TableThIndex = styled(TableTh)`
+  width: 40px;
+`;
+
+const TableRow = styled.tr`
+  transition: background-color 150ms;
+
+  &:hover {
+    background-color: ${colors.slate50};
+  }
+
+  &:nth-child(even) {
+    background-color: rgba(248, 250, 252, 0.5);
+  }
+`;
+
+const TableTd = styled.td`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  color: ${colors.slate900};
+  font-family: ${fonts.mono};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+`;
+
+const TableTdIndex = styled.td`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  color: ${colors.slate400};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+`;
+
+const EmptyResults = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: ${colors.slate400};
+`;
+
+const EmptyResultsIcon = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.slate100};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const EmptyResultsTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.slate600};
+`;
+
+const EmptyResultsHint = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  margin-top: ${Theme.usage.space.xxSmall};
+  color: ${colors.slate500};
+`;
+
+/* ── Right Panel: AI Assistant ── */
+
+const RightPanelContainer = styled.div`
+  width: 440px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  ${glassPanelChat}
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  transition: all 200ms;
+`;
+
+const RightPanelCollapsed = styled.div`
+  width: 44px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  ${glassPanelSubtle}
+  background-color: rgba(245, 243, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: ${Theme.usage.space.small};
+  transition: all 200ms;
+`;
+
+const RightHeader = styled.div`
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 ${Theme.usage.space.small};
+  flex-shrink: 0;
+`;
+
+const RightTabGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: rgba(99, 82, 175, 0.06);
+`;
+
+const RightTab = styled.button<{ $active: boolean }>`
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  border-radius: ${Theme.usage.borderRadius.full};
+  border: none;
+  cursor: pointer;
+  transition: all 200ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: rgba(255, 255, 255, 0.9);
+    color: ${colors.foreground};
+    box-shadow: ${shadows.sm};
+  ` : css`
+    background: none;
+    color: ${colors.mutedForeground};
+    &:hover { color: ${colors.foreground}; }
+  `}
+`;
+
+const RightToggle = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: ${colors.mutedForeground};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: rgba(99, 82, 175, 0.06);
+    color: ${colors.foreground};
+  }
+`;
+
+const ChatBody = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+`;
+
+const ChatMessages = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.medium};
+  display: flex;
+  flex-direction: column;
+`;
+
+const ChatCenter = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ChatIconBox = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background: linear-gradient(to bottom right, rgba(99, 82, 175, 0.15), rgba(139, 127, 212, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const ChatTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const ChatDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: rgba(113, 113, 130, 0.7);
+  text-align: center;
+  max-width: 240px;
+  line-height: 1.625;
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const ChatSuggestionList = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ChatSuggestion = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-radius: ${Theme.usage.borderRadius.large};
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(99, 82, 175, 0.06);
+  color: ${colors.foreground};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  text-align: left;
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.8);
+    border-color: rgba(99, 82, 175, 0.12);
+    transform: translateY(-1px);
+    box-shadow: ${shadows.sm};
+  }
+`;
+
+/* ── KB Dropdown ── */
+
+const KbDropdown = styled.div`
+  position: absolute;
+  bottom: 80px;
+  left: ${Theme.usage.space.small};
+  right: ${Theme.usage.space.small};
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  overflow: hidden;
+`;
+
+const KbDropdownHeader = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+`;
+
+const KbDropdownLabel = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 600;
+  color: rgba(113, 113, 130, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const KbDropdownItem = styled.button<{ $selected: boolean }>`
+  width: 100%;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  text-align: left;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  background-color: ${({ $selected }) => $selected ? 'rgba(26, 26, 46, 0.03)' : 'transparent'};
+
+  &:hover { background-color: rgba(26, 26, 46, 0.04); }
+`;
+
+const KbItemName = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const KbItemDesc = styled.div`
+  font-size: 11px;
+  color: rgba(113, 113, 130, 0.6);
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const KbDropdownFooter = styled.div`
+  border-top: 1px solid rgba(26, 26, 46, 0.04);
+`;
+
+const KbAddButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 200ms;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+
+  &:hover { background-color: rgba(26, 26, 46, 0.04); }
+`;
+
+const KbAddName = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.ddPrimary};
+`;
+
+/* ── Chat Input ── */
+
+const ChatInputArea = styled.div`
+  padding: ${Theme.usage.space.small};
+`;
+
+const ChatInputBox = styled.div`
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(99, 82, 175, 0.08);
+  transition: all 200ms;
+
+  &:focus-within {
+    border-color: rgba(99, 82, 175, 0.2);
+    box-shadow: 0 0 0 3px rgba(99, 82, 175, 0.06);
+  }
+`;
+
+const ChatTextarea = styled.textarea`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  padding-bottom: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.foreground};
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+
+  &::placeholder { color: rgba(113, 113, 130, 0.4); }
+`;
+
+const ChatToolbar = styled.div`
+  padding: 0 ${Theme.usage.space.small} ${Theme.usage.space.small};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ChatToolbarLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const ChatKbToggle = styled.button`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  color: rgba(113, 113, 130, 0.5);
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background-color: rgba(99, 82, 175, 0.06);
+    color: ${colors.mutedForeground};
+  }
+`;
+
+const ChatKbBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: rgba(99, 82, 175, 0.07);
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.foreground};
+`;
+
+const ChatKbRemove = styled.button`
+  color: rgba(113, 113, 130, 0.4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: ${Theme.usage.space.xxxSmall};
+  padding: 0;
+  transition: color 200ms;
+
+  &:hover { color: ${colors.mutedForeground}; }
+`;
+
+const ChatSendButton = styled.button<{ $active: boolean }>`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  cursor: pointer;
+  transition: all 200ms;
+
+  ${({ $active }) => $active ? css`
+    background-color: #6352af;
+    color: ${colors.white};
+    box-shadow: 0 2px 8px rgba(99, 82, 175, 0.2);
+    &:hover { background-color: #5646a0; }
+  ` : css`
+    background-color: rgba(99, 82, 175, 0.06);
+    color: rgba(113, 113, 130, 0.3);
+    cursor: default;
+  `}
+`;
+
+/* ── Past Conversations Tab ── */
+
+const PastConvBody = styled.div`
+  flex: 1;
+  overflow: auto;
+`;
+
+const PastConvSearch = styled.div`
+  padding: ${Theme.usage.space.small};
+  position: relative;
+`;
+
+const PastConvSearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.large};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: rgba(113, 113, 130, 0.4);
+`;
+
+const PastConvSearchInput = styled.input`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  width: 100%;
+  border-radius: ${Theme.usage.borderRadius.large};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xLarge};
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(99, 82, 175, 0.06);
+  outline: none;
+  transition: background-color 200ms;
+
+  &::placeholder { color: rgba(113, 113, 130, 0.5); }
+  &:focus { background-color: rgba(255, 255, 255, 0.7); }
+`;
+
+const PastConvItem = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  cursor: pointer;
+  margin-bottom: ${Theme.usage.space.xxxSmall};
+  transition: all 150ms;
+
+  &:hover { background-color: rgba(255, 255, 255, 0.4); }
+`;
+
+const PastConvTitleRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.xxxSmall};
+`;
+
+const PastConvTitle = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: ${Theme.usage.space.xSmall};
+`;
+
+const PastConvTimestamp = styled.span`
+  font-size: 10px;
+  color: rgba(113, 113, 130, 0.5);
+  flex-shrink: 0;
+`;
+
+const PastConvPreview = styled.div`
+  font-size: 11px;
+  color: rgba(113, 113, 130, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const PastFolderButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 150ms;
+
+  &:hover { background-color: rgba(255, 255, 255, 0.4); }
+`;
+
+const PastFolderName = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const PastFolderCount = styled.span`
+  font-size: 10px;
+  color: rgba(113, 113, 130, 0.4);
+  margin-left: auto;
+`;
+
+const PastFolderChildren = styled.div`
+  margin-left: 20px;
+  padding-left: ${Theme.usage.space.small};
+  border-left: 1px solid rgba(99, 82, 175, 0.08);
+`;
+
+/* ─── Mock Data ─────────────────────────────────────────────────────── */
 
 const knowledgeBases = [
   { id: 'default', name: 'Default SQL Skills', description: 'Core SQL syntax, joins, aggregations, window functions' },
@@ -81,87 +1592,20 @@ const pastConversationsGrouped = {
 
 const catalogBrowse = {
   topics: [
-    {
-      id: 'finance',
-      name: 'Finance',
-      items: [
-        { id: 'ft1', name: 'fact_revenue' },
-        { id: 'ft2', name: 'dim_cost_center' },
-        { id: 'ft3', name: 'fact_payments' },
-        { id: 'ft4', name: 'fact_invoices' },
-      ],
-    },
-    {
-      id: 'merchant',
-      name: 'Merchant',
-      items: [
-        { id: 'mt1', name: 'dim_merchant' },
-        { id: 'mt2', name: 'fact_merchant_gmv' },
-        { id: 'mt3', name: 'fact_merchant_ratings' },
-        { id: 'mt4', name: 'dim_merchant_tier' },
-      ],
-    },
-    {
-      id: 'marketing',
-      name: 'Marketing',
-      items: [
-        { id: 'mkt1', name: 'fact_campaigns' },
-        { id: 'mkt2', name: 'dim_channel' },
-        { id: 'mkt3', name: 'fact_attribution' },
-      ],
-    },
-    {
-      id: 'delivery',
-      name: 'Delivery',
-      items: [
-        { id: 'dt1', name: 'fact_deliveries' },
-        { id: 'dt2', name: 'dim_dasher' },
-        { id: 'dt3', name: 'fact_delivery_times' },
-        { id: 'dt4', name: 'dim_delivery_zone' },
-      ],
-    },
-    {
-      id: 'customer',
-      name: 'Customer',
-      items: [
-        { id: 'ct1', name: 'dim_customer' },
-        { id: 'ct2', name: 'fact_orders' },
-        { id: 'ct3', name: 'fact_churn' },
-        { id: 'ct4', name: 'dim_dashpass' },
-      ],
-    },
+    { id: 'finance', name: 'Finance', items: [{ id: 'ft1', name: 'fact_revenue' }, { id: 'ft2', name: 'dim_cost_center' }, { id: 'ft3', name: 'fact_payments' }, { id: 'ft4', name: 'fact_invoices' }] },
+    { id: 'merchant', name: 'Merchant', items: [{ id: 'mt1', name: 'dim_merchant' }, { id: 'mt2', name: 'fact_merchant_gmv' }, { id: 'mt3', name: 'fact_merchant_ratings' }, { id: 'mt4', name: 'dim_merchant_tier' }] },
+    { id: 'marketing', name: 'Marketing', items: [{ id: 'mkt1', name: 'fact_campaigns' }, { id: 'mkt2', name: 'dim_channel' }, { id: 'mkt3', name: 'fact_attribution' }] },
+    { id: 'delivery', name: 'Delivery', items: [{ id: 'dt1', name: 'fact_deliveries' }, { id: 'dt2', name: 'dim_dasher' }, { id: 'dt3', name: 'fact_delivery_times' }, { id: 'dt4', name: 'dim_delivery_zone' }] },
+    { id: 'customer', name: 'Customer', items: [{ id: 'ct1', name: 'dim_customer' }, { id: 'ct2', name: 'fact_orders' }, { id: 'ct3', name: 'fact_churn' }, { id: 'ct4', name: 'dim_dashpass' }] },
   ],
   metrics: [
-    {
-      id: 'guardrails',
-      name: 'Guardrails',
-      items: [
-        { id: 'g1', name: 'P99 delivery time' },
-        { id: 'g2', name: 'Error rate threshold' },
-        { id: 'g3', name: 'Customer satisfaction floor' },
-      ],
-    },
-    {
-      id: 'capital_okrs',
-      name: 'Capital OKRs',
-      items: [
-        { id: 'o1', name: 'CAC payback period' },
-        { id: 'o2', name: 'LTV:CAC ratio' },
-        { id: 'o3', name: 'Gross margin %' },
-      ],
-    },
-    {
-      id: 'revenue_metrics',
-      name: 'Revenue',
-      items: [
-        { id: 'r1', name: 'Total GMV' },
-        { id: 'r2', name: 'Net revenue' },
-        { id: 'r3', name: 'ARPU' },
-        { id: 'r4', name: 'Take rate' },
-      ],
-    },
+    { id: 'guardrails', name: 'Guardrails', items: [{ id: 'g1', name: 'P99 delivery time' }, { id: 'g2', name: 'Error rate threshold' }, { id: 'g3', name: 'Customer satisfaction floor' }] },
+    { id: 'capital_okrs', name: 'Capital OKRs', items: [{ id: 'o1', name: 'CAC payback period' }, { id: 'o2', name: 'LTV:CAC ratio' }, { id: 'o3', name: 'Gross margin %' }] },
+    { id: 'revenue_metrics', name: 'Revenue', items: [{ id: 'r1', name: 'Total GMV' }, { id: 'r2', name: 'Net revenue' }, { id: 'r3', name: 'ARPU' }, { id: 'r4', name: 'Take rate' }] },
   ],
 };
+
+/* ─── Component ─────────────────────────────────────────────────────── */
 
 export function SQLStudioPage() {
   const [showLanding, setShowLanding] = useState(false);
@@ -186,25 +1630,16 @@ export function SQLStudioPage() {
   const [centerExpanded, setCenterExpanded] = useState<'none' | 'editor' | 'results'>('none');
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Detect theme changes
   useEffect(() => {
     const updateTheme = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     };
-
     updateTheme();
-
-    // Watch for theme changes
     const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
 
-  // Tab management
   const [sqlTabs, setSqlTabs] = useState<{ id: string; name: string; sql: string }[]>([
     { id: 'tab-1', name: 'query.sql', sql: DEFAULT_SQL },
     { id: 'tab-2', name: 'revenue_report.sql', sql: '' },
@@ -216,7 +1651,6 @@ export function SQLStudioPage() {
   const kbDropdownRef = useRef<HTMLDivElement>(null);
   const kbButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Focus input when editing a tab name
   useEffect(() => {
     if (editingTabId && editInputRef.current) {
       editInputRef.current.focus();
@@ -251,7 +1685,6 @@ export function SQLStudioPage() {
   }, [activeFileTab]);
 
   const switchTab = useCallback((tabId: string) => {
-    // Save current tab's SQL
     setSqlTabs(prev => prev.map(t => t.id === activeFileTab ? { ...t, sql } : t));
     const target = sqlTabs.find(t => t.id === tabId);
     if (target) {
@@ -275,7 +1708,6 @@ export function SQLStudioPage() {
     }
   }, [editingTabId, editingTabName]);
 
-  // Close KB dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       const target = event.target as Node;
@@ -317,677 +1749,543 @@ export function SQLStudioPage() {
     setRunTime(null);
   };
 
+  /* ── Landing Page ── */
   if (showLanding) {
     return (
-      <div className="h-full bg-background overflow-hidden relative">
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+      <PageContainer>
+        <GradientOverlay />
+        <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
+        <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
-        {/* Gradient Orbs */}
-        <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
-        <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
-
-        <div className="relative z-10 h-full flex overflow-hidden">
-        <div className="flex-1 p-8 overflow-auto">
-          <div className="max-w-7xl mx-auto">
-            <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-              <div className="mb-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <Database className="w-6 h-6 text-dd-primary" />
-                  <h1 className="text-2xl text-dd-primary">SQL Studio</h1>
-                </div>
-                <p className="text-muted-foreground">
-                  Create and manage SQL queries. Open a query to edit or start a new one
-                </p>
-              </div>
-            </motion.div>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-                <Input
-                  placeholder="Search queries..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-muted/50 border-border/60"
-                />
-              </div>
-              <Button
-                className="bg-dd-primary text-white gap-2"
-                onClick={() => setShowLanding(false)}
-              >
-                <Plus className="w-4 h-4" />
-                New Query
-              </Button>
-            </div>
-
-            <div className="flex items-center gap-2 mb-6">
-              <Button variant="outline" size="sm" className={filter === 'all' ? 'bg-muted text-foreground' : ''} onClick={() => setFilter('all')}>All</Button>
-              <Button variant="outline" size="sm" className={filter === 'mine' ? 'bg-muted text-foreground' : ''} onClick={() => setFilter('mine')}>My Queries</Button>
-              <Button variant="outline" size="sm" className={filter === 'shared' ? 'bg-muted text-foreground' : ''} onClick={() => setFilter('shared')}>Shared with me</Button>
-            </div>
-
-            {filteredQueries.length > 0 ? (
-              <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredQueries.map((query) => (
-                  <motion.div variants={staggerItem} key={query.id}>
-                    <div
-                      className="bg-white dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl p-5 hover:shadow-card-hover transition-shadow cursor-pointer"
-                      onClick={() => setShowLanding(false)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Database className="w-5 h-5 text-muted-foreground/60 dark:text-slate-500" />
-                          <h3 className="font-medium text-slate-900 dark:text-white">{query.title}</h3>
-                        </div>
-                        {query.shared && <Users className="w-4 h-4 text-muted-foreground/60 dark:text-slate-500" />}
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{query.description}</p>
-                      <div className="flex items-center text-xs text-slate-600 dark:text-slate-500 gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{query.lastEdited}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
+        <LandingLayout>
+          <LandingMain>
+            <LandingInner>
+              <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+                <LandingHeader>
+                  <LandingTitleRow>
+                    <Database style={{ width: '24px', height: '24px', color: colors.ddPrimary }} />
+                    <LandingTitle>SQL Studio</LandingTitle>
+                  </LandingTitleRow>
+                  <LandingSubtitle>
+                    Create and manage SQL queries. Open a query to edit or start a new one
+                  </LandingSubtitle>
+                </LandingHeader>
               </motion.div>
-            ) : (
-              <div className="text-center py-16 bg-muted/50 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl">
-                <Database className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60 dark:text-slate-600" />
-                <p className="text-slate-600 dark:text-slate-400 mb-4">No queries found</p>
-                <Button className="bg-dd-primary text-white gap-2" onClick={() => setShowLanding(false)}>
-                  <Plus className="w-4 h-4" />
-                  Create your first query
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Right Panel - AI Assistant (simplified for landing) */}
-        <div className="w-[440px] border-l border-border/60 dark:border-white/10 flex flex-col overflow-hidden bg-white/90 dark:bg-slate-950/55 backdrop-blur-xl">
-          <div className="px-4 py-3 border-b border-border/60 dark:border-white/10">
-            <h3 className="font-semibold text-slate-900 dark:text-white">SQL Assistant</h3>
-          </div>
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-auto px-4 py-6 flex flex-col">
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500/15 to-violet-500/5 flex items-center justify-center mb-4">
-                  <Sparkles className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                </div>
-                <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">SQL Assistant</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-400 text-center max-w-[240px] leading-relaxed mb-6">
-                  I can help you write SQL queries, explain code, and search for tables and metrics.
-                </p>
-                <div className="w-full space-y-2">
-                  {[
-                    'Write a revenue query by region',
-                    'Explain the current SQL',
-                    'Find customer-related tables',
-                    'Optimize my query performance',
-                  ].map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setShowLanding(false)}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 text-xs text-left hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-colors"
-                    >
-                      {suggestion}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="px-3 pb-3">
-              <div className="border border-slate-200 dark:border-white/10 rounded-2xl bg-white dark:bg-white/[0.04] overflow-hidden">
-                <div className="px-3 pt-2.5 flex items-center gap-1.5">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/[0.06] text-xs text-slate-700 dark:text-slate-300">
-                    <BookOpen className="w-3 h-3 text-slate-500 dark:text-slate-400" />
-                    <span>Default SQL Skills</span>
-                  </div>
-                </div>
-                <textarea
-                  placeholder="Ask about SQL, tables, or metrics..."
-                  rows={2}
-                  className="w-full px-3 py-2 text-sm text-slate-900 dark:text-slate-200 bg-transparent placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none resize-none"
-                />
-                <div className="px-3 pb-2.5 flex items-center justify-between">
-                  <button className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-white/[0.06] text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                  <button className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/[0.06] text-slate-400 dark:text-slate-500">
-                    <ArrowUp className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ─── Premium Editor View ───────────────────────────────────────────────
-  return (
-    <div className="h-full bg-background overflow-hidden relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
-
-      {/* Gradient Orbs */}
-      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
-      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
-
-      <div className="relative z-10 h-full flex overflow-hidden p-2 gap-2">
-      {/* ── Left Panel ── */}
-      {leftPanelOpen ? (
-        <div className="w-72 rounded-2xl border border-border/60 dark:border-white/10 bg-white/90 dark:bg-slate-950/55 backdrop-blur-xl flex flex-col overflow-hidden transition-all duration-200">
-          {/* Header */}
-          <div className="h-12 flex items-center justify-between px-3 shrink-0 border-b border-border/40 dark:border-white/10">
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
-              {(['history', 'catalog'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setLeftPanelTab(tab)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl capitalize transition-all duration-200 ${
-                    leftPanelTab === tab
-                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                  }`}
-                >
-                  {tab === 'history' ? (
-                    <><Clock className="w-3 h-3" /> History</>
-                  ) : (
-                    <><Database className="w-3 h-3" /> Catalog</>
-                  )}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setLeftPanelOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-auto">
-            {leftPanelTab === 'history' ? (
-              <div className="p-2">
-                <div className="px-2 py-2">
-                  <input
-                    type="text"
-                    placeholder="Search history..."
-                    className="text-xs w-full rounded-xl px-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
+              <LandingSearchBar>
+                <LandingSearchWrapper>
+                  <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                  <Input
+                    placeholder="Search queries..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={{ paddingLeft: '40px', backgroundColor: 'rgba(236, 236, 240, 0.5)', borderColor: colors.border }}
                   />
-                </div>
+                </LandingSearchWrapper>
+                <Button
+                  style={{ backgroundColor: colors.ddPrimary, color: colors.white, gap: '8px' }}
+                  onClick={() => setShowLanding(false)}
+                >
+                  <Plus style={{ width: '16px', height: '16px' }} />
+                  New Query
+                </Button>
+              </LandingSearchBar>
 
-                <div className="px-2 pt-3 pb-1.5">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Recent</span>
-                </div>
-                {queryHistoryGrouped.recent.map((item) => (
-                  <div key={item.id} className="px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                    <div className="flex items-start gap-2">
-                      <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
-                      <div className="min-w-0">
-                        <div className="text-xs text-slate-900 dark:text-slate-200 truncate">{item.title}</div>
-                        <div className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">{item.timestamp}</div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <LandingFilterRow>
+                <Button variant="outline" size="sm" style={filter === 'all' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => setFilter('all')}>All</Button>
+                <Button variant="outline" size="sm" style={filter === 'mine' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => setFilter('mine')}>My Queries</Button>
+                <Button variant="outline" size="sm" style={filter === 'shared' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => setFilter('shared')}>Shared with me</Button>
+              </LandingFilterRow>
 
-                <div className="px-2 pt-5 pb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Folders</span>
-                  <button className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 transition-all duration-200" title="New folder">
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
-                {queryHistoryGrouped.folders.map((folder) => (
-                  <div key={folder.id}>
-                    <button
-                      onClick={() => setExpandedHistoryFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
-                    >
-                      {expandedHistoryFolders[folder.id]
-                        ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                        : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                      }
-                      <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{folder.name}</span>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{folder.items.length}</span>
-                      {expandedHistoryFolders[folder.id]
-                        ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                        : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                      }
-                    </button>
-                    {expandedHistoryFolders[folder.id] && (
-                      <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
-                        {folder.items.map((item) => (
-                          <div key={item.id} className="px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                            <div className="text-xs text-slate-900 dark:text-slate-200 truncate">{item.title}</div>
-                            <div className="text-[10px] text-slate-500 dark:text-slate-500 mt-0.5">{item.timestamp}</div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div>
-                <div className="p-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                    <input
-                      type="text"
-                      placeholder="Search tables or metrics..."
-                      value={catalogSearch}
-                      onChange={(e) => setCatalogSearch(e.target.value)}
-                      className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-slate-50 dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/[0.06] transition-colors duration-200 border border-slate-200 dark:border-white/10"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-2">
-                  <div className="px-2 pt-2 pb-1.5">
-                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Source of Truth Datasets</span>
-                  </div>
-                  {catalogBrowse.topics.map((topic) => (
-                    <div key={topic.id}>
-                      <button
-                        onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [topic.id]: !prev[topic.id] }))}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
-                      >
-                        {expandedCatalogBrowse[topic.id]
-                          ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                          : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                        }
-                        <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{topic.name}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{topic.items.length}</span>
-                        {expandedCatalogBrowse[topic.id]
-                          ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                          : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                        }
-                      </button>
-                      {expandedCatalogBrowse[topic.id] && (
-                        <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
-                          {topic.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                              <Table className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                              <span className="text-xs text-slate-900 dark:text-slate-300 font-mono">{item.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+              {filteredQueries.length > 0 ? (
+                <LandingGrid variants={staggerContainer} initial="hidden" animate="visible">
+                  {filteredQueries.map((query) => (
+                    <motion.div variants={staggerItem} key={query.id}>
+                      <QueryCard onClick={() => setShowLanding(false)}>
+                        <QueryCardHeader>
+                          <QueryCardTitleRow>
+                            <Database style={{ width: '20px', height: '20px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                            <QueryCardTitle>{query.title}</QueryCardTitle>
+                          </QueryCardTitleRow>
+                          {query.shared && <Users style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />}
+                        </QueryCardHeader>
+                        <QueryCardDesc>{query.description}</QueryCardDesc>
+                        <QueryCardMeta>
+                          <Clock style={{ width: '12px', height: '12px' }} />
+                          <span>{query.lastEdited}</span>
+                        </QueryCardMeta>
+                      </QueryCard>
+                    </motion.div>
                   ))}
-
-                  <div className="px-2 pt-5 pb-1.5">
-                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Metrics</span>
-                  </div>
-                  {catalogBrowse.metrics.map((group) => (
-                    <div key={group.id}>
-                      <button
-                        onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [group.id]: !prev[group.id] }))}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer transition-all duration-150"
-                      >
-                        {expandedCatalogBrowse[group.id]
-                          ? <FolderOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                          : <Folder className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 shrink-0" />
-                        }
-                        <span className="text-xs font-medium text-slate-900 dark:text-slate-200">{group.name}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-auto">{group.items.length}</span>
-                        {expandedCatalogBrowse[group.id]
-                          ? <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                          : <ChevronRight className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                        }
-                      </button>
-                      {expandedCatalogBrowse[group.id] && (
-                        <div className="ml-5 pl-3 border-l border-slate-200 dark:border-white/[0.06]">
-                          {group.items.map((item) => (
-                            <div key={item.id} className="flex items-center gap-2 px-2 py-2 hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                              <BarChart3 className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                              <span className="text-xs text-slate-900 dark:text-slate-300">{item.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="w-11 rounded-2xl border border-border/60 dark:border-white/10 bg-white/60 dark:bg-slate-950/40 backdrop-blur-xl flex flex-col items-center pt-3 transition-all duration-200">
-          <button
-            onClick={() => setLeftPanelOpen(true)}
-            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-            title="Open sidebar"
-          >
-            <PanelLeftOpen className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {/* ── Center: Editor + Results ── */}
-      <div className="flex-1 flex flex-col gap-2 min-w-0 overflow-hidden">
-        {/* Editor Card */}
-        {centerExpanded !== 'results' && (
-        <div className={`${centerExpanded === 'editor' ? 'flex-1' : 'flex-1'} min-h-0 flex flex-col rounded-2xl glass-panel overflow-hidden`}>
-          {/* Tab Bar */}
-          <div className="h-12 flex items-center justify-between px-4 shrink-0 border-b border-border/40 dark:border-white/10 bg-slate-50/50 dark:bg-slate-950/45">
-            <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
-              {sqlTabs.map((tab) => (
-                <div
-                  key={tab.id}
-                  className={`group relative flex items-center gap-1 px-3 py-2 rounded-t-xl text-xs font-mono cursor-pointer transition-all duration-200 shrink-0 border border-b-0 ${
-                    activeFileTab === tab.id
-                      ? 'bg-white dark:bg-[#0b1220] text-slate-900 dark:text-white border-slate-200 dark:border-white/10'
-                      : 'bg-transparent text-slate-500 dark:text-slate-400 border-transparent hover:bg-slate-100/50 dark:hover:bg-white/[0.04]'
-                  }`}
-                  onClick={() => switchTab(tab.id)}
-                  onDoubleClick={() => startRenaming(tab.id, tab.name)}
-                >
-                  {editingTabId === tab.id ? (
-                    <input
-                      ref={editInputRef}
-                      type="text"
-                      value={editingTabName}
-                      onChange={(e) => setEditingTabName(e.target.value)}
-                      onBlur={commitRename}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') commitRename();
-                        if (e.key === 'Escape') setEditingTabId(null);
-                      }}
-                      className="bg-transparent border-0 outline-none text-xs font-mono w-[120px] px-0 py-0"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <span className="truncate max-w-[140px]">{tab.name}</span>
-                  )}
-                  {sqlTabs.length > 1 && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}
-                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-slate-100 dark:hover:bg-white/[0.08] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-150 -mr-1"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button
-                onClick={addNewTab}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 ml-1 shrink-0"
-                title="New query"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <select className="text-xs rounded-xl px-3 py-2 bg-white dark:bg-white/[0.04] text-slate-900 dark:text-slate-200 border border-slate-200 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-violet-400/20 transition-all duration-200">
-                <option>Snowflake</option>
-                <option>Spark</option>
-                <option>ClickHouse</option>
-              </select>
-              <button className="inline-flex items-center gap-1.5 text-xs h-8 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all duration-200">
-                <BookmarkPlus className="w-3.5 h-3.5" /> Save
-              </button>
-              <button className="inline-flex items-center gap-1.5 text-xs h-8 px-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.04] text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/[0.06] transition-all duration-200">
-                <Share2 className="w-3.5 h-3.5" /> Share
-              </button>
-              <button
-                onClick={() => setCenterExpanded(prev => prev === 'editor' ? 'none' : 'editor')}
-                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-                title={centerExpanded === 'editor' ? 'Restore panes' : 'Expand editor'}
-              >
-                {centerExpanded === 'editor' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Monaco Editor */}
-          <div className={`flex-1 min-h-0 ${isDarkMode ? 'bg-[#0b1220]' : 'bg-white'}`}>
-            <Editor
-              height="100%"
-              defaultLanguage="sql"
-              value={sql}
-              onChange={(value) => setSql(value || '')}
-              theme={isDarkMode ? 'vs-dark' : 'vs-light'}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 13,
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 2,
-                padding: { top: 12 },
-                renderLineHighlight: 'gutter',
-              }}
-            />
-          </div>
-        </div>
-        )}
-
-        {/* Results Card */}
-        {centerExpanded !== 'editor' && (
-        <div className="flex-1 min-h-0 flex flex-col rounded-2xl glass-panel overflow-hidden">
-          {/* Recommendation Banner */}
-          <div className="mx-3 mt-3 px-4 py-3 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-rose-500 dark:bg-rose-400 animate-pulse" />
-                <span className="text-rose-900 dark:text-rose-200 font-semibold">Low confidence SQL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-rose-500 dark:bg-rose-400" />
-                <span className="text-rose-800 dark:text-rose-300">Stale table: <code className="font-mono bg-rose-100 dark:bg-rose-950/60 px-2 py-0.5 rounded-md text-rose-900 dark:text-rose-200">fact_orders</code></span>
-              </div>
-              <button className="ml-auto text-sm font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors duration-200">
-                Refactor with SOT tables →
-              </button>
-            </div>
-          </div>
-
-          {/* Results Tabs + Run */}
-          <div className="flex items-center px-4 py-2.5 shrink-0 border-b border-border/40 dark:border-white/10">
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200/50 dark:border-white/10">
-              {(['results', 'chart', 'messages'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`px-4 py-2 text-xs font-semibold rounded-xl capitalize transition-all duration-200 ${
-                    activeTab === tab
-                      ? 'bg-white dark:bg-violet-500/15 text-slate-900 dark:text-white shadow-sm border border-slate-200/50 dark:border-violet-400/30'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            <div className="ml-auto flex items-center gap-3">
-              {runTime && <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{results.length} rows · {runTime}</span>}
-              {isRunning ? (
-                <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 dark:bg-rose-400 text-white dark:text-slate-900 text-sm font-semibold shadow-sm hover:bg-rose-600 dark:hover:bg-rose-300 hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200"
-                  onClick={handleStop}
-                >
-                  <Square className="w-4 h-4" />
-                  Stop
-                </button>
+                </LandingGrid>
               ) : (
-                <button
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 dark:bg-emerald-400 text-white dark:text-slate-900 text-sm font-semibold shadow-sm hover:bg-emerald-600 dark:hover:bg-emerald-300 hover:-translate-y-[1px] active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:hover:translate-y-0"
-                  onClick={handleRun}
-                >
-                  <Play className="w-4 h-4" />
-                  Run
-                </button>
+                <LandingEmptyState>
+                  <LandingEmptyIcon />
+                  <LandingEmptyText>No queries found</LandingEmptyText>
+                  <Button style={{ backgroundColor: colors.ddPrimary, color: colors.white, gap: '8px' }} onClick={() => setShowLanding(false)}>
+                    <Plus style={{ width: '16px', height: '16px' }} />
+                    Create your first query
+                  </Button>
+                </LandingEmptyState>
               )}
-              <button
-                onClick={() => setCenterExpanded(prev => prev === 'results' ? 'none' : 'results')}
-                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
-                title={centerExpanded === 'results' ? 'Restore panes' : 'Expand results'}
-              >
-                {centerExpanded === 'results' ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
+            </LandingInner>
+          </LandingMain>
 
-          {/* Results Table */}
-          <div className="flex-1 overflow-auto mx-3 mb-3 rounded-xl border border-slate-200 dark:border-white/10">
-            {results.length > 0 ? (
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-slate-50 dark:bg-slate-900/60 backdrop-blur-sm">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-10">#</th>
-                    {Object.keys(results[0]).map((key) => (
-                      <th key={key} className="text-left py-3 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{key}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((row, i) => (
-                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/[0.03] even:bg-slate-50/50 dark:even:bg-white/[0.015] transition-colors duration-150">
-                      <td className="py-2.5 px-4 text-slate-400 dark:text-slate-500 text-xs">{i + 1}</td>
-                      {Object.values(row).map((value: any, j) => (
-                        <td key={j} className="py-2.5 px-4 text-slate-900 dark:text-slate-200 font-mono text-xs">
-                          {typeof value === 'number'
-                            ? value % 1 !== 0 ? value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : value.toLocaleString()
-                            : value}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
-                <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/[0.03] flex items-center justify-center mb-4">
-                  <Database className="w-7 h-7" />
-                </div>
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Run a query to see results</p>
-                <p className="text-xs mt-1.5 text-slate-500 dark:text-slate-500">Ctrl/Cmd + Enter</p>
-              </div>
-            )}
-          </div>
-        </div>
-        )}
-      </div>
-
-      {/* ── Right Panel: AI Assistant ── */}
-      {rightPanelOpen ? (
-        <div className="w-[440px] rounded-2xl glass-panel-chat flex flex-col overflow-hidden relative transition-all duration-200">
-          {/* Header */}
-          <div className="h-12 flex items-center justify-between px-3 shrink-0">
-            <div className="flex items-center gap-1 p-1 rounded-full bg-[#6352af]/[0.06]">
-              {(['chat', 'past'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setRightPanelTab(tab)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all duration-200 ${
-                    rightPanelTab === tab
-                      ? 'bg-white/90 text-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {tab === 'chat' ? (
-                    <span className="flex items-center gap-1.5"><Sparkles className="w-3 h-3" /> Chat</span>
-                  ) : (
-                    <span className="flex items-center gap-1.5"><MessageSquare className="w-3 h-3" /> Past Chats</span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setRightPanelOpen(false)}
-              className="p-1.5 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground hover:text-foreground transition-all duration-200"
-            >
-              <PanelRightClose className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Tab Content */}
-          {rightPanelTab === 'chat' ? (
-            <div className="flex-1 flex flex-col min-h-0">
-              {/* Chat Messages Area */}
-              <div className="flex-1 overflow-auto px-4 py-6 flex flex-col">
-                <div className="flex-1 flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6352af]/15 to-[#8b7fd4]/8 flex items-center justify-center mb-4">
-                    <Sparkles className="w-5 h-5 text-[#6352af]" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground mb-1">SQL Assistant</h3>
-                  <p className="text-xs text-muted-foreground/70 text-center max-w-[240px] leading-relaxed mb-6">
+          <LandingRightPanel>
+            <LandingRightHeader>
+              <LandingRightTitle>SQL Assistant</LandingRightTitle>
+            </LandingRightHeader>
+            <LandingRightBody>
+              <LandingRightContent>
+                <LandingRightCenter>
+                  <AssistantIconBox>
+                    <Sparkles style={{ width: '20px', height: '20px', color: colors.violet600 }} />
+                  </AssistantIconBox>
+                  <AssistantTitle>SQL Assistant</AssistantTitle>
+                  <AssistantDescription>
                     I can help you write SQL queries, explain code, and search for tables and metrics.
-                  </p>
-                  <div className="w-full space-y-2">
+                  </AssistantDescription>
+                  <SuggestionList>
                     {[
                       'Write a revenue query by region',
                       'Explain the current SQL',
                       'Find customer-related tables',
                       'Optimize my query performance',
                     ].map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setChatInput(suggestion)}
-                        className="w-full px-4 py-3 rounded-xl bg-white/50 border border-[#6352af]/[0.06] text-foreground text-xs text-left hover:bg-white/80 hover:border-[#6352af]/[0.12] hover:-translate-y-[1px] hover:shadow-sm transition-all duration-200"
-                      >
+                      <SuggestionButton key={index} onClick={() => setShowLanding(false)}>
                         {suggestion}
-                      </button>
+                      </SuggestionButton>
                     ))}
-                  </div>
-                </div>
-              </div>
+                  </SuggestionList>
+                </LandingRightCenter>
+              </LandingRightContent>
+              <LandingInputArea>
+                <LandingInputBox>
+                  <LandingKbRow>
+                    <KbBadge>
+                      <BookOpen style={{ width: '12px', height: '12px', color: colors.slate500 }} />
+                      <span>Default SQL Skills</span>
+                    </KbBadge>
+                  </LandingKbRow>
+                  <LandingTextarea placeholder="Ask about SQL, tables, or metrics..." rows={2} />
+                  <LandingInputFooter>
+                    <SmallIconButton><Plus style={{ width: '16px', height: '16px' }} /></SmallIconButton>
+                    <SendButton><ArrowUp style={{ width: '16px', height: '16px' }} /></SendButton>
+                  </LandingInputFooter>
+                </LandingInputBox>
+              </LandingInputArea>
+            </LandingRightBody>
+          </LandingRightPanel>
+        </LandingLayout>
+      </PageContainer>
+    );
+  }
 
-              {/* Knowledge base dropdown */}
-              {kbDropdownOpen && (
-                <div ref={kbDropdownRef} className="absolute bottom-20 left-3 right-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.12),0_0_1px_rgba(0,0,0,0.08)] z-50 overflow-hidden">
-                  <div className="px-4 py-3">
-                    <span className="text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">Knowledge Bases</span>
-                  </div>
-                  {knowledgeBases.map((kb) => (
-                    <button
-                      key={kb.id}
-                      onClick={() => {
-                        setSelectedKb(kb);
-                        setKbDropdownOpen(false);
-                      }}
-                      className={`w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3 ${
-                        selectedKb.id === kb.id ? 'bg-foreground/[0.03]' : ''
-                      }`}
-                    >
-                      <BookOpen className="w-4 h-4 text-muted-foreground/50 mt-0.5 shrink-0" />
-                      <div>
-                        <div className="text-xs font-medium text-foreground">{kb.name}</div>
-                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">{kb.description}</div>
-                      </div>
-                    </button>
-                  ))}
-                  <div className="border-t border-foreground/[0.04]">
-                    <button className="w-full px-4 py-3 text-left hover:bg-foreground/[0.04] transition-all duration-200 flex items-start gap-3">
-                      <Plus className="w-4 h-4 text-muted-foreground/50 shrink-0 mt-0.5" />
-                      <div>
-                        <div className="text-xs font-medium text-dd-primary">Add Custom SQL Skills</div>
-                        <div className="text-[11px] text-muted-foreground/60 mt-0.5">Import .cursorrules, .mdc files, or paste custom SQL patterns</div>
-                      </div>
-                    </button>
-                  </div>
+  /* ── Editor View ── */
+  return (
+    <PageContainer>
+      <GradientOverlay />
+      <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
+      <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
+
+      <EditorLayout>
+      {/* Left Panel */}
+      {leftPanelOpen ? (
+        <LeftPanelContainer>
+          <PanelHeader>
+            <PanelTabGroup>
+              {(['history', 'catalog'] as const).map((tab) => (
+                <PanelTab key={tab} $active={leftPanelTab === tab} onClick={() => setLeftPanelTab(tab)}>
+                  {tab === 'history' ? <><Clock style={{ width: '12px', height: '12px' }} /> History</> : <><Database style={{ width: '12px', height: '12px' }} /> Catalog</>}
+                </PanelTab>
+              ))}
+            </PanelTabGroup>
+            <PanelToggleButton onClick={() => setLeftPanelOpen(false)}>
+              <PanelLeftClose style={{ width: '16px', height: '16px' }} />
+            </PanelToggleButton>
+          </PanelHeader>
+
+          <PanelBody>
+            {leftPanelTab === 'history' ? (
+              <PanelSection>
+                <div style={{ padding: '8px' }}>
+                  <PanelSearchInput type="text" placeholder="Search history..." />
                 </div>
+
+                <SectionHeader><SectionLabel>Recent</SectionLabel></SectionHeader>
+                {queryHistoryGrouped.recent.map((item) => (
+                  <TreeItem key={item.id}>
+                    <TreeItemRow>
+                      <Clock style={{ width: '14px', height: '14px', color: colors.slate400, marginTop: '2px', flexShrink: 0 }} />
+                      <div style={{ minWidth: 0 }}>
+                        <TreeItemTitle>{item.title}</TreeItemTitle>
+                        <TreeItemTimestamp>{item.timestamp}</TreeItemTimestamp>
+                      </div>
+                    </TreeItemRow>
+                  </TreeItem>
+                ))}
+
+                <SectionHeaderWithAction>
+                  <SectionLabel>Folders</SectionLabel>
+                  <NewFolderButton title="New folder"><Plus style={{ width: '12px', height: '12px' }} /></NewFolderButton>
+                </SectionHeaderWithAction>
+                {queryHistoryGrouped.folders.map((folder) => (
+                  <div key={folder.id}>
+                    <FolderButton onClick={() => setExpandedHistoryFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}>
+                      {expandedHistoryFolders[folder.id]
+                        ? <FolderOpen style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                        : <Folder style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                      }
+                      <FolderName>{folder.name}</FolderName>
+                      <FolderCount>{folder.items.length}</FolderCount>
+                      {expandedHistoryFolders[folder.id]
+                        ? <ChevronDown style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                        : <ChevronRight style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                      }
+                    </FolderButton>
+                    {expandedHistoryFolders[folder.id] && (
+                      <FolderChildren>
+                        {folder.items.map((item) => (
+                          <FolderChild key={item.id}>
+                            <TreeItemTitle>{item.title}</TreeItemTitle>
+                            <TreeItemTimestamp>{item.timestamp}</TreeItemTimestamp>
+                          </FolderChild>
+                        ))}
+                      </FolderChildren>
+                    )}
+                  </div>
+                ))}
+              </PanelSection>
+            ) : (
+              <div>
+                <CatalogSearchWrapper>
+                  <CatalogSearchIcon />
+                  <CatalogSearchInput
+                    type="text"
+                    placeholder="Search tables or metrics..."
+                    value={catalogSearch}
+                    onChange={(e) => setCatalogSearch(e.target.value)}
+                  />
+                </CatalogSearchWrapper>
+
+                <PanelSection>
+                  <SectionHeader><SectionLabel>Source of Truth Datasets</SectionLabel></SectionHeader>
+                  {catalogBrowse.topics.map((topic) => (
+                    <div key={topic.id}>
+                      <FolderButton onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [topic.id]: !prev[topic.id] }))}>
+                        {expandedCatalogBrowse[topic.id]
+                          ? <FolderOpen style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                          : <Folder style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                        }
+                        <FolderName>{topic.name}</FolderName>
+                        <FolderCount>{topic.items.length}</FolderCount>
+                        {expandedCatalogBrowse[topic.id]
+                          ? <ChevronDown style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                          : <ChevronRight style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                        }
+                      </FolderButton>
+                      {expandedCatalogBrowse[topic.id] && (
+                        <FolderChildren>
+                          {topic.items.map((item) => (
+                            <CatalogItem key={item.id}>
+                              <Table style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                              <CatalogItemName $mono>{item.name}</CatalogItemName>
+                            </CatalogItem>
+                          ))}
+                        </FolderChildren>
+                      )}
+                    </div>
+                  ))}
+
+                  <SectionHeader style={{ paddingTop: '20px' }}><SectionLabel>Metrics</SectionLabel></SectionHeader>
+                  {catalogBrowse.metrics.map((group) => (
+                    <div key={group.id}>
+                      <FolderButton onClick={() => setExpandedCatalogBrowse(prev => ({ ...prev, [group.id]: !prev[group.id] }))}>
+                        {expandedCatalogBrowse[group.id]
+                          ? <FolderOpen style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                          : <Folder style={{ width: '14px', height: '14px', color: colors.slate500, flexShrink: 0 }} />
+                        }
+                        <FolderName>{group.name}</FolderName>
+                        <FolderCount>{group.items.length}</FolderCount>
+                        {expandedCatalogBrowse[group.id]
+                          ? <ChevronDown style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                          : <ChevronRight style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                        }
+                      </FolderButton>
+                      {expandedCatalogBrowse[group.id] && (
+                        <FolderChildren>
+                          {group.items.map((item) => (
+                            <CatalogItem key={item.id}>
+                              <BarChart3 style={{ width: '12px', height: '12px', color: colors.slate400 }} />
+                              <CatalogItemName>{item.name}</CatalogItemName>
+                            </CatalogItem>
+                          ))}
+                        </FolderChildren>
+                      )}
+                    </div>
+                  ))}
+                </PanelSection>
+              </div>
+            )}
+          </PanelBody>
+        </LeftPanelContainer>
+      ) : (
+        <LeftPanelCollapsed>
+          <PanelToggleButton onClick={() => setLeftPanelOpen(true)} title="Open sidebar">
+            <PanelLeftOpen style={{ width: '16px', height: '16px' }} />
+          </PanelToggleButton>
+        </LeftPanelCollapsed>
+      )}
+
+      {/* Center: Editor + Results */}
+      <CenterContainer>
+        {centerExpanded !== 'results' && (
+          <EditorCard>
+            <TabBar>
+              <TabList>
+                {sqlTabs.map((tab) => (
+                  <FileTab
+                    key={tab.id}
+                    $active={activeFileTab === tab.id}
+                    onClick={() => switchTab(tab.id)}
+                    onDoubleClick={() => startRenaming(tab.id, tab.name)}
+                  >
+                    {editingTabId === tab.id ? (
+                      <TabRenameInput
+                        ref={editInputRef}
+                        type="text"
+                        value={editingTabName}
+                        onChange={(e) => setEditingTabName(e.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitRename();
+                          if (e.key === 'Escape') setEditingTabId(null);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <TabName>{tab.name}</TabName>
+                    )}
+                    {sqlTabs.length > 1 && (
+                      <TabCloseButton onClick={(e) => { e.stopPropagation(); closeTab(tab.id); }}>
+                        <X style={{ width: '12px', height: '12px' }} />
+                      </TabCloseButton>
+                    )}
+                  </FileTab>
+                ))}
+                <NewTabButton onClick={addNewTab} title="New query">
+                  <Plus style={{ width: '14px', height: '14px' }} />
+                </NewTabButton>
+              </TabList>
+              <TabBarActions>
+                <EngineSelect>
+                  <option>Snowflake</option>
+                  <option>Spark</option>
+                  <option>ClickHouse</option>
+                </EngineSelect>
+                <ActionButton><BookmarkPlus style={{ width: '14px', height: '14px' }} /> Save</ActionButton>
+                <ActionButton><Share2 style={{ width: '14px', height: '14px' }} /> Share</ActionButton>
+                <ExpandButton
+                  onClick={() => setCenterExpanded(prev => prev === 'editor' ? 'none' : 'editor')}
+                  title={centerExpanded === 'editor' ? 'Restore panes' : 'Expand editor'}
+                >
+                  {centerExpanded === 'editor' ? <Minimize2 style={{ width: '16px', height: '16px' }} /> : <Maximize2 style={{ width: '16px', height: '16px' }} />}
+                </ExpandButton>
+              </TabBarActions>
+            </TabBar>
+
+            <MonacoWrapper $dark={isDarkMode}>
+              <Editor
+                height="100%"
+                defaultLanguage="sql"
+                value={sql}
+                onChange={(value) => setSql(value || '')}
+                theme={isDarkMode ? 'vs-dark' : 'vs-light'}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 2,
+                  padding: { top: 12 },
+                  renderLineHighlight: 'gutter',
+                }}
+              />
+            </MonacoWrapper>
+          </EditorCard>
+        )}
+
+        {centerExpanded !== 'editor' && (
+          <ResultsCard>
+            <RecommendationBanner>
+              <BannerRow>
+                <BannerItem>
+                  <PulseDot $animate />
+                  <BannerLabel>Low confidence SQL</BannerLabel>
+                </BannerItem>
+                <BannerItem>
+                  <PulseDot />
+                  <BannerDetail>Stale table: <BannerCode>fact_orders</BannerCode></BannerDetail>
+                </BannerItem>
+                <BannerAction>Refactor with SOT tables →</BannerAction>
+              </BannerRow>
+            </RecommendationBanner>
+
+            <ResultsTabBar>
+              <ResultsTabGroup>
+                {(['results', 'chart', 'messages'] as const).map((tab) => (
+                  <ResultsTab key={tab} $active={activeTab === tab} onClick={() => setActiveTab(tab)}>
+                    {tab}
+                  </ResultsTab>
+                ))}
+              </ResultsTabGroup>
+              <ResultsActions>
+                {runTime && <ResultsMeta>{results.length} rows · {runTime}</ResultsMeta>}
+                {isRunning ? (
+                  <RunButton $variant="stop" onClick={handleStop}>
+                    <Square style={{ width: '16px', height: '16px' }} />
+                    Stop
+                  </RunButton>
+                ) : (
+                  <RunButton $variant="run" onClick={handleRun}>
+                    <Play style={{ width: '16px', height: '16px' }} />
+                    Run
+                  </RunButton>
+                )}
+                <ExpandButton
+                  onClick={() => setCenterExpanded(prev => prev === 'results' ? 'none' : 'results')}
+                  title={centerExpanded === 'results' ? 'Restore panes' : 'Expand results'}
+                >
+                  {centerExpanded === 'results' ? <Minimize2 style={{ width: '16px', height: '16px' }} /> : <Maximize2 style={{ width: '16px', height: '16px' }} />}
+                </ExpandButton>
+              </ResultsActions>
+            </ResultsTabBar>
+
+            <TableContainer>
+              {results.length > 0 ? (
+                <ResultsTable>
+                  <TableHead>
+                    <tr>
+                      <TableThIndex>#</TableThIndex>
+                      {Object.keys(results[0]).map((key) => (
+                        <TableTh key={key}>{key}</TableTh>
+                      ))}
+                    </tr>
+                  </TableHead>
+                  <tbody>
+                    {results.map((row, i) => (
+                      <TableRow key={i}>
+                        <TableTdIndex>{i + 1}</TableTdIndex>
+                        {Object.values(row).map((value: any, j) => (
+                          <TableTd key={j}>
+                            {typeof value === 'number'
+                              ? value % 1 !== 0 ? value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : value.toLocaleString()
+                              : value}
+                          </TableTd>
+                        ))}
+                      </TableRow>
+                    ))}
+                  </tbody>
+                </ResultsTable>
+              ) : (
+                <EmptyResults>
+                  <EmptyResultsIcon>
+                    <Database style={{ width: '28px', height: '28px' }} />
+                  </EmptyResultsIcon>
+                  <EmptyResultsTitle>Run a query to see results</EmptyResultsTitle>
+                  <EmptyResultsHint>Ctrl/Cmd + Enter</EmptyResultsHint>
+                </EmptyResults>
+              )}
+            </TableContainer>
+          </ResultsCard>
+        )}
+      </CenterContainer>
+
+      {/* Right Panel: AI Assistant */}
+      {rightPanelOpen ? (
+        <RightPanelContainer>
+          <RightHeader>
+            <RightTabGroup>
+              {(['chat', 'past'] as const).map((tab) => (
+                <RightTab key={tab} $active={rightPanelTab === tab} onClick={() => setRightPanelTab(tab)}>
+                  {tab === 'chat' ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Sparkles style={{ width: '12px', height: '12px' }} /> Chat</span>
+                  ) : (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MessageSquare style={{ width: '12px', height: '12px' }} /> Past Chats</span>
+                  )}
+                </RightTab>
+              ))}
+            </RightTabGroup>
+            <RightToggle onClick={() => setRightPanelOpen(false)}>
+              <PanelRightClose style={{ width: '16px', height: '16px' }} />
+            </RightToggle>
+          </RightHeader>
+
+          {rightPanelTab === 'chat' ? (
+            <ChatBody>
+              <ChatMessages>
+                <ChatCenter>
+                  <ChatIconBox>
+                    <Sparkles style={{ width: '20px', height: '20px', color: '#6352af' }} />
+                  </ChatIconBox>
+                  <ChatTitle>SQL Assistant</ChatTitle>
+                  <ChatDescription>
+                    I can help you write SQL queries, explain code, and search for tables and metrics.
+                  </ChatDescription>
+                  <ChatSuggestionList>
+                    {[
+                      'Write a revenue query by region',
+                      'Explain the current SQL',
+                      'Find customer-related tables',
+                      'Optimize my query performance',
+                    ].map((suggestion, index) => (
+                      <ChatSuggestion key={index} onClick={() => setChatInput(suggestion)}>
+                        {suggestion}
+                      </ChatSuggestion>
+                    ))}
+                  </ChatSuggestionList>
+                </ChatCenter>
+              </ChatMessages>
+
+              {kbDropdownOpen && (
+                <KbDropdown ref={kbDropdownRef}>
+                  <KbDropdownHeader>
+                    <KbDropdownLabel>Knowledge Bases</KbDropdownLabel>
+                  </KbDropdownHeader>
+                  {knowledgeBases.map((kb) => (
+                    <KbDropdownItem
+                      key={kb.id}
+                      $selected={selectedKb.id === kb.id}
+                      onClick={() => { setSelectedKb(kb); setKbDropdownOpen(false); }}
+                    >
+                      <BookOpen style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.5)', marginTop: '2px', flexShrink: 0 }} />
+                      <div>
+                        <KbItemName>{kb.name}</KbItemName>
+                        <KbItemDesc>{kb.description}</KbItemDesc>
+                      </div>
+                    </KbDropdownItem>
+                  ))}
+                  <KbDropdownFooter>
+                    <KbAddButton>
+                      <Plus style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.5)', flexShrink: 0, marginTop: '2px' }} />
+                      <div>
+                        <KbAddName>Add Custom SQL Skills</KbAddName>
+                        <KbItemDesc>Import .cursorrules, .mdc files, or paste custom SQL patterns</KbItemDesc>
+                      </div>
+                    </KbAddButton>
+                  </KbDropdownFooter>
+                </KbDropdown>
               )}
 
-              {/* Input Area */}
-              <div className="px-3 pb-3">
-                <div className="rounded-2xl bg-white/50 border border-[#6352af]/[0.08] focus-within:border-[#6352af]/[0.2] focus-within:shadow-[0_0_0_3px_rgba(99,82,175,0.06)] transition-all duration-200">
-                  {/* Text input */}
-                  <textarea
+              <ChatInputArea>
+                <ChatInputBox>
+                  <ChatTextarea
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Ask about SQL, tables, or metrics..."
                     rows={2}
-                    className="w-full px-3 pt-3 pb-2 text-sm text-foreground bg-transparent placeholder-muted-foreground/40 focus:outline-none resize-none"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -995,129 +2293,100 @@ export function SQLStudioPage() {
                       }
                     }}
                   />
-
-                  {/* Bottom toolbar */}
-                  <div className="px-3 pb-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                      <button
+                  <ChatToolbar>
+                    <ChatToolbarLeft>
+                      <ChatKbToggle
                         ref={kbButtonRef}
                         onClick={() => setKbDropdownOpen(!kbDropdownOpen)}
-                        className="p-2 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground/50 hover:text-muted-foreground transition-all duration-200"
                         title="Add knowledge base"
                       >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#6352af]/[0.07] text-xs text-foreground">
-                        <BookOpen className="w-3 h-3 text-muted-foreground/60" />
+                        <Plus style={{ width: '16px', height: '16px' }} />
+                      </ChatKbToggle>
+                      <ChatKbBadge>
+                        <BookOpen style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.6)' }} />
                         <span>{selectedKb.name}</span>
-                        <button
-                          onClick={() => setSelectedKb(knowledgeBases[0])}
-                          className="text-muted-foreground/40 hover:text-muted-foreground ml-0.5 transition-colors duration-200"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                        <ChatKbRemove onClick={() => setSelectedKb(knowledgeBases[0])}>
+                          <X style={{ width: '12px', height: '12px' }} />
+                        </ChatKbRemove>
+                      </ChatKbBadge>
+                    </ChatToolbarLeft>
 
-                    <button
-                      className={`p-2 rounded-xl transition-all duration-200 ${
-                        chatInput.trim()
-                          ? 'bg-[#6352af] text-white hover:bg-[#5646a0] shadow-sm shadow-[#6352af]/20'
-                          : 'bg-[#6352af]/[0.06] text-muted-foreground/30'
-                      }`}
+                    <ChatSendButton
+                      $active={!!chatInput.trim()}
                       disabled={!chatInput.trim()}
                       onClick={() => setChatInput('')}
                     >
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+                      <ArrowUp style={{ width: '16px', height: '16px' }} />
+                    </ChatSendButton>
+                  </ChatToolbar>
+                </ChatInputBox>
+              </ChatInputArea>
+            </ChatBody>
           ) : (
-            /* Past Conversations Tab */
-            <div className="flex-1 overflow-auto">
-              <div className="p-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
-                  <input
-                    type="text"
-                    placeholder="Search conversations..."
-                    className="text-xs w-full rounded-xl pl-8 pr-3 py-2 bg-white/50 placeholder-muted-foreground/50 focus:outline-none focus:bg-white/70 transition-colors duration-200 border border-[#6352af]/[0.06]"
-                  />
-                </div>
-              </div>
-              <div className="p-2">
-                <div className="px-2 pt-2 pb-1.5">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Recent</span>
-                </div>
+            <PastConvBody>
+              <PastConvSearch>
+                <PastConvSearchIcon />
+                <PastConvSearchInput type="text" placeholder="Search conversations..." />
+              </PastConvSearch>
+              <PanelSection>
+                <SectionHeader><SectionLabel>Recent</SectionLabel></SectionHeader>
                 {pastConversationsGrouped.recent.map((conv) => (
-                  <div
-                    key={conv.id}
-                    className="px-3 py-3 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150"
-                  >
-                    <div className="flex items-start justify-between mb-0.5">
-                      <div className="text-xs font-medium text-foreground truncate pr-2">{conv.title}</div>
-                      <span className="text-[10px] text-muted-foreground/50 shrink-0">{conv.timestamp}</span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/60 truncate">{conv.preview}</div>
-                  </div>
+                  <PastConvItem key={conv.id}>
+                    <PastConvTitleRow>
+                      <PastConvTitle>{conv.title}</PastConvTitle>
+                      <PastConvTimestamp>{conv.timestamp}</PastConvTimestamp>
+                    </PastConvTitleRow>
+                    <PastConvPreview>{conv.preview}</PastConvPreview>
+                  </PastConvItem>
                 ))}
 
-                <div className="px-2 pt-5 pb-1.5 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">Folders</span>
-                  <button className="p-1 rounded-lg hover:bg-white/40 text-muted-foreground/40 hover:text-muted-foreground transition-all duration-200" title="New folder">
-                    <Plus className="w-3 h-3" />
-                  </button>
-                </div>
+                <SectionHeaderWithAction>
+                  <SectionLabel>Folders</SectionLabel>
+                  <NewFolderButton title="New folder" style={{ color: 'rgba(113, 113, 130, 0.4)' }}>
+                    <Plus style={{ width: '12px', height: '12px' }} />
+                  </NewFolderButton>
+                </SectionHeaderWithAction>
                 {pastConversationsGrouped.folders.map((folder) => (
                   <div key={folder.id}>
-                    <button
-                      onClick={() => setExpandedChatFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer transition-all duration-150"
-                    >
+                    <PastFolderButton onClick={() => setExpandedChatFolders(prev => ({ ...prev, [folder.id]: !prev[folder.id] }))}>
                       {expandedChatFolders[folder.id]
-                        ? <FolderOpen className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                        : <Folder className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                        ? <FolderOpen style={{ width: '14px', height: '14px', color: colors.mutedForeground, flexShrink: 0 }} />
+                        : <Folder style={{ width: '14px', height: '14px', color: colors.mutedForeground, flexShrink: 0 }} />
                       }
-                      <span className="text-xs font-medium text-foreground">{folder.name}</span>
-                      <span className="text-[10px] text-muted-foreground/40 ml-auto">{folder.items.length}</span>
+                      <PastFolderName>{folder.name}</PastFolderName>
+                      <PastFolderCount>{folder.items.length}</PastFolderCount>
                       {expandedChatFolders[folder.id]
-                        ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
-                        : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
+                        ? <ChevronDown style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.4)' }} />
+                        : <ChevronRight style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.4)' }} />
                       }
-                    </button>
+                    </PastFolderButton>
                     {expandedChatFolders[folder.id] && (
-                      <div className="ml-5 pl-3 border-l border-[#6352af]/[0.08]">
+                      <PastFolderChildren>
                         {folder.items.map((item) => (
-                          <div key={item.id} className="px-2 py-2.5 hover:bg-white/40 rounded-xl cursor-pointer mb-0.5 transition-all duration-150">
-                            <div className="flex items-start justify-between mb-0.5">
-                              <div className="text-xs text-foreground truncate pr-2">{item.title}</div>
-                              <span className="text-[10px] text-muted-foreground/50 shrink-0">{item.timestamp}</span>
-                            </div>
-                            <div className="text-[11px] text-muted-foreground/60 truncate">{item.preview}</div>
-                          </div>
+                          <PastConvItem key={item.id}>
+                            <PastConvTitleRow>
+                              <PastConvTitle>{item.title}</PastConvTitle>
+                              <PastConvTimestamp>{item.timestamp}</PastConvTimestamp>
+                            </PastConvTitleRow>
+                            <PastConvPreview>{item.preview}</PastConvPreview>
+                          </PastConvItem>
                         ))}
-                      </div>
+                      </PastFolderChildren>
                     )}
                   </div>
                 ))}
-              </div>
-            </div>
+              </PanelSection>
+            </PastConvBody>
           )}
-        </div>
+        </RightPanelContainer>
       ) : (
-        <div className="w-11 rounded-2xl glass-panel-subtle bg-[#f5f3ff]/60 flex flex-col items-center pt-3 transition-all duration-200">
-          <button
-            onClick={() => setRightPanelOpen(true)}
-            className="p-2 rounded-xl hover:bg-[#6352af]/[0.06] text-muted-foreground hover:text-foreground transition-all duration-200"
-            title="Open AI Assistant"
-          >
-            <PanelRightOpen className="w-4 h-4" />
-          </button>
-        </div>
+        <RightPanelCollapsed>
+          <RightToggle onClick={() => setRightPanelOpen(true)} title="Open AI Assistant">
+            <PanelRightOpen style={{ width: '16px', height: '16px' }} />
+          </RightToggle>
+        </RightPanelCollapsed>
       )}
-      </div>
-    </div>
+      </EditorLayout>
+    </PageContainer>
   );
 }

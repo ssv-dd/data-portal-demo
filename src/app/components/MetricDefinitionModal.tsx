@@ -1,9 +1,12 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import styled from 'styled-components';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Code, Database, User, Clock, ExternalLink, Copy, Download, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
+import { toast } from '@/app/lib/toast';
 
 interface MetricDefinitionModalProps {
   open: boolean;
@@ -12,7 +15,6 @@ interface MetricDefinitionModalProps {
   metricId?: string;
 }
 
-// Mock data - would come from backend in real implementation
 const getMetricDefinition = (title: string) => {
   const definitions: Record<string, any> = {
     'Monthly Active Users (MAU)': {
@@ -102,6 +104,163 @@ ORDER BY month DESC`,
   return definitions[title] || definitions['Monthly Active Users (MAU)'];
 };
 
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const TagsAndActions = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const TagsWrap = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${Theme.usage.space.xSmall};
+  flex: 1;
+`;
+
+const ActionsWrap = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  flex-shrink: 0;
+`;
+
+const SectionBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SectionTitle = styled.h3`
+  font-weight: 600;
+`;
+
+const LogicBox = styled.div`
+  background-color: ${colors.muted};
+  border-radius: ${radius.lg};
+  padding: ${Theme.usage.space.medium};
+`;
+
+const LogicList = styled.ul`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const LogicItem = styled.li`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const LogicNumber = styled.span`
+  color: ${colors.mutedForeground};
+  flex-shrink: 0;
+`;
+
+const SqlHeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SqlBox = styled.div`
+  background-color: ${colors.slate950};
+  color: ${colors.slate50};
+  border-radius: ${radius.lg};
+  padding: ${Theme.usage.space.medium};
+  overflow-x: auto;
+`;
+
+const SqlPre = styled.pre`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre;
+`;
+
+const SourcesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SourceItem = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  background-color: ${colors.muted};
+  border-radius: ${radius.lg};
+  transition: background-color 150ms;
+
+  &:hover {
+    background-color: rgba(236, 236, 240, 0.8);
+  }
+`;
+
+const SourceInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SourceName = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+`;
+
+const MetadataGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.medium};
+`;
+
+const MetadataBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const MetadataLabel = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetadataValue = styled.div`
+  font-weight: 500;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const MetadataSubtext = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
 export function MetricDefinitionModal({
   open,
   onOpenChange,
@@ -117,163 +276,151 @@ export function MetricDefinitionModal({
 
   const handleExport = (format: 'csv' | 'excel') => {
     toast.success(`Exporting ${metricTitle} data to ${format.toUpperCase()}...`);
-    // Real implementation would generate and download file
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-2">
+    <Dialog open={open} onOpenChange={onOpenChange} title={metricTitle}>
+      <DialogContent style={{ maxWidth: '768px', maxHeight: '80vh', overflowY: 'auto' }}>
+          <HeaderRow>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="gap-1 -ml-2"
+              style={{ gap: '4px', marginLeft: '-8px' }}
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft style={{ height: '16px', width: '16px' }} />
               Back
             </Button>
-          </div>
-          <DialogTitle className="text-xl">{metricTitle}</DialogTitle>
+          </HeaderRow>
           <DialogDescription>{definition.description}</DialogDescription>
-        </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Tags and Export Actions */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex flex-wrap gap-2 flex-1">
+        <ContentWrapper>
+          <TagsAndActions>
+            <TagsWrap>
               {definition.tags.map((tag: string) => (
                 <Badge key={tag} variant="secondary">
                   {tag}
                 </Badge>
               ))}
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
+            </TagsWrap>
+            <ActionsWrap>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleExport('csv')}
-                className="gap-1"
+                style={{ gap: '4px' }}
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download style={{ height: '14px', width: '14px' }} />
                 CSV
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => handleExport('excel')}
-                className="gap-1"
+                style={{ gap: '4px' }}
               >
-                <Download className="h-3.5 w-3.5" />
+                <Download style={{ height: '14px', width: '14px' }} />
                 Excel
               </Button>
-            </div>
-          </div>
+            </ActionsWrap>
+          </TagsAndActions>
 
           <Separator />
 
-          {/* Metric Logic */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Code className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-semibold">Metric Logic</h3>
-            </div>
-            <div className="bg-muted rounded-lg p-4">
-              <ul className="space-y-2 text-sm">
+          <SectionBlock>
+            <SectionHeader>
+              <Code style={{ height: '16px', width: '16px', color: colors.mutedForeground }} />
+              <SectionTitle>Metric Logic</SectionTitle>
+            </SectionHeader>
+            <LogicBox>
+              <LogicList>
                 {definition.logic.map((step: string, index: number) => (
-                  <li key={index} className="flex gap-2">
-                    <span className="text-muted-foreground shrink-0">
+                  <LogicItem key={index}>
+                    <LogicNumber>
                       {step.startsWith('  •') ? '  •' : `${index + 1}.`}
-                    </span>
+                    </LogicNumber>
                     <span>{step.replace('  • ', '')}</span>
-                  </li>
+                  </LogicItem>
                 ))}
-              </ul>
-            </div>
-          </div>
+              </LogicList>
+            </LogicBox>
+          </SectionBlock>
 
           <Separator />
 
-          {/* SQL Query */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold">SQL Query</h3>
-              </div>
+          <SectionBlock>
+            <SqlHeaderRow>
+              <SectionHeader>
+                <Database style={{ height: '16px', width: '16px', color: colors.mutedForeground }} />
+                <SectionTitle>SQL Query</SectionTitle>
+              </SectionHeader>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => copyToClipboard(definition.sqlQuery)}
-                className="gap-1"
+                style={{ gap: '4px' }}
               >
-                <Copy className="h-3 w-3" />
+                <Copy style={{ height: '12px', width: '12px' }} />
                 Copy
               </Button>
-            </div>
-            <div className="bg-slate-950 text-slate-50 rounded-lg p-4 overflow-x-auto">
-              <pre className="text-xs font-mono whitespace-pre">{definition.sqlQuery}</pre>
-            </div>
-          </div>
+            </SqlHeaderRow>
+            <SqlBox>
+              <SqlPre>{definition.sqlQuery}</SqlPre>
+            </SqlBox>
+          </SectionBlock>
 
           <Separator />
 
-          {/* Data Sources */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-semibold">Data Sources</h3>
-            </div>
-            <div className="space-y-2">
+          <SectionBlock>
+            <SectionHeader>
+              <Database style={{ height: '16px', width: '16px', color: colors.mutedForeground }} />
+              <SectionTitle>Data Sources</SectionTitle>
+            </SectionHeader>
+            <SourcesList>
               {definition.dataSources.map((source: any, index: number) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
+                <SourceItem key={index}>
+                  <SourceInfo>
+                    <Badge variant="outline" style={{ fontSize: '12px' }}>
                       {source.type}
                     </Badge>
-                    <span className="text-sm font-mono">{source.name}</span>
-                  </div>
-                  <Button variant="ghost" size="sm" className="gap-1">
-                    <ExternalLink className="h-3 w-3" />
+                    <SourceName>{source.name}</SourceName>
+                  </SourceInfo>
+                  <Button variant="ghost" size="sm" style={{ gap: '4px' }}>
+                    <ExternalLink style={{ height: '12px', width: '12px' }} />
                     View
                   </Button>
-                </div>
+                </SourceItem>
               ))}
-            </div>
-          </div>
+            </SourcesList>
+          </SectionBlock>
 
           <Separator />
 
-          {/* Metadata */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <User className="h-4 w-4" />
+          <MetadataGrid>
+            <MetadataBlock>
+              <MetadataLabel>
+                <User style={{ height: '16px', width: '16px' }} />
                 <span>Owner</span>
-              </div>
+              </MetadataLabel>
               <div>
-                <div className="font-medium text-sm">{definition.owner}</div>
-                <div className="text-xs text-muted-foreground">{definition.ownerTeam}</div>
+                <MetadataValue>{definition.owner}</MetadataValue>
+                <MetadataSubtext>{definition.ownerTeam}</MetadataSubtext>
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
+            </MetadataBlock>
+            <MetadataBlock>
+              <MetadataLabel>
+                <Clock style={{ height: '16px', width: '16px' }} />
                 <span>Last Updated</span>
-              </div>
+              </MetadataLabel>
               <div>
-                <div className="text-sm">{definition.lastUpdated}</div>
-                <div className="text-xs text-muted-foreground">
+                <div style={{ fontSize: '14px' }}>{definition.lastUpdated}</div>
+                <MetadataSubtext>
                   Refreshes: {definition.refreshCadence}
-                </div>
+                </MetadataSubtext>
               </div>
-            </div>
-          </div>
-        </div>
+            </MetadataBlock>
+          </MetadataGrid>
+        </ContentWrapper>
       </DialogContent>
     </Dialog>
   );

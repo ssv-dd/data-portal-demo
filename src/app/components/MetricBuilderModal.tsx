@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import styled from 'styled-components';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Select, Theme } from '@doordash/prism-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
 import { Textarea } from './ui/textarea';
 import { Sparkles, Code, Table, Play, Save, Eye, Edit3, ChevronRight, Check, X } from 'lucide-react';
 import { SourceTableModal } from './SourceTableModal';
-import { toast } from 'sonner';
+import { colors, radius } from '@/styles/theme';
+import { toast } from '@/app/lib/toast';
 
 interface MetricBuilderModalProps {
   open: boolean;
@@ -18,7 +20,6 @@ interface MetricBuilderModalProps {
   mode: 'executive' | 'analyst';
 }
 
-// Mock data for dropdowns
 const dimensions = [
   { id: 'time', name: 'Time Period', options: ['Last 7 days', 'Last 30 days', 'Last 90 days', 'QTD', 'YTD'] },
   { id: 'region', name: 'Region', options: ['All Regions', 'North America', 'EMEA', 'APAC', 'LATAM'] },
@@ -41,6 +42,285 @@ const previewData = [
   { region: 'LATAM', value: '$12.3M', change: '+5%' }
 ];
 
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+`;
+
+const ModeSelector = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xxSmall};
+  background-color: ${colors.muted};
+  border-radius: ${radius.lg};
+`;
+
+const AISection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const InputRow = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  margin-top: ${Theme.usage.space.xSmall};
+`;
+
+const AICardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const AICardTitle = styled.div`
+  font-weight: 500;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const AICardDesc = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ConfigSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+  margin-top: ${Theme.usage.space.medium};
+`;
+
+const TwoColGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+`;
+
+const PreviewBox = styled.div`
+  margin-top: ${Theme.usage.space.medium};
+  padding: ${Theme.usage.space.small};
+  background-color: ${colors.background};
+  border-radius: ${radius.lg};
+  border: 1px solid ${colors.border};
+`;
+
+const PreviewHeader = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  margin-bottom: ${Theme.usage.space.xSmall};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const PreviewRows = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PreviewRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+`;
+
+const MutedText = styled.span`
+  color: ${colors.mutedForeground};
+`;
+
+const PreviewValue = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const QueryLink = styled.button`
+  margin-top: ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.primary};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const MeasureGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.xSmall};
+  margin-top: ${Theme.usage.space.xSmall};
+`;
+
+const MeasureCard = styled(Card)<{ $selected: boolean }>`
+  padding: ${Theme.usage.space.small};
+  cursor: pointer;
+  transition: all 200ms;
+  border-color: ${({ $selected }) => $selected ? colors.primary : undefined};
+  background-color: ${({ $selected }) => $selected ? 'rgba(3, 2, 19, 0.05)' : undefined};
+
+  &:hover {
+    border-color: rgba(3, 2, 19, 0.5);
+  }
+`;
+
+const MeasureHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+const MeasureName = styled.div`
+  font-weight: 500;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const MeasureDesc = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const DimensionGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+  margin-top: ${Theme.usage.space.xSmall};
+`;
+
+const DataSourceRow = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  margin-top: ${Theme.usage.space.xSmall};
+`;
+
+const QueryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const QueryActions = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const WarningBox = styled.div`
+  padding: ${Theme.usage.space.small};
+  background-color: #fefce8;
+  border: 1px solid #fef08a;
+  border-radius: ${radius.lg};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const WarningContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const WarningText = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: #854d0e;
+`;
+
+const ValidationRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const PreviewTableWrap = styled.div`
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.lg};
+  overflow: hidden;
+`;
+
+const PreviewTableHeader = styled.div`
+  background-color: ${colors.muted};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const PreviewTableScroll = styled.div`
+  overflow-x: auto;
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const StyledTh = styled.th<{ $align?: string }>`
+  text-align: ${({ $align }) => $align || 'left'};
+  padding: ${Theme.usage.space.small};
+  font-weight: 500;
+`;
+
+const StyledTd = styled.td<{ $align?: string }>`
+  padding: ${Theme.usage.space.small};
+  text-align: ${({ $align }) => $align || 'left'};
+`;
+
+const StyledTr = styled.tr`
+  border-top: 1px solid ${colors.border};
+`;
+
+const ExecQueryCard = styled(Card)`
+  padding: ${Theme.usage.space.medium};
+  background-color: rgba(236, 236, 240, 0.5);
+`;
+
+const ExecQueryHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const ExecQueryPre = styled.pre`
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  background-color: ${colors.background};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.md};
+  border: 1px solid ${colors.border};
+  overflow-x: auto;
+`;
+
+const ExecQueryFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: ${Theme.usage.space.small};
+  padding-top: ${Theme.usage.space.small};
+  border-top: 1px solid ${colors.border};
+`;
+
+const FooterActions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: ${Theme.usage.space.medium};
+  border-top: 1px solid ${colors.border};
+`;
+
+const FooterRight = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
 export function MetricBuilderModal({ open, onClose, mode }: MetricBuilderModalProps) {
   const [creationMode, setCreationMode] = useState<'ai' | 'manual'>('ai');
   const [aiPrompt, setAiPrompt] = useState('');
@@ -61,7 +341,6 @@ export function MetricBuilderModal({ open, onClose, mode }: MetricBuilderModalPr
   const isExecutive = mode === 'executive';
 
   const handleAIGenerate = () => {
-    // Simulate AI generation
     setAiGenerated(true);
     setMetricName('Average Order Value');
     setSelectedMeasure('avg');
@@ -94,296 +373,240 @@ ORDER BY avg_order_value DESC`);
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Create New Metric</DialogTitle>
+      <Dialog open={open} onOpenChange={onClose} title="Create New Metric">
+        <DialogContent style={{ maxWidth: '896px', maxHeight: '90vh', overflowY: 'auto' }}>
             <DialogDescription>
               {isExecutive 
                 ? 'Use AI to quickly create a metric tailored to your needs'
                 : 'Build a custom metric using AI or manual configuration'}
             </DialogDescription>
-          </DialogHeader>
 
-          <div className="space-y-6">
-            {/* Mode Selection - Only for Analysts */}
+          <ContentWrapper>
             {!isExecutive && (
-              <div className="flex gap-2 p-1 bg-muted rounded-lg">
+              <ModeSelector>
                 <Button
                   variant={creationMode === 'ai' ? 'default' : 'ghost'}
-                  className="flex-1"
+                  style={{ flex: 1 }}
                   onClick={() => setCreationMode('ai')}
                 >
-                  <Sparkles className="h-4 w-4 mr-2" />
+                  <Sparkles style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                   AI Assistant
                 </Button>
                 <Button
                   variant={creationMode === 'manual' ? 'default' : 'ghost'}
-                  className="flex-1"
+                  style={{ flex: 1 }}
                   onClick={() => setCreationMode('manual')}
                 >
-                  <Edit3 className="h-4 w-4 mr-2" />
+                  <Edit3 style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                   Build from Scratch
                 </Button>
-              </div>
+              </ModeSelector>
             )}
 
-            {/* AI Creation Mode */}
             {(isExecutive || creationMode === 'ai') && (
-              <div className="space-y-4">
+              <AISection>
                 <div>
                   <Label>Describe the metric you want to track</Label>
-                  <div className="flex gap-2 mt-2">
+                  <InputRow>
                     <Input
                       placeholder="e.g., I want to track average order value by region"
                       value={aiPrompt}
                       onChange={(e) => setAiPrompt(e.target.value)}
-                      className="flex-1"
+                      style={{ flex: 1 }}
                     />
                     <Button onClick={handleAIGenerate} disabled={!aiPrompt}>
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Sparkles style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                       Generate
                     </Button>
-                  </div>
+                  </InputRow>
                 </div>
 
                 {aiGenerated && (
-                  <Card className="p-4 border-purple-200 bg-purple-50/30">
-                    <div className="flex items-start gap-2 mb-3">
-                      <Sparkles className="h-4 w-4 text-purple-600 mt-0.5" />
-                      <div className="flex-1">
-                        <div className="font-medium text-sm mb-1">AI Generated Metric</div>
-                        <div className="text-xs text-muted-foreground">
+                  <Card style={{ padding: '16px', borderColor: colors.purple200, backgroundColor: 'rgba(250, 245, 255, 0.3)' }}>
+                    <AICardHeader>
+                      <Sparkles style={{ height: '16px', width: '16px', color: colors.purple600, marginTop: '2px' }} />
+                      <div style={{ flex: 1 }}>
+                        <AICardTitle>AI Generated Metric</AICardTitle>
+                        <AICardDesc>
                           Based on your description, I've created this metric configuration
-                        </div>
+                        </AICardDesc>
                       </div>
-                    </div>
+                    </AICardHeader>
 
-                    {/* Configuration */}
-                    <div className="space-y-3 mt-4">
+                    <ConfigSection>
                       <div>
-                        <Label className="text-xs">Metric Name</Label>
+                        <Label style={{ fontSize: '12px' }}>Metric Name</Label>
                         <Input
                           value={metricName}
                           onChange={(e) => setMetricName(e.target.value)}
-                          className="mt-1"
+                          style={{ marginTop: '4px' }}
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs">Measure</Label>
-                          <Select value={selectedMeasure} onValueChange={setSelectedMeasure}>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {measures.map(m => (
-                                <SelectItem key={m.id} value={m.id}>
-                                  {m.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                      <TwoColGrid>
+                        <div style={{ marginTop: '4px' }}>
+                          <Select
+                            label="Measure"
+                            value={selectedMeasure}
+                            onChange={(v) => setSelectedMeasure(v)}
+                            options={measures.map(m => ({ name: m.name, value: m.id }))}
+                          />
                         </div>
 
-                        <div>
-                          <Label className="text-xs">Time Period</Label>
+                        <div style={{ marginTop: '4px' }}>
                           <Select
+                            label="Time Period"
                             value={selectedDimensions.time}
-                            onValueChange={(val) => setSelectedDimensions({ ...selectedDimensions, time: val })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {dimensions[0].options.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            onChange={(val) => setSelectedDimensions({ ...selectedDimensions, time: val })}
+                            options={dimensions[0].options.map(opt => ({ name: opt, value: opt }))}
+                          />
                         </div>
-                      </div>
+                      </TwoColGrid>
 
                       {!isExecutive && (
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label className="text-xs">Group by Region</Label>
+                        <TwoColGrid>
+                          <div style={{ marginTop: '4px' }}>
                             <Select
+                              label="Group by Region"
                               value={selectedDimensions.region}
-                              onValueChange={(val) => setSelectedDimensions({ ...selectedDimensions, region: val })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dimensions[1].options.map(opt => (
-                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              onChange={(val) => setSelectedDimensions({ ...selectedDimensions, region: val })}
+                              options={dimensions[1].options.map(opt => ({ name: opt, value: opt }))}
+                            />
                           </div>
 
-                          <div>
-                            <Label className="text-xs">Customer Segment</Label>
+                          <div style={{ marginTop: '4px' }}>
                             <Select
+                              label="Customer Segment"
                               value={selectedDimensions.customer}
-                              onValueChange={(val) => setSelectedDimensions({ ...selectedDimensions, customer: val })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {dimensions[3].options.map(opt => (
-                                  <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              onChange={(val) => setSelectedDimensions({ ...selectedDimensions, customer: val })}
+                              options={dimensions[3].options.map(opt => ({ name: opt, value: opt }))}
+                            />
                           </div>
-                        </div>
+                        </TwoColGrid>
                       )}
-                    </div>
+                    </ConfigSection>
 
-                    {/* Preview */}
-                    <div className="mt-4 p-3 bg-background rounded-lg border">
-                      <div className="text-xs font-medium mb-2 flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
+                    <PreviewBox>
+                      <PreviewHeader>
+                        <Eye style={{ height: '12px', width: '12px' }} />
                         Preview
-                      </div>
-                      <div className="space-y-2">
+                      </PreviewHeader>
+                      <PreviewRows>
                         {previewData.map((row, i) => (
-                          <div key={i} className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">{row.region}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{row.value}</span>
-                              <Badge variant="secondary" className="text-xs">{row.change}</Badge>
-                            </div>
-                          </div>
+                          <PreviewRow key={i}>
+                            <MutedText>{row.region}</MutedText>
+                            <PreviewValue>
+                              <span style={{ fontWeight: 500 }}>{row.value}</span>
+                              <Badge variant="secondary" style={{ fontSize: '12px' }}>{row.change}</Badge>
+                            </PreviewValue>
+                          </PreviewRow>
                         ))}
-                      </div>
-                    </div>
+                      </PreviewRows>
+                    </PreviewBox>
 
-                    {/* Query Validation */}
-                    <div className="mt-4">
-                      <button
-                        onClick={() => setActiveTab('query')}
-                        className="text-xs text-primary hover:underline flex items-center gap-1"
-                      >
-                        <Code className="h-3 w-3" />
-                        {isExecutive ? 'View query logic' : 'View & edit query'}
-                        <ChevronRight className="h-3 w-3" />
-                      </button>
-                    </div>
+                    <QueryLink onClick={() => setActiveTab('query')}>
+                      <Code style={{ height: '12px', width: '12px' }} />
+                      {isExecutive ? 'View query logic' : 'View & edit query'}
+                      <ChevronRight style={{ height: '12px', width: '12px' }} />
+                    </QueryLink>
                   </Card>
                 )}
-              </div>
+              </AISection>
             )}
 
-            {/* Manual Creation Mode - Analyst Only */}
             {!isExecutive && creationMode === 'manual' && (
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs value={activeTab} onValueChange={setActiveTab} style={{ width: '100%' }}>
+                <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
                   <TabsTrigger value="builder">
-                    <Edit3 className="h-4 w-4 mr-2" />
+                    <Edit3 style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                     Visual Builder
                   </TabsTrigger>
                   <TabsTrigger value="query">
-                    <Code className="h-4 w-4 mr-2" />
+                    <Code style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                     Query
                   </TabsTrigger>
                   <TabsTrigger value="preview">
-                    <Table className="h-4 w-4 mr-2" />
+                    <Table style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                     Preview Data
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="builder" className="space-y-4 mt-4">
+                <TabsContent value="builder" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
                   <div>
                     <Label>Metric Name</Label>
                     <Input
                       placeholder="e.g., Average Order Value"
                       value={metricName}
                       onChange={(e) => setMetricName(e.target.value)}
-                      className="mt-2"
+                      style={{ marginTop: '8px' }}
                     />
                   </div>
 
                   <div>
                     <Label>Select Measure</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    <MeasureGrid>
                       {measures.map(measure => (
-                        <Card
+                        <MeasureCard
                           key={measure.id}
-                          className={`p-3 cursor-pointer transition-all ${
-                            selectedMeasure === measure.id
-                              ? 'border-primary bg-primary/5'
-                              : 'hover:border-primary/50'
-                          }`}
+                          $selected={selectedMeasure === measure.id}
                           onClick={() => setSelectedMeasure(measure.id)}
                         >
-                          <div className="flex items-start justify-between">
+                          <MeasureHeader>
                             <div>
-                              <div className="font-medium text-sm">{measure.name}</div>
-                              <div className="text-xs text-muted-foreground">{measure.description}</div>
+                              <MeasureName>{measure.name}</MeasureName>
+                              <MeasureDesc>{measure.description}</MeasureDesc>
                             </div>
                             {selectedMeasure === measure.id && (
-                              <Check className="h-4 w-4 text-primary" />
+                              <Check style={{ height: '16px', width: '16px', color: colors.primary }} />
                             )}
-                          </div>
-                        </Card>
+                          </MeasureHeader>
+                        </MeasureCard>
                       ))}
-                    </div>
+                    </MeasureGrid>
                   </div>
 
                   <div>
                     <Label>Select Dimensions</Label>
-                    <div className="grid grid-cols-2 gap-3 mt-2">
+                    <DimensionGrid>
                       {dimensions.map(dim => (
-                        <div key={dim.id}>
-                          <Label className="text-xs text-muted-foreground">{dim.name}</Label>
+                        <div key={dim.id} style={{ marginTop: '4px' }}>
                           <Select
+                            label={dim.name}
                             value={selectedDimensions[dim.id as keyof typeof selectedDimensions]}
-                            onValueChange={(val) => setSelectedDimensions({ ...selectedDimensions, [dim.id]: val })}
-                          >
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {dim.options.map(opt => (
-                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            onChange={(val) => setSelectedDimensions({ ...selectedDimensions, [dim.id]: val })}
+                            options={dim.options.map(opt => ({ name: opt, value: opt }))}
+                          />
                         </div>
                       ))}
-                    </div>
+                    </DimensionGrid>
                   </div>
 
                   <div>
                     <Label>Data Source</Label>
-                    <div className="flex gap-2 mt-2">
-                      <Select defaultValue="analytics.orders">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="analytics.orders">analytics.orders</SelectItem>
-                          <SelectItem value="analytics.customers">analytics.customers</SelectItem>
-                          <SelectItem value="analytics.revenue">analytics.revenue</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <DataSourceRow>
+                      <Select
+                        label="Data Source"
+                        isLabelHidden
+                        value="analytics.orders"
+                        onChange={() => {}}
+                        options={[
+                          { name: 'analytics.orders', value: 'analytics.orders' },
+                          { name: 'analytics.customers', value: 'analytics.customers' },
+                          { name: 'analytics.revenue', value: 'analytics.revenue' },
+                        ]}
+                      />
                       <Button variant="outline" onClick={() => setSourceTableOpen(true)}>
-                        <Table className="h-4 w-4 mr-2" />
+                        <Table style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                         Open Table
                       </Button>
-                    </div>
+                    </DataSourceRow>
                   </div>
                 </TabsContent>
 
-                <TabsContent value="query" className="space-y-4 mt-4">
-                  <div className="flex items-center justify-between">
+                <TabsContent value="query" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px' }}>
+                  <QueryHeader>
                     <Label>SQL Query</Label>
-                    <div className="flex gap-2">
+                    <QueryActions>
                       <Button
                         variant="outline"
                         size="sm"
@@ -391,141 +614,143 @@ ORDER BY avg_order_value DESC`);
                       >
                         {queryEditMode ? (
                           <>
-                            <X className="h-4 w-4 mr-1" />
+                            <X style={{ height: '16px', width: '16px', marginRight: '4px' }} />
                             Cancel Edit
                           </>
                         ) : (
                           <>
-                            <Edit3 className="h-4 w-4 mr-1" />
+                            <Edit3 style={{ height: '16px', width: '16px', marginRight: '4px' }} />
                             Edit Query
                           </>
                         )}
                       </Button>
                       <Button variant="outline" size="sm" onClick={handleTestQuery}>
-                        <Play className="h-4 w-4 mr-1" />
+                        <Play style={{ height: '16px', width: '16px', marginRight: '4px' }} />
                         Test Query
                       </Button>
-                    </div>
-                  </div>
+                    </QueryActions>
+                  </QueryHeader>
 
                   {queryEditMode && (
-                    <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-                      <div className="flex items-start gap-2">
-                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 mt-0.5">
+                    <WarningBox>
+                      <WarningContent>
+                        <Badge variant="outline" style={{ backgroundColor: '#fef9c3', color: '#854d0e', marginTop: '2px' }}>
                           Warning
                         </Badge>
-                        <div className="text-xs text-yellow-800">
+                        <WarningText>
                           Editing the query directly will disable the visual builder. Your changes will be preserved.
-                        </div>
-                      </div>
-                    </div>
+                        </WarningText>
+                      </WarningContent>
+                    </WarningBox>
                   )}
 
                   <Textarea
                     value={sqlQuery}
                     onChange={(e) => setSqlQuery(e.target.value)}
                     readOnly={!queryEditMode}
-                    className={`font-mono text-xs h-64 ${queryEditMode ? '' : 'bg-muted'}`}
+                    style={{
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      fontSize: '12px',
+                      height: '256px',
+                      backgroundColor: queryEditMode ? undefined : colors.muted,
+                    }}
                   />
 
                   {!queryEditMode && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Check className="h-3 w-3 text-green-600" />
+                    <ValidationRow>
+                      <Check style={{ height: '12px', width: '12px', color: colors.green600 }} />
                       Query validated successfully
-                    </div>
+                    </ValidationRow>
                   )}
                 </TabsContent>
 
-                <TabsContent value="preview" className="mt-4">
-                  <div className="border rounded-lg overflow-hidden">
-                    <div className="bg-muted px-4 py-2 border-b">
-                      <div className="text-sm font-medium">Sample Results (4 rows)</div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead className="bg-muted/50">
+                <TabsContent value="preview" style={{ marginTop: '16px' }}>
+                  <PreviewTableWrap>
+                    <PreviewTableHeader>
+                      <div style={{ fontSize: '14px', fontWeight: 500 }}>Sample Results (4 rows)</div>
+                    </PreviewTableHeader>
+                    <PreviewTableScroll>
+                      <StyledTable>
+                        <thead style={{ backgroundColor: 'rgba(236, 236, 240, 0.5)' }}>
                           <tr>
-                            <th className="text-left p-3 font-medium">Region</th>
-                            <th className="text-right p-3 font-medium">Avg Order Value</th>
-                            <th className="text-right p-3 font-medium">Order Count</th>
-                            <th className="text-right p-3 font-medium">Change</th>
+                            <StyledTh>Region</StyledTh>
+                            <StyledTh $align="right">Avg Order Value</StyledTh>
+                            <StyledTh $align="right">Order Count</StyledTh>
+                            <StyledTh $align="right">Change</StyledTh>
                           </tr>
                         </thead>
                         <tbody>
                           {previewData.map((row, i) => (
-                            <tr key={i} className="border-t">
-                              <td className="p-3">{row.region}</td>
-                              <td className="p-3 text-right font-medium">{row.value}</td>
-                              <td className="p-3 text-right text-muted-foreground">1,234</td>
-                              <td className="p-3 text-right">
+                            <StyledTr key={i}>
+                              <StyledTd>{row.region}</StyledTd>
+                              <StyledTd $align="right" style={{ fontWeight: 500 }}>{row.value}</StyledTd>
+                              <StyledTd $align="right" style={{ color: colors.mutedForeground }}>1,234</StyledTd>
+                              <StyledTd $align="right">
                                 <Badge variant="secondary">{row.change}</Badge>
-                              </td>
-                            </tr>
+                              </StyledTd>
+                            </StyledTr>
                           ))}
                         </tbody>
-                      </table>
-                    </div>
-                  </div>
+                      </StyledTable>
+                    </PreviewTableScroll>
+                  </PreviewTableWrap>
 
                   <Button
                     variant="outline"
-                    className="mt-4 w-full"
+                    style={{ marginTop: '16px', width: '100%' }}
                     onClick={() => setSourceTableOpen(true)}
                   >
-                    <Table className="h-4 w-4 mr-2" />
+                    <Table style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                     Open Full Source Table
                   </Button>
                 </TabsContent>
               </Tabs>
             )}
 
-            {/* Executive Query View (Read-only modal within modal) */}
             {isExecutive && activeTab === 'query' && aiGenerated && (
-              <Card className="p-4 bg-muted/50">
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-sm">Query Logic</Label>
+              <ExecQueryCard>
+                <ExecQueryHeader>
+                  <Label style={{ fontSize: '14px' }}>Query Logic</Label>
                   <Button variant="ghost" size="sm" onClick={() => setActiveTab('builder')}>
-                    <X className="h-4 w-4" />
+                    <X style={{ height: '16px', width: '16px' }} />
                   </Button>
-                </div>
-                <pre className="font-mono text-xs bg-background p-3 rounded border overflow-x-auto">
+                </ExecQueryHeader>
+                <ExecQueryPre>
                   {sqlQuery}
-                </pre>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Check className="h-3 w-3 text-green-600" />
+                </ExecQueryPre>
+                <ExecQueryFooter>
+                  <ValidationRow>
+                    <Check style={{ height: '12px', width: '12px', color: colors.green600 }} />
                     Query looks correct
-                  </div>
-                  <Button variant="link" size="sm" className="text-xs">
+                  </ValidationRow>
+                  <Button variant="link" size="sm" style={{ fontSize: '12px' }}>
                     Request changes
                   </Button>
-                </div>
-              </Card>
+                </ExecQueryFooter>
+              </ExecQueryCard>
             )}
-          </div>
+          </ContentWrapper>
 
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-4 border-t">
+          <FooterActions>
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <div className="flex gap-2">
+            <FooterRight>
               {!isExecutive && (
                 <Button variant="outline" onClick={() => setSourceTableOpen(true)}>
-                  <Table className="h-4 w-4 mr-2" />
+                  <Table style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                   View Source
                 </Button>
               )}
               <Button onClick={handleSaveMetric} disabled={!aiGenerated && !metricName}>
-                <Save className="h-4 w-4 mr-2" />
+                <Save style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                 Add to Dashboard
               </Button>
-            </div>
-          </div>
+            </FooterRight>
+          </FooterActions>
         </DialogContent>
       </Dialog>
 
-      {/* Source Table Modal */}
       <SourceTableModal
         open={sourceTableOpen}
         onClose={() => setSourceTableOpen(false)}

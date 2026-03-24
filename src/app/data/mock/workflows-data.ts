@@ -24,8 +24,8 @@ export const templates: WorkflowTemplate[] = [
 ];
 
 export const statusConfig: Record<string, WorkflowStatusConfig> = {
-  active: { icon: Play, label: 'Active', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
-  paused: { icon: Pause, label: 'Paused', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
-  completed: { icon: CheckCircle, label: 'Completed', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
-  failed: { icon: AlertCircle, label: 'Failed', color: 'text-red-700', bg: 'bg-red-50 border-red-200' },
+  active: { icon: Play, label: 'Active', color: '#15803d', bg: '#f0fdf4', borderColor: '#bbf7d0' },
+  paused: { icon: Pause, label: 'Paused', color: '#b45309', bg: '#fffbeb', borderColor: '#fde68a' },
+  completed: { icon: CheckCircle, label: 'Completed', color: '#1d4ed8', bg: '#eff6ff', borderColor: '#bfdbfe' },
+  failed: { icon: AlertCircle, label: 'Failed', color: '#b91c1c', bg: '#fef2f2', borderColor: '#fecaca' },
 };

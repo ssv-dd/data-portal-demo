@@ -1,6 +1,8 @@
+import styled from 'styled-components';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { RefreshCw } from 'lucide-react';
+import { colors, radius, Theme } from '@/styles/theme';
 import type { ProductArea } from '@/types';
 
 interface ScorecardContextBarProps {
@@ -11,6 +13,118 @@ interface ScorecardContextBarProps {
   onTimeRangeChange: (range: string) => void;
 }
 
+const StyledCard = styled(Card)`
+  padding: ${Theme.usage.space.medium};
+`;
+
+const TopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 64px;
+`;
+
+const LeftSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const ProductAreasSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const Label = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+`;
+
+const ScrollContainer = styled.div`
+  position: relative;
+`;
+
+const ButtonList = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  overflow-x: auto;
+  max-width: 750px;
+  padding-bottom: ${Theme.usage.space.xxSmall};
+  scrollbar-width: thin;
+`;
+
+const AreaButton = styled(Button)`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  white-space: nowrap;
+  flex-shrink: 0;
+`;
+
+const FadeIndicator = styled.div`
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: ${Theme.usage.space.xxSmall};
+  width: 64px;
+  background: linear-gradient(to left, ${colors.white}, rgba(255, 255, 255, 0.8), transparent);
+  pointer-events: none;
+`;
+
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  flex-shrink: 0;
+`;
+
+const ComparisonSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ComparisonLabel = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const StyledSelect = styled.select`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  border: 1px solid ${colors.border};
+  background-color: ${colors.background};
+  color: ${colors.foreground};
+`;
+
+const UpdatedInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const SubsidiaryCallout = styled.div`
+  margin-top: ${Theme.usage.space.small};
+  padding-top: ${Theme.usage.space.small};
+  border-top: 1px solid ${colors.border};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ScopeLabel = styled.span`
+  font-weight: 500;
+`;
+
+const Separator = styled.span`
+  margin: 0 ${Theme.usage.space.xSmall};
+`;
+
+const WarningText = styled.span`
+  color: ${colors.yellow600};
+`;
+
 export function ScorecardContextBar({
   areas,
   selectedAreas,
@@ -19,57 +133,53 @@ export function ScorecardContextBar({
   onTimeRangeChange,
 }: ScorecardContextBarProps) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between gap-16">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Product Areas:</span>
-            <div className="relative">
-              <div className="flex gap-2 overflow-x-auto max-w-[750px] pb-1 scrollbar-thin">
+    <StyledCard>
+      <TopRow>
+        <LeftSection>
+          <ProductAreasSection>
+            <Label>Product Areas:</Label>
+            <ScrollContainer>
+              <ButtonList>
                 {areas.map(area => (
-                  <Button
+                  <AreaButton
                     key={area.id}
                     variant={selectedAreas.includes(area.id) ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => onToggleArea(area.id)}
-                    className="text-xs whitespace-nowrap shrink-0"
                   >
                     {area.name}
-                  </Button>
+                  </AreaButton>
                 ))}
-              </div>
-              {/* Gradient fade indicator */}
-              <div className="absolute right-0 top-0 bottom-1 w-16 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none" />
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-4 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Comparison:</span>
-            <select
+              </ButtonList>
+              <FadeIndicator />
+            </ScrollContainer>
+          </ProductAreasSection>
+        </LeftSection>
+        <RightSection>
+          <ComparisonSection>
+            <ComparisonLabel>Comparison:</ComparisonLabel>
+            <StyledSelect
               value={timeRange}
               onChange={(e) => onTimeRangeChange(e.target.value)}
-              className="text-sm px-2 py-1 rounded border bg-background"
             >
               <option value="dod">DoD</option>
               <option value="wow">WoW</option>
               <option value="mom">MoM</option>
               <option value="yoy">YoY</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <RefreshCw className="h-3 w-3" />
+            </StyledSelect>
+          </ComparisonSection>
+          <UpdatedInfo>
+            <RefreshCw style={{ height: '12px', width: '12px' }} />
             Updated 5 mins ago
-          </div>
-        </div>
-      </div>
+          </UpdatedInfo>
+        </RightSection>
+      </TopRow>
 
-      {/* Subsidiary Callout */}
-      <div className="mt-3 pt-3 border-t text-xs text-muted-foreground">
-        <span className="font-medium">Scope:</span> DoorDash US, DoorDash Canada, SevenRooms
-        <span className="mx-2">|</span>
-        <span className="text-yellow-700">⚠️ Excludes: Wolt, Deliveroo (pending integration)</span>
-      </div>
-    </Card>
+      <SubsidiaryCallout>
+        <ScopeLabel>Scope:</ScopeLabel> DoorDash US, DoorDash Canada, SevenRooms
+        <Separator>|</Separator>
+        <WarningText>⚠️ Excludes: Wolt, Deliveroo (pending integration)</WarningText>
+      </SubsidiaryCallout>
+    </StyledCard>
   );
 }

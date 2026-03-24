@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Send, Sparkles, ChevronDown, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Send, Sparkles, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn } from './ui/utils';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows, glassPanelSubtle, glassPanelChat } from '@/styles/theme';
 import { knowledgeBases, type KnowledgeBase } from '../data/mock/knowledge-bases-data';
 
 interface SuggestionChip {
@@ -22,6 +24,310 @@ interface AIAssistantSidebarProps {
   onToggleCollapse?: () => void;
   className?: string;
 }
+
+const CollapsedPanel = styled(motion.div)`
+  border-left: 1px solid ${colors.border};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  ${glassPanelSubtle}
+`;
+
+const CollapsedHeader = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+const ToggleButton = styled.button`
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.lg};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+  }
+`;
+
+const CollapsedBody = styled.div`
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ExpandedPanel = styled(motion.div)`
+  border-left: 1px solid ${colors.border};
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  ${glassPanelChat}
+`;
+
+const PanelHeader = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-bottom: 1px solid ${colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PanelTitle = styled.h3`
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const ContextBadge = styled.span`
+  border-radius: ${radius.xl};
+  border: 1px solid rgba(167, 139, 250, 0.2);
+  background: rgba(139, 92, 246, 0.1);
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.violet700};
+`;
+
+const CollapseButton = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${radius.lg};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+  }
+`;
+
+const KBSection = styled.div`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  position: relative;
+`;
+
+const KBSelectorButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  font-size: ${Theme.usage.fontSize.xSmall};
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.4);
+  }
+`;
+
+const KBButtonContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  flex: 1;
+  min-width: 0;
+`;
+
+const KBName = styled.span`
+  color: ${colors.foreground};
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const KBDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: ${Theme.usage.space.medium};
+  right: ${Theme.usage.space.medium};
+  margin-top: ${Theme.usage.space.xxSmall};
+  background: ${colors.background};
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.xl};
+  box-shadow: ${shadows.popover};
+  z-index: 50;
+  padding: ${Theme.usage.space.xxSmall} 0;
+`;
+
+const KBDropdownItem = styled.button<{ $selected: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
+  transition: background-color 150ms;
+  text-align: left;
+  background: ${({ $selected }) => ($selected ? 'rgba(233, 235, 239, 0.4)' : 'transparent')};
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+  }
+`;
+
+const KBItemContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const KBItemName = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const KBItemDescription = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  overflow: auto;
+  padding: ${Theme.usage.space.large};
+  display: flex;
+  flex-direction: column;
+`;
+
+const WelcomeSection = styled.div`
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const WelcomeText = styled.p`
+  color: ${colors.mutedForeground};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  line-height: 1.625;
+`;
+
+const SuggestionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+  margin-bottom: auto;
+`;
+
+const SuggestionButton = styled.button`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background: rgba(255, 255, 255, 0.4);
+  color: ${colors.foreground};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.6);
+    border-color: ${colors.border};
+    box-shadow: ${shadows.sm};
+  }
+`;
+
+const SuggestedActionsSection = styled.div`
+  margin-top: ${Theme.usage.space.large};
+  padding-top: ${Theme.usage.space.large};
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const SuggestedActionsLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const SuggestedActionsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SuggestedActionButton = styled.button`
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.full};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
+  color: ${colors.slate700};
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+`;
+
+const InputSection = styled.div`
+  margin-top: ${Theme.usage.space.large};
+  position: relative;
+`;
+
+const ChatInput = styled.input`
+  width: 100%;
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  padding-right: 2.780px;
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  color: ${colors.foreground};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 200ms;
+  outline: none;
+
+  &::placeholder {
+    color: rgba(113, 113, 130, 0.6);
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+    border-color: rgba(167, 139, 250, 0.4);
+  }
+`;
+
+const SendBtn = styled.button`
+  position: absolute;
+  right: ${Theme.usage.space.xSmall};
+  top: 50%;
+  transform: translateY(-50%);
+  padding: ${Theme.usage.space.xSmall};
+  color: rgba(113, 113, 130, 0.6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 150ms;
+
+  &:hover {
+    color: ${colors.violet500};
+  }
+`;
 
 export function AIAssistantSidebar({
   title = 'AI Assistant',
@@ -55,169 +361,123 @@ export function AIAssistantSidebar({
 
   if (collapsed && collapsible) {
     return (
-      <motion.div
+      <CollapsedPanel
         animate={{ width: 72 }}
         transition={{ duration: 0.2 }}
-        className={cn('border-l border-border/60 flex flex-col items-center glass-panel-subtle', className)}
+        className={className}
       >
-        <div className="p-3 border-b border-border/40 w-full flex justify-center">
-          <button
+        <CollapsedHeader>
+          <ToggleButton
             onClick={onToggleCollapse}
-            className="p-2 rounded-lg hover:bg-accent/60 transition-colors"
             aria-label="Expand assistant"
           >
-            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-muted-foreground" />
-        </div>
-      </motion.div>
+            <ChevronLeft style={{ width: 16, height: 16, color: colors.mutedForeground }} />
+          </ToggleButton>
+        </CollapsedHeader>
+        <CollapsedBody>
+          <Sparkles style={{ width: 20, height: 20, color: colors.mutedForeground }} />
+        </CollapsedBody>
+      </CollapsedPanel>
     );
   }
 
   return (
-    <motion.div
+    <ExpandedPanel
       animate={{ width: 384 }}
       transition={{ duration: 0.2 }}
-      className={cn('border-l border-border/60 flex flex-col overflow-hidden glass-panel-chat', className)}
+      className={className}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border/60 dark:border-white/10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="font-medium text-foreground dark:text-white">{title}</h3>
+      <PanelHeader>
+        <HeaderLeft>
+          <PanelTitle>{title}</PanelTitle>
           {contextLabel && (
-            <span className="rounded-xl border border-violet-400/20 dark:border-violet-400/30 bg-violet-500/10 dark:bg-violet-500/15 px-2.5 py-1 text-xs font-medium text-violet-700 dark:text-violet-200">
-              {contextLabel}
-            </span>
+            <ContextBadge>{contextLabel}</ContextBadge>
           )}
-        </div>
+        </HeaderLeft>
         {collapsible && (
-          <button
+          <CollapseButton
             onClick={onToggleCollapse}
-            className="p-1.5 rounded-lg hover:bg-accent/60 transition-colors"
             aria-label="Collapse assistant"
           >
-            <ChevronRight className="w-4 h-4 text-muted-foreground" />
-          </button>
+            <ChevronRight style={{ width: 16, height: 16, color: colors.mutedForeground }} />
+          </CollapseButton>
         )}
-      </div>
+      </PanelHeader>
 
       {/* Knowledge Base Selector */}
-      <div className="px-4 py-3 border-b border-border/40 dark:border-white/10 relative">
-        <button
-          onClick={() => setShowKBDropdown(!showKBDropdown)}
-          className={cn(
-            'w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg',
-            'bg-background/50 dark:bg-white/[0.05] border border-border/40 dark:border-white/10',
-            'hover:bg-accent/40 dark:hover:bg-white/[0.08] transition-colors',
-            'text-sm'
-          )}
-        >
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <KBIcon className={cn('w-4 h-4 flex-shrink-0', currentKB.color)} />
-            <span className="text-foreground dark:text-white font-medium truncate">{currentKB.name}</span>
-          </div>
-          <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-        </button>
+      <KBSection>
+        <KBSelectorButton onClick={() => setShowKBDropdown(!showKBDropdown)}>
+          <KBButtonContent>
+            <KBIcon style={{ width: 16, height: 16, flexShrink: 0 }} />
+            <KBName>{currentKB.name}</KBName>
+          </KBButtonContent>
+          <ChevronDown style={{ width: 16, height: 16, color: colors.mutedForeground, flexShrink: 0 }} />
+        </KBSelectorButton>
 
-        {/* Dropdown */}
         {showKBDropdown && (
-          <div className="absolute top-full left-4 right-4 mt-1 bg-background dark:bg-slate-900/95 border border-border/60 dark:border-white/10 rounded-xl shadow-popover z-50 py-1">
+          <KBDropdown>
             {knowledgeBases.map((kb) => {
               const Icon = kb.icon;
               return (
-                <button
+                <KBDropdownItem
                   key={kb.id}
                   onClick={() => handleKBSelect(kb)}
-                  className={cn(
-                    'w-full flex items-start gap-3 px-3 py-2.5 hover:bg-accent/60 dark:hover:bg-white/[0.08] transition-colors text-left',
-                    selectedKB === kb.id && 'bg-accent/40 dark:bg-white/[0.06]'
-                  )}
+                  $selected={selectedKB === kb.id}
                 >
-                  <Icon className={cn('w-4 h-4 flex-shrink-0 mt-0.5', kb.color)} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-foreground dark:text-white">{kb.name}</div>
-                    <div className="text-xs text-muted-foreground dark:text-slate-400 line-clamp-1">
-                      {kb.description}
-                    </div>
-                  </div>
-                </button>
+                  <Icon style={{ width: 16, height: 16, flexShrink: 0, marginTop: '2px' }} />
+                  <KBItemContent>
+                    <KBItemName>{kb.name}</KBItemName>
+                    <KBItemDescription>{kb.description}</KBItemDescription>
+                  </KBItemContent>
+                </KBDropdownItem>
               );
             })}
-          </div>
+          </KBDropdown>
         )}
-      </div>
+      </KBSection>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6 flex flex-col">
-        <div className="mb-6">
-          <p className="text-muted-foreground dark:text-slate-400 text-sm leading-relaxed">
-            {welcomeMessage}
-          </p>
-        </div>
+      <ContentArea>
+        <WelcomeSection>
+          <WelcomeText>{welcomeMessage}</WelcomeText>
+        </WelcomeSection>
 
         {/* Suggestion Chips */}
-        <div className="grid grid-cols-2 gap-3 mb-auto">
+        <SuggestionsGrid>
           {suggestions.map((suggestion, index) => (
-            <button
-              key={index}
-              className={cn(
-                'px-4 py-3 rounded-xl border border-border/60 dark:border-white/10',
-                'bg-background/40 dark:bg-white/[0.04] text-foreground dark:text-slate-200 text-sm',
-                'flex items-center gap-2',
-                'hover:bg-accent/60 dark:hover:bg-white/[0.07] hover:border-border dark:hover:border-violet-400/20 transition-all',
-                'hover:shadow-sm'
-              )}
-            >
-              {suggestion.icon || <Sparkles className="w-4 h-4" />}
+            <SuggestionButton key={index}>
+              {suggestion.icon || <Sparkles style={{ width: 16, height: 16 }} />}
               <span>{suggestion.text}</span>
-            </button>
+            </SuggestionButton>
           ))}
-        </div>
+        </SuggestionsGrid>
 
         {/* Suggested Actions */}
         {suggestedActions.length > 0 && (
-          <div className="mt-6 pt-6 border-t border-border/40 dark:border-white/10">
-            <p className="text-xs font-medium text-muted-foreground dark:text-slate-500 uppercase tracking-wider mb-3">Suggested actions</p>
-            <div className="flex flex-wrap gap-2">
+          <SuggestedActionsSection>
+            <SuggestedActionsLabel>Suggested actions</SuggestedActionsLabel>
+            <SuggestedActionsRow>
               {suggestedActions.map((action, index) => (
-                <button
-                  key={index}
-                  className={cn(
-                    'px-3 py-2 rounded-full text-xs font-medium',
-                    'border border-white/10 dark:border-white/10',
-                    'bg-black/10 dark:bg-black/20',
-                    'text-slate-700 dark:text-slate-300',
-                    'hover:bg-black/20 dark:hover:bg-black/30 transition-colors'
-                  )}
-                >
+                <SuggestedActionButton key={index}>
                   {action}
-                </button>
+                </SuggestedActionButton>
               ))}
-            </div>
-          </div>
+            </SuggestedActionsRow>
+          </SuggestedActionsSection>
         )}
 
         {/* Input */}
-        <div className="mt-6 relative">
-          <input
+        <InputSection>
+          <ChatInput
             type="text"
             placeholder="@ for objects, / for commands, ↕ for history"
-            className={cn(
-              'w-full px-4 py-3 rounded-xl border border-border dark:border-white/10',
-              'text-foreground dark:text-slate-200 text-sm',
-              'bg-background/50 dark:bg-slate-950/70',
-              'placeholder-muted-foreground/60 dark:placeholder-slate-400',
-              'focus:outline-none focus:ring-2 focus:ring-violet-400/20 focus:border-violet-400/40',
-              'transition-all'
-            )}
           />
-          <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-muted-foreground/60 dark:text-slate-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors">
-            <Send className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </motion.div>
+          <SendBtn>
+            <Send style={{ width: 16, height: 16 }} />
+          </SendBtn>
+        </InputSection>
+      </ContentArea>
+    </ExpandedPanel>
   );
 }

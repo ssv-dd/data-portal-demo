@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import styled from 'styled-components';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
+import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 
 interface AskAIPromptModalProps {
   open: boolean;
@@ -10,6 +13,105 @@ interface AskAIPromptModalProps {
   contextType: 'highlight' | 'concern';
   onSelectPrompt: (prompt: string, selectedText: string) => void;
 }
+
+const PreviewBox = styled.div`
+  padding: ${Theme.usage.space.small};
+  background-color: ${colors.purple50};
+  border: 1px solid ${colors.purple200};
+  border-radius: ${radius.xl};
+`;
+
+const PreviewLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const PreviewText = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const PromptsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PromptsLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.mutedForeground};
+`;
+
+const PromptButton = styled(motion.button)`
+  width: 100%;
+  text-align: left;
+  padding: ${Theme.usage.space.medium};
+  border-radius: ${radius.xl};
+  border: 2px solid;
+  transition: all 200ms;
+  background: transparent;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${colors.purple400};
+    background-color: ${colors.purple50};
+  }
+`;
+
+const PromptInner = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+`;
+
+const PromptEmoji = styled.span`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+`;
+
+const PromptContent = styled.div`
+  flex: 1;
+`;
+
+const PromptHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const PromptText = styled.span`
+  font-weight: 500;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const StyledArrowRight = styled(ArrowRight)<{ $hovered: boolean }>`
+  height: 16px;
+  width: 16px;
+  transition: transform 200ms;
+  transform: ${({ $hovered }) => ($hovered ? 'translateX(4px)' : 'none')};
+`;
+
+const PromptDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const FooterDivider = styled.div`
+  padding-top: ${Theme.usage.space.xSmall};
+  border-top: 1px solid ${colors.border};
+`;
+
+const FooterHint = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  text-align: center;
+  color: ${colors.mutedForeground};
+`;
 
 export function AskAIPromptModal({
   open,
@@ -20,13 +122,10 @@ export function AskAIPromptModal({
 }: AskAIPromptModalProps) {
   const [hoveredPrompt, setHoveredPrompt] = useState<number | null>(null);
 
-  // Detect if selection is a number/metric
   const isNumeric = /^\d+\.?\d*%?|[\$\€\£]\d+/.test(selectedText.trim());
 
-  // Smart prompts based on content type
   const getSmartPrompts = () => {
     if (isNumeric) {
-      // Number/metric specific prompts
       return [
         {
           text: 'Why did this metric change?',
@@ -45,7 +144,6 @@ export function AskAIPromptModal({
         }
       ];
     } else if (contextType === 'concern') {
-      // Concern/issue prompts
       return [
         {
           text: 'What caused this issue?',
@@ -64,7 +162,6 @@ export function AskAIPromptModal({
         }
       ];
     } else {
-      // General/positive prompts
       return [
         {
           text: 'Explain this in more detail',
@@ -93,31 +190,22 @@ export function AskAIPromptModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-600" />
-            Ask AI About This
-          </DialogTitle>
+    <Dialog open={open} onOpenChange={onOpenChange} title="Ask AI About This">
+      <DialogContent style={{ maxWidth: '512px' }}>
           <DialogDescription>
             Choose a question to explore this insight with Data Debby
           </DialogDescription>
-        </DialogHeader>
 
-        {/* Selected Text Preview */}
-        <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl">
-          <p className="text-sm text-muted-foreground mb-1">Selected text:</p>
-          <p className="text-sm font-medium line-clamp-3">"{selectedText}"</p>
-        </div>
+        <PreviewBox>
+          <PreviewLabel>Selected text:</PreviewLabel>
+          <PreviewText>"{selectedText}"</PreviewText>
+        </PreviewBox>
 
-        {/* Smart Prompts */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Suggested questions:</p>
+        <PromptsContainer>
+          <PromptsLabel>Suggested questions:</PromptsLabel>
           {prompts.map((prompt, idx) => (
-            <motion.button
+            <PromptButton
               key={idx}
-              className="w-full text-left p-4 rounded-xl border-2 transition-all hover:border-purple-400 hover:bg-purple-50"
               style={{
                 borderColor: hoveredPrompt === idx ? '#a855f7' : '#e5e7eb'
               }}
@@ -127,28 +215,25 @@ export function AskAIPromptModal({
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">{prompt.icon}</span>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-sm">{prompt.text}</span>
-                    <ArrowRight className={`h-4 w-4 transition-transform ${
-                      hoveredPrompt === idx ? 'translate-x-1' : ''
-                    }`} />
-                  </div>
-                  <p className="text-xs text-muted-foreground">{prompt.description}</p>
-                </div>
-              </div>
-            </motion.button>
+              <PromptInner>
+                <PromptEmoji>{prompt.icon}</PromptEmoji>
+                <PromptContent>
+                  <PromptHeader>
+                    <PromptText>{prompt.text}</PromptText>
+                    <StyledArrowRight $hovered={hoveredPrompt === idx} />
+                  </PromptHeader>
+                  <PromptDescription>{prompt.description}</PromptDescription>
+                </PromptContent>
+              </PromptInner>
+            </PromptButton>
           ))}
-        </div>
+        </PromptsContainer>
 
-        {/* Or ask custom question hint */}
-        <div className="pt-2 border-t">
-          <p className="text-xs text-center text-muted-foreground">
+        <FooterDivider>
+          <FooterHint>
             Or ask your own question in the chat panel
-          </p>
-        </div>
+          </FooterHint>
+        </FooterDivider>
       </DialogContent>
     </Dialog>
   );

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styled from 'styled-components';
 import { Button } from './ui/button';
 import {
   Settings,
@@ -6,7 +7,9 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { toast } from 'sonner';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
+import { toast } from '@/app/lib/toast';
 
 export interface AIOverviewSettings {
   autoSync: boolean;
@@ -41,6 +44,231 @@ export const defaultAIOverviewSettings: AIOverviewSettings = {
   },
 };
 
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${Theme.usage.space.medium};
+`;
+
+const Backdrop = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+`;
+
+const ModalContainer = styled(motion.div)`
+  position: relative;
+  width: 100%;
+  max-width: 448px;
+  background: ${colors.white};
+  border-radius: ${radius.xl};
+  box-shadow: ${shadows['2xl']};
+  overflow: hidden;
+`;
+
+const Header = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-bottom: 1px solid ${colors.border};
+  background: linear-gradient(to right, ${colors.purple50}, #eff6ff);
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const HeaderTitle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const TitleText = styled.h2`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+`;
+
+const Content = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const ToggleRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+`;
+
+const ToggleButton = styled.button`
+  flex-shrink: 0;
+  margin-top: ${Theme.usage.space.xxxSmall};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+`;
+
+const ToggleContent = styled.div`
+  flex: 1;
+`;
+
+const ToggleLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const ToggleDesc = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-top: ${Theme.usage.space.xxSmall};
+`;
+
+const RecommendBox = styled.div`
+  margin-left: ${Theme.usage.space.xLarge};
+  margin-top: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+`;
+
+const RecommendText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: #14532d;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const AdvancedToggle = styled.button`
+  width: 100%;
+  text-align: left;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms;
+
+  &:hover {
+    background-color: rgba(233, 235, 239, 0.4);
+  }
+`;
+
+const AdvancedLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const AdvancedContent = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+  overflow: hidden;
+`;
+
+const SectionLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const OptionsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const DetailOption = styled.button<{ $selected: boolean }>`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  border: 1px solid ${({ $selected }) => $selected ? colors.purple500 : colors.border};
+  background-color: ${({ $selected }) => $selected ? colors.purple50 : 'transparent'};
+  cursor: pointer;
+  transition: all 200ms;
+  text-align: left;
+
+  &:hover {
+    background-color: ${({ $selected }) => $selected ? colors.purple50 : 'rgba(233, 235, 239, 0.4)'};
+  }
+`;
+
+const UnselectedCircle = styled.div<{ $size?: string }>`
+  height: ${({ $size }) => $size || '20px'};
+  width: ${({ $size }) => $size || '20px'};
+  border-radius: ${Theme.usage.borderRadius.full};
+  border: 2px solid ${colors.border};
+`;
+
+const UnselectedSquare = styled.div`
+  height: 16px;
+  width: 16px;
+  border-radius: ${Theme.usage.borderRadius.small};
+  border: 2px solid ${colors.border};
+`;
+
+const OptionText = styled.div`
+  flex: 1;
+  text-align: left;
+`;
+
+const OptionLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const OptionDesc = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const FocusOption = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 150ms;
+  text-align: left;
+
+  &:hover {
+    background-color: rgba(233, 235, 239, 0.4);
+  }
+`;
+
+const Footer = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-top: 1px solid ${colors.border};
+  background-color: rgba(236, 236, 240, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
 export function AIOverviewSettingsModal({ 
   isOpen, 
   onClose, 
@@ -70,142 +298,110 @@ export function AIOverviewSettingsModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
+      <Overlay>
+        <Backdrop
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         />
 
-        {/* Modal */}
-        <motion.div
+        <ModalContainer
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-md bg-white dark:bg-foreground/5 rounded-xl shadow-2xl overflow-hidden"
         >
-          {/* Header */}
-          <div className="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold">AI Overview Settings</h2>
-              </div>
+          <Header>
+            <HeaderRow>
+              <HeaderTitle>
+                <Settings style={{ height: '20px', width: '20px', color: colors.purple600 }} />
+                <TitleText>AI Overview Settings</TitleText>
+              </HeaderTitle>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="shrink-0"
+                style={{ flexShrink: 0 }}
               >
-                <X className="h-5 w-5" />
+                <X style={{ height: '20px', width: '20px' }} />
               </Button>
-            </div>
-          </div>
+            </HeaderRow>
+          </Header>
 
-          {/* Content */}
-          <div className="px-6 py-4 space-y-4">
-            {/* Auto-Sync */}
+          <Content>
             <div>
-              <div className="flex items-start gap-3">
-                <button
+              <ToggleRow>
+                <ToggleButton
                   onClick={() => setSettings(prev => ({ ...prev, autoSync: !prev.autoSync }))}
-                  className="shrink-0 mt-0.5"
                 >
                   {settings.autoSync ? (
-                    <CheckCircle2 className="h-5 w-5 text-purple-600" />
+                    <CheckCircle2 style={{ height: '20px', width: '20px', color: colors.purple600 }} />
                   ) : (
-                    <div className="h-5 w-5 rounded-full border-2 border-border" />
+                    <UnselectedCircle />
                   )}
-                </button>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground dark:text-foreground">
-                    Auto-sync with my scorecard
-                  </p>
-                  <p className="text-xs text-muted-foreground dark:text-muted-foreground/60 mt-1">
-                    Show insights for selected metrics only
-                  </p>
-                </div>
-              </div>
+                </ToggleButton>
+                <ToggleContent>
+                  <ToggleLabel>Auto-sync with my scorecard</ToggleLabel>
+                  <ToggleDesc>Show insights for selected metrics only</ToggleDesc>
+                </ToggleContent>
+              </ToggleRow>
 
               {settings.autoSync && (
-                <div className="ml-8 mt-2 p-2 rounded bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <p className="text-xs text-green-900 dark:text-green-200 flex items-start gap-2">
-                    <CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" />
+                <RecommendBox>
+                  <RecommendText>
+                    <CheckCircle2 style={{ height: '12px', width: '12px', flexShrink: 0, marginTop: '2px' }} />
                     <span>Recommended for most users. AI will automatically focus on your selected metrics.</span>
-                  </p>
-                </div>
+                  </RecommendText>
+                </RecommendBox>
               )}
             </div>
 
-            {/* Advanced Settings Toggle */}
-            <button
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full text-left p-3 rounded-xl border border-border/60 dark:border-border hover:bg-accent/40 dark:hover:bg-accent/40 transition-colors"
-            >
-              <p className="text-sm font-medium text-foreground dark:text-muted-foreground flex items-center gap-2">
+            <AdvancedToggle onClick={() => setShowAdvanced(!showAdvanced)}>
+              <AdvancedLabel>
                 Advanced {showAdvanced ? '▼' : '▶'}
-              </p>
-            </button>
+              </AdvancedLabel>
+            </AdvancedToggle>
 
-            {/* Advanced Settings */}
             <AnimatePresence>
               {showAdvanced && (
-                <motion.div
+                <AdvancedContent
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="space-y-4 overflow-hidden"
                 >
-                  {/* Detail Level */}
                   <div>
-                    <p className="text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
-                      Detail Level:
-                    </p>
-                    <div className="space-y-2">
+                    <SectionLabel>Detail Level:</SectionLabel>
+                    <OptionsList>
                       {[
                         { value: 'summary', label: 'Executive Summary', desc: '3-4 bullet points' },
                         { value: 'balanced', label: 'Balanced', desc: 'Current default view' },
                         { value: 'detailed', label: 'Detailed Analysis', desc: 'Expanded explanations' },
                       ].map((option) => (
-                        <button
+                        <DetailOption
                           key={option.value}
+                          $selected={settings.detailLevel === option.value}
                           onClick={() => setSettings(prev => ({ ...prev, detailLevel: option.value as any }))}
-                          className={`w-full flex items-start gap-3 p-3 rounded-xl border transition-all ${
-                            settings.detailLevel === option.value
-                              ? 'border-purple-500 bg-purple-50 dark:bg-purple-950/20'
-                              : 'border-border/60 dark:border-border hover:bg-accent/40 dark:hover:bg-accent/40'
-                          }`}
                         >
-                          <div className="shrink-0 mt-0.5">
+                          <div style={{ flexShrink: 0, marginTop: '2px' }}>
                             {settings.detailLevel === option.value ? (
-                              <CheckCircle2 className="h-5 w-5 text-purple-600" />
+                              <CheckCircle2 style={{ height: '20px', width: '20px', color: colors.purple600 }} />
                             ) : (
-                              <div className="h-5 w-5 rounded-full border-2 border-border" />
+                              <UnselectedCircle />
                             )}
                           </div>
-                          <div className="flex-1 text-left">
-                            <p className="text-sm font-medium text-foreground dark:text-foreground">
-                              {option.label}
-                            </p>
-                            <p className="text-xs text-muted-foreground dark:text-muted-foreground/60">
-                              {option.desc}
-                            </p>
-                          </div>
-                        </button>
+                          <OptionText>
+                            <OptionLabel>{option.label}</OptionLabel>
+                            <OptionDesc>{option.desc}</OptionDesc>
+                          </OptionText>
+                        </DetailOption>
                       ))}
-                    </div>
+                    </OptionsList>
                   </div>
 
-                  {/* Focus Areas */}
                   <div>
-                    <p className="text-sm font-medium text-foreground dark:text-muted-foreground mb-2">
-                      Focus on:
-                    </p>
-                    <div className="space-y-2">
+                    <SectionLabel>Focus on:</SectionLabel>
+                    <OptionsList>
                       {[
                         { key: 'goalProgress', label: 'Goal progress', desc: 'Track vs targets' },
                         { key: 'anomalies', label: 'Anomalies', desc: 'Unusual patterns' },
@@ -214,54 +410,47 @@ export function AIOverviewSettingsModal({
                         { key: 'recommendations', label: 'AI recommendations', desc: 'Next actions' },
                         { key: 'crossMetricCorrelations', label: 'Cross-metric correlations', desc: 'Related patterns' },
                       ].map((option) => (
-                        <button
+                        <FocusOption
                           key={option.key}
                           onClick={() => handleToggleFocusArea(option.key as any)}
-                          className="w-full flex items-start gap-3 p-2 rounded hover:bg-accent/40 dark:hover:bg-accent/40 transition-colors text-left"
                         >
-                          <div className="shrink-0 mt-0.5">
+                          <div style={{ flexShrink: 0, marginTop: '2px' }}>
                             {settings.focusAreas[option.key as keyof typeof settings.focusAreas] ? (
-                              <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                              <CheckCircle2 style={{ height: '16px', width: '16px', color: colors.purple600 }} />
                             ) : (
-                              <div className="h-4 w-4 rounded border-2 border-border" />
+                              <UnselectedSquare />
                             )}
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm text-foreground dark:text-foreground">
-                              {option.label}
-                            </p>
-                            <p className="text-xs text-muted-foreground dark:text-muted-foreground/60">
-                              {option.desc}
-                            </p>
-                          </div>
-                        </button>
+                          <OptionText>
+                            <OptionLabel>{option.label}</OptionLabel>
+                            <OptionDesc>{option.desc}</OptionDesc>
+                          </OptionText>
+                        </FocusOption>
                       ))}
-                    </div>
+                    </OptionsList>
                   </div>
-                </motion.div>
+                </AdvancedContent>
               )}
             </AnimatePresence>
-          </div>
+          </Content>
 
-          {/* Footer */}
-          <div className="px-6 py-4 border-t bg-muted/50 dark:bg-muted/50 flex items-center justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-            >
+          <Footer>
+            <Button variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>
             <Button
               size="sm"
               onClick={handleSave}
-              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+              style={{
+                background: 'linear-gradient(to right, #a855f7, #3b82f6)',
+                color: colors.white,
+              }}
             >
               Apply
             </Button>
-          </div>
-        </motion.div>
-      </div>
+          </Footer>
+        </ModalContainer>
+      </Overlay>
     </AnimatePresence>
   );
 }

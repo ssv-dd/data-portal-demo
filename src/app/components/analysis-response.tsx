@@ -2,6 +2,9 @@ import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboa
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
 
 interface AnalysisChartDataPoint {
   date: string;
@@ -23,163 +26,522 @@ interface AnalysisResponseProps {
   summaryData: AnalysisSummaryRow[];
 }
 
+const OuterContainer = styled.div`
+  background: rgba(236, 236, 240, 0.5);
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+`;
+
+const HeaderBar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+`;
+
+const AiIconBadge = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${colors.violet600};
+`;
+
+const HeaderInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const CompletionText = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ConfidenceBadge = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: #dcfce7;
+  color: #15803d;
+  font-weight: 500;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const IconButton = styled(Button)`
+  height: 28px;
+  padding: 0 ${Theme.usage.space.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const CollapseBtn = styled.button`
+  color: rgba(113, 113, 130, 0.6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-left: ${Theme.usage.space.xxSmall};
+  transition: color 150ms;
+
+  &:hover {
+    color: ${colors.mutedForeground};
+  }
+`;
+
+const ContentBody = styled.div`
+  padding: ${Theme.usage.space.large};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+`;
+
+const TitleBlock = styled.div``;
+
+const TitleText = styled.h2`
+  font-size: ${Theme.usage.fontSize.xLarge};
+  font-weight: 600;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const SubtitleText = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const SectionCard = styled.div`
+  background-color: ${colors.white};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  overflow: hidden;
+`;
+
+const SectionHeader = styled.div`
+  padding: ${Theme.usage.space.small} 20px;
+  background: rgba(236, 236, 240, 0.5);
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const SectionTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.foreground};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const SectionBody = styled.div`
+  padding: 20px;
+`;
+
+const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.medium};
+`;
+
+const MetricColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const MetricLabel = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+`;
+
+const MetricDescription = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.foreground};
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const SourceFooter = styled.div`
+  margin-top: ${Theme.usage.space.medium};
+  padding-top: ${Theme.usage.space.small};
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+`;
+
+const SourceText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const TableWrapper = styled.div`
+  overflow-x: auto;
+`;
+
+const StyledTable = styled.table`
+  width: 100%;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const ThCell = styled.th<{ $align?: string }>`
+  text-align: ${({ $align }) => $align || 'left'};
+  padding: ${Theme.usage.space.small} 20px;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 600;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+`;
+
+const ThRow = styled.tr`
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const DataRow = styled.tr<{ $isFirst: boolean }>`
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  ${({ $isFirst }) =>
+    $isFirst
+      ? `background: rgba(245, 243, 255, 0.4); font-weight: 500;`
+      : `&:hover { background: rgba(233, 235, 239, 0.4); }`}
+`;
+
+const TdCell = styled.td<{ $align?: string }>`
+  padding: ${Theme.usage.space.small} 20px;
+  color: ${colors.foreground};
+  text-align: ${({ $align }) => $align || 'left'};
+`;
+
+const GrowthBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  color: #15803d;
+`;
+
+type TakeawayVariant = 'green' | 'amber' | 'blue';
+
+const takeawayStyles = {
+  green: { bg: '#f0fdf4', border: '#dcfce7', iconColor: '#16a34a', titleColor: '#14532d', descColor: '#15803d' },
+  amber: { bg: '#fffbeb', border: '#fef3c7', iconColor: '#d97706', titleColor: '#78350f', descColor: '#b45309' },
+  blue: { bg: '#eff6ff', border: '#dbeafe', iconColor: '#2563eb', titleColor: '#1e3a5f', descColor: '#1d4ed8' },
+};
+
+const TakeawayCard = styled.div<{ $variant: TakeawayVariant }>`
+  display: flex;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background: ${({ $variant }) => takeawayStyles[$variant].bg};
+  border: 1px solid ${({ $variant }) => takeawayStyles[$variant].border};
+`;
+
+const TakeawayIconWrap = styled.div<{ $variant: TakeawayVariant }>`
+  color: ${({ $variant }) => takeawayStyles[$variant].iconColor};
+  flex-shrink: 0;
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const TakeawayTitle = styled.div<{ $variant: TakeawayVariant }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${({ $variant }) => takeawayStyles[$variant].titleColor};
+`;
+
+const TakeawayDesc = styled.div<{ $variant: TakeawayVariant }>`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${({ $variant }) => takeawayStyles[$variant].descColor};
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const TakeawaysBody = styled.div`
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const HoverActionsOverlay = styled.div`
+  position: absolute;
+  top: ${Theme.usage.space.xxxLarge};
+  right: 20px;
+  opacity: 0;
+  transition: opacity 200ms;
+`;
+
+const ChartSectionWrapper = styled.div`
+  background-color: ${colors.white};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  overflow: hidden;
+  position: relative;
+
+  &:hover ${HoverActionsOverlay} {
+    opacity: 1;
+  }
+`;
+
+const ChartHeaderRow = styled.div`
+  padding: ${Theme.usage.space.small} 20px;
+  background: rgba(236, 236, 240, 0.5);
+  border-bottom: 1px solid ${colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ChartTimeLabel = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const ChartBody = styled.div`
+  padding: 20px;
+`;
+
+const ActionsRow = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ChartActionBtn = styled(Button)`
+  background-color: ${colors.white};
+  box-shadow: ${shadows.card};
+  border-color: ${colors.border};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  height: 28px;
+
+  &:hover {
+    background: rgba(233, 235, 239, 0.4);
+  }
+`;
+
+const NextCutsIntro = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const NextCutsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+`;
+
+const NextCutArrowWrap = styled.span`
+  color: rgba(113, 113, 130, 0.4);
+  flex-shrink: 0;
+  margin-top: ${Theme.usage.space.xxxSmall};
+  transition: color 150ms;
+`;
+
+const NextCutButton = styled.button`
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  padding: 14px;
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: all 200ms;
+
+  &:hover {
+    border-color: ${colors.borderStrong};
+    background: rgba(233, 235, 239, 0.4);
+  }
+
+  &:hover ${NextCutArrowWrap} {
+    color: ${colors.mutedForeground};
+  }
+`;
+
+const NextCutContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const NextCutQuery = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.foreground};
+`;
+
+const NextCutTag = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: rgba(113, 113, 130, 0.6);
+  margin-top: ${Theme.usage.space.xxSmall};
+`;
+
 export function AnalysisResponse({ chartData, summaryData }: AnalysisResponseProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
-    <div className="bg-muted/50 rounded-xl border border-border/60">
+    <OuterContainer>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border/60">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-600 dark:bg-violet-500">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Completed in 3 minutes and 4 seconds</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-medium">High confidence</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground">
-            <Copy className="w-3.5 h-3.5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground">
-            <Download className="w-3.5 h-3.5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-7 px-2 text-muted-foreground">
-            <Share2 className="w-3.5 h-3.5" />
-          </Button>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="text-muted-foreground/60 hover:text-muted-foreground ml-1"
-          >
-            {isCollapsed ? <ChevronDown className="w-5 h-5" /> : <ChevronUp className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
+      <HeaderBar>
+        <HeaderLeft>
+          <AiIconBadge>
+            <Sparkles style={{ width: 16, height: 16, color: '#ffffff' }} />
+          </AiIconBadge>
+          <HeaderInfo>
+            <CompletionText>Completed in 3 minutes and 4 seconds</CompletionText>
+            <ConfidenceBadge>High confidence</ConfidenceBadge>
+          </HeaderInfo>
+        </HeaderLeft>
+        <HeaderActions>
+          <IconButton variant="ghost" size="sm">
+            <Copy style={{ width: 14, height: 14 }} />
+          </IconButton>
+          <IconButton variant="ghost" size="sm">
+            <Download style={{ width: 14, height: 14 }} />
+          </IconButton>
+          <IconButton variant="ghost" size="sm">
+            <Share2 style={{ width: 14, height: 14 }} />
+          </IconButton>
+          <CollapseBtn onClick={() => setIsCollapsed(!isCollapsed)}>
+            {isCollapsed ? <ChevronDown style={{ width: 20, height: 20 }} /> : <ChevronUp style={{ width: 20, height: 20 }} />}
+          </CollapseBtn>
+        </HeaderActions>
+      </HeaderBar>
 
       {!isCollapsed && (
-        <div className="p-6 space-y-6">
+        <ContentBody>
           {/* Title */}
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-1">DashPass Growth Deep-Dive</h2>
-            <p className="text-sm text-muted-foreground">Analysis period: Jan 15 – Mar 16, 2026 (60 days)</p>
-          </div>
+          <TitleBlock>
+            <TitleText>DashPass Growth Deep-Dive</TitleText>
+            <SubtitleText>Analysis period: Jan 15 – Mar 16, 2026 (60 days)</SubtitleText>
+          </TitleBlock>
 
           {/* Section 1: Metric Definitions */}
-          <div className="bg-white rounded-xl border border-border/60 overflow-hidden">
-            <div className="px-5 py-3 bg-muted/50 border-b border-border/60">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Metric Definitions & Methodology</h3>
-            </div>
-            <div className="p-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-3">
+          <SectionCard>
+            <SectionHeader>
+              <SectionTitle>Metric Definitions &amp; Methodology</SectionTitle>
+            </SectionHeader>
+            <SectionBody>
+              <MetricGrid>
+                <MetricColumn>
                   <div>
-                    <div className="text-xs font-medium text-muted-foreground uppercase">Active Subscribers</div>
-                    <div className="text-sm text-foreground mt-0.5">Users with active DashPass billing in the period. Excludes trial and paused.</div>
+                    <MetricLabel>Active Subscribers</MetricLabel>
+                    <MetricDescription>Users with active DashPass billing in the period. Excludes trial and paused.</MetricDescription>
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-muted-foreground uppercase">MoM Growth</div>
-                    <div className="text-sm text-foreground mt-0.5">Month-over-month change in active subscribers, seasonally adjusted.</div>
+                    <MetricLabel>MoM Growth</MetricLabel>
+                    <MetricDescription>Month-over-month change in active subscribers, seasonally adjusted.</MetricDescription>
                   </div>
-                </div>
-                <div className="space-y-3">
+                </MetricColumn>
+                <MetricColumn>
                   <div>
-                    <div className="text-xs font-medium text-muted-foreground uppercase">Retention Rate</div>
-                    <div className="text-sm text-foreground mt-0.5">Percentage of subscribers renewing at end of billing cycle (30-day rolling).</div>
+                    <MetricLabel>Retention Rate</MetricLabel>
+                    <MetricDescription>Percentage of subscribers renewing at end of billing cycle (30-day rolling).</MetricDescription>
                   </div>
                   <div>
-                    <div className="text-xs font-medium text-muted-foreground uppercase">Avg. Order Value (AOV)</div>
-                    <div className="text-sm text-foreground mt-0.5">Mean order value for DashPass members, pre-tip and pre-discount.</div>
+                    <MetricLabel>Avg. Order Value (AOV)</MetricLabel>
+                    <MetricDescription>Mean order value for DashPass members, pre-tip and pre-discount.</MetricDescription>
                   </div>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/40">
-                <p className="text-xs text-muted-foreground/60">Sources: billing_events, subscription_status, orders_completed | Warehouse: Snowflake prod | Last refreshed: 12 min ago</p>
-              </div>
-            </div>
-          </div>
+                </MetricColumn>
+              </MetricGrid>
+              <SourceFooter>
+                <SourceText>Sources: billing_events, subscription_status, orders_completed | Warehouse: Snowflake prod | Last refreshed: 12 min ago</SourceText>
+              </SourceFooter>
+            </SectionBody>
+          </SectionCard>
 
           {/* Section 2: Executive Summary Table */}
-          <div className="bg-white rounded-xl border border-border/60 overflow-hidden">
-            <div className="px-5 py-3 bg-muted/50 border-b border-border/60">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Executive Summary by Region</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+          <SectionCard>
+            <SectionHeader>
+              <SectionTitle>Executive Summary by Region</SectionTitle>
+            </SectionHeader>
+            <TableWrapper>
+              <StyledTable>
                 <thead>
-                  <tr className="border-b border-border/60">
-                    <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase">Region</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase">Subscribers</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase">Growth (MoM)</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase">Retention</th>
-                    <th className="text-right px-5 py-3 text-xs font-semibold text-muted-foreground uppercase">AOV</th>
-                  </tr>
+                  <ThRow>
+                    <ThCell>Region</ThCell>
+                    <ThCell $align="right">Subscribers</ThCell>
+                    <ThCell $align="right">Growth (MoM)</ThCell>
+                    <ThCell $align="right">Retention</ThCell>
+                    <ThCell $align="right">AOV</ThCell>
+                  </ThRow>
                 </thead>
                 <tbody>
                   {summaryData.map((row, i) => (
-                    <tr key={row.region} className={`border-b border-border/40 ${i === 0 ? 'bg-violet-50/40 dark:bg-violet-950/20 font-medium' : 'hover:bg-accent/40'}`}>
-                      <td className="px-5 py-3 text-foreground">{row.region}</td>
-                      <td className="px-5 py-3 text-right text-foreground">{row.subs}</td>
-                      <td className="px-5 py-3 text-right">
-                        <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400">
-                          <TrendingUp className="w-3 h-3" />
+                    <DataRow key={row.region} $isFirst={i === 0}>
+                      <TdCell>{row.region}</TdCell>
+                      <TdCell $align="right">{row.subs}</TdCell>
+                      <TdCell $align="right">
+                        <GrowthBadge>
+                          <TrendingUp style={{ width: 12, height: 12 }} />
                           {row.growth}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-right text-foreground">{row.retention}</td>
-                      <td className="px-5 py-3 text-right text-foreground">{row.aov}</td>
-                    </tr>
+                        </GrowthBadge>
+                      </TdCell>
+                      <TdCell $align="right">{row.retention}</TdCell>
+                      <TdCell $align="right">{row.aov}</TdCell>
+                    </DataRow>
                   ))}
                 </tbody>
-              </table>
-            </div>
-          </div>
+              </StyledTable>
+            </TableWrapper>
+          </SectionCard>
 
           {/* Section 3: Key Takeaways */}
-          <div className="bg-white rounded-xl border border-border/60 overflow-hidden">
-            <div className="px-5 py-3 bg-muted/50 border-b border-border/60">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Key Takeaways & Trend Highlights</h3>
-            </div>
-            <div className="p-5 space-y-4">
-              <div className="flex gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
-                <TrendingUp className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+          <SectionCard>
+            <SectionHeader>
+              <SectionTitle>Key Takeaways &amp; Trend Highlights</SectionTitle>
+            </SectionHeader>
+            <TakeawaysBody>
+              <TakeawayCard $variant="green">
+                <TakeawayIconWrap $variant="green">
+                  <TrendingUp style={{ width: 20, height: 20 }} />
+                </TakeawayIconWrap>
                 <div>
-                  <div className="text-sm font-medium text-green-900">Subscriptions surpassed 14M milestone</div>
-                  <div className="text-xs text-green-700 mt-0.5">14.2M active subscribers — 12.4% MoM growth, well ahead of 10% target. The fastest growth period since Q2 2025.</div>
+                  <TakeawayTitle $variant="green">Subscriptions surpassed 14M milestone</TakeawayTitle>
+                  <TakeawayDesc $variant="green">14.2M active subscribers — 12.4% MoM growth, well ahead of 10% target. The fastest growth period since Q2 2025.</TakeawayDesc>
                 </div>
-              </div>
-              <div className="flex gap-3 p-3 bg-green-50 rounded-lg border border-green-100">
-                <TrendingUp className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+              </TakeawayCard>
+              <TakeawayCard $variant="green">
+                <TakeawayIconWrap $variant="green">
+                  <TrendingUp style={{ width: 20, height: 20 }} />
+                </TakeawayIconWrap>
                 <div>
-                  <div className="text-sm font-medium text-green-900">Retention improved +3.2pp to 87.3%</div>
-                  <div className="text-xs text-green-700 mt-0.5">Driven by the new "pause instead of cancel" flow shipped Feb 1. Churn rate dropped from 15.9% to 12.7%.</div>
+                  <TakeawayTitle $variant="green">Retention improved +3.2pp to 87.3%</TakeawayTitle>
+                  <TakeawayDesc $variant="green">Driven by the new &quot;pause instead of cancel&quot; flow shipped Feb 1. Churn rate dropped from 15.9% to 12.7%.</TakeawayDesc>
                 </div>
-              </div>
-              <div className="flex gap-3 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                <ArrowRight className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+              </TakeawayCard>
+              <TakeawayCard $variant="amber">
+                <TakeawayIconWrap $variant="amber">
+                  <ArrowRight style={{ width: 20, height: 20 }} />
+                </TakeawayIconWrap>
                 <div>
-                  <div className="text-sm font-medium text-amber-900">Order frequency gap widening</div>
-                  <div className="text-xs text-amber-700 mt-0.5">DashPass members order 4.2x/week vs 1.8x for non-members (ratio: 2.3x, up from 2.1x). Suggests strong value lock-in.</div>
+                  <TakeawayTitle $variant="amber">Order frequency gap widening</TakeawayTitle>
+                  <TakeawayDesc $variant="amber">DashPass members order 4.2x/week vs 1.8x for non-members (ratio: 2.3x, up from 2.1x). Suggests strong value lock-in.</TakeawayDesc>
                 </div>
-              </div>
-              <div className="flex gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                <TrendingUp className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+              </TakeawayCard>
+              <TakeawayCard $variant="blue">
+                <TakeawayIconWrap $variant="blue">
+                  <TrendingUp style={{ width: 20, height: 20 }} />
+                </TakeawayIconWrap>
                 <div>
-                  <div className="text-sm font-medium text-blue-900">SF Bay Area leads regional growth at +18.2%</div>
-                  <div className="text-xs text-blue-700 mt-0.5">Correlated with the Feb 10 "DashPass for Families" launch in Bay Area. NYC (+15%) and Chicago (+13%) also strong.</div>
+                  <TakeawayTitle $variant="blue">SF Bay Area leads regional growth at +18.2%</TakeawayTitle>
+                  <TakeawayDesc $variant="blue">Correlated with the Feb 10 &quot;DashPass for Families&quot; launch in Bay Area. NYC (+15%) and Chicago (+13%) also strong.</TakeawayDesc>
                 </div>
-              </div>
-            </div>
-          </div>
+              </TakeawayCard>
+            </TakeawaysBody>
+          </SectionCard>
 
           {/* Section 4: Growth Trend Chart */}
-          <div className="bg-white rounded-xl border border-border/60 overflow-hidden relative group">
-            <div className="px-5 py-3 bg-muted/50 border-b border-border/60 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Subscriber Growth Trend</h3>
-              <span className="text-xs text-muted-foreground/60">60-day window • millions</span>
-            </div>
-            <div className="p-5">
+          <ChartSectionWrapper>
+            <ChartHeaderRow>
+              <SectionTitle>Subscriber Growth Trend</SectionTitle>
+              <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
+            </ChartHeaderRow>
+            <ChartBody>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                   <defs>
@@ -199,57 +561,55 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                   <Line type="monotone" dataKey="target" stroke="#9ca3af" strokeWidth={1.5} strokeDasharray="6 3" dot={false} name="Target" />
                 </AreaChart>
               </ResponsiveContainer>
-            </div>
-            {/* Hover action buttons */}
-            <div className="absolute top-12 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="bg-white shadow-md hover:bg-accent/40 border-border text-xs h-7">
-                  <LayoutDashboard className="w-3.5 h-3.5 mr-1" />
+            </ChartBody>
+            <HoverActionsOverlay>
+              <ActionsRow>
+                <ChartActionBtn size="sm" variant="outline">
+                  <LayoutDashboard style={{ width: 14, height: 14, marginRight: '4px' }} />
                   Add to Dashboard
-                </Button>
-                <Button size="sm" variant="outline" className="bg-white shadow-md hover:bg-accent/40 border-border text-xs h-7">
-                  <Code2 className="w-3.5 h-3.5 mr-1" />
+                </ChartActionBtn>
+                <ChartActionBtn size="sm" variant="outline">
+                  <Code2 style={{ width: 14, height: 14, marginRight: '4px' }} />
                   Open SQL
-                </Button>
-                <Button size="sm" variant="outline" className="bg-white shadow-md hover:bg-accent/40 border-border text-xs h-7">
-                  <FileText className="w-3.5 h-3.5 mr-1" />
+                </ChartActionBtn>
+                <ChartActionBtn size="sm" variant="outline">
+                  <FileText style={{ width: 14, height: 14, marginRight: '4px' }} />
                   Notebook
-                </Button>
-              </div>
-            </div>
-          </div>
+                </ChartActionBtn>
+              </ActionsRow>
+            </HoverActionsOverlay>
+          </ChartSectionWrapper>
 
           {/* Section 5: Recommended Next Cuts */}
-          <div className="bg-white rounded-xl border border-border/60 overflow-hidden">
-            <div className="px-5 py-3 bg-muted/50 border-b border-border/60">
-              <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">Recommended Next Cuts</h3>
-            </div>
-            <div className="p-5">
-              <p className="text-sm text-muted-foreground mb-4">Based on this analysis, the agent suggests these follow-up explorations:</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <SectionCard>
+            <SectionHeader>
+              <SectionTitle>Recommended Next Cuts</SectionTitle>
+            </SectionHeader>
+            <SectionBody>
+              <NextCutsIntro>Based on this analysis, the agent suggests these follow-up explorations:</NextCutsIntro>
+              <NextCutsGrid>
                 {[
                   { q: 'Break down growth by acquisition channel (organic vs paid vs referral)', tag: 'Segmentation' },
                   { q: 'Compare "pause instead of cancel" cohort retention vs control', tag: 'A/B Analysis' },
                   { q: 'DashPass for Families adoption by market since Feb 10 launch', tag: 'Feature Impact' },
                   { q: 'Predict next 30-day subscriber trajectory with current trends', tag: 'Forecast' },
                 ].map((item) => (
-                  <button
-                    key={item.q}
-                    className="flex items-start gap-3 p-3.5 rounded-xl border border-border/60 hover:border-border-strong hover:bg-accent/40 transition-all text-left group/item"
-                  >
-                    <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-violet-600 dark:text-violet-400" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm text-foreground group-hover/item:text-foreground">{item.q}</div>
-                      <div className="text-xs text-muted-foreground/60 mt-1">{item.tag}</div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground/40 group-hover/item:text-muted-foreground shrink-0 mt-0.5" />
-                  </button>
+                  <NextCutButton key={item.q}>
+                    <Sparkles style={{ width: 16, height: 16, color: colors.violet600, flexShrink: 0, marginTop: '2px' }} />
+                    <NextCutContent>
+                      <NextCutQuery>{item.q}</NextCutQuery>
+                      <NextCutTag>{item.tag}</NextCutTag>
+                    </NextCutContent>
+                    <NextCutArrowWrap>
+                      <ArrowRight style={{ width: 16, height: 16 }} />
+                    </NextCutArrowWrap>
+                  </NextCutButton>
                 ))}
-              </div>
-            </div>
-          </div>
-        </div>
+              </NextCutsGrid>
+            </SectionBody>
+          </SectionCard>
+        </ContentBody>
       )}
-    </div>
+    </OuterContainer>
   );
 }

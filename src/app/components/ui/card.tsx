@@ -1,92 +1,89 @@
-import * as React from "react";
+import React from 'react';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
 
-import { cn } from "./utils";
+const StyledCard = styled.div`
+  background-color: ${colors.card};
+  color: ${colors.cardForeground};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+  border-radius: ${radius['2xl']};
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: ${shadows.card};
+`;
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card"
-      className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-2xl border border-border/60 shadow-card",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const StyledCardHeader = styled.div`
+  display: grid;
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.large} 0;
+`;
 
-function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-header"
-      className={cn(
-        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 pt-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const StyledCardTitle = styled.h4`
+  leading: none;
+  letter-spacing: -0.2px;
+`;
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <h4
-      data-slot="card-title"
-      className={cn("leading-none tracking-tight", className)}
-      {...props}
-    />
-  );
-}
+const StyledCardDescription = styled.p`
+  color: ${colors.mutedForeground};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <p
-      data-slot="card-description"
-      className={cn("text-muted-foreground", className)}
-      {...props}
-    />
-  );
-}
+const StyledCardAction = styled.div`
+  grid-column-start: 2;
+  grid-row: 1 / span 2;
+  align-self: start;
+  justify-self: end;
+`;
 
-function CardAction({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-action"
-      className={cn(
-        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const StyledCardContent = styled.div`
+  padding: 0 ${Theme.usage.space.large};
+  &:last-child {
+    padding-bottom: ${Theme.usage.space.large};
+  }
+`;
 
-function CardContent({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn("px-6 [&:last-child]:pb-6", className)}
-      {...props}
-    />
-  );
-}
+const StyledCardFooter = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 0 ${Theme.usage.space.large} ${Theme.usage.space.large};
+`;
 
-function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="card-footer"
-      className={cn("flex items-center px-6 pb-6 [.border-t]:pt-6", className)}
-      {...props}
-    />
-  );
-}
+export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <StyledCard ref={ref} {...props} />
+);
 
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardAction,
-  CardDescription,
-  CardContent,
-};
+export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <StyledCardHeader ref={ref} {...props} />
+);
+
+export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  (props, ref) => <StyledCardTitle ref={ref} {...props} />
+);
+
+export const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  (props, ref) => <StyledCardDescription ref={ref} {...props} />
+);
+
+export const CardAction = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <StyledCardAction ref={ref} {...props} />
+);
+
+export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <StyledCardContent ref={ref} {...props} />
+);
+
+export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  (props, ref) => <StyledCardFooter ref={ref} {...props} />
+);
+
+Card.displayName = 'Card';
+CardHeader.displayName = 'CardHeader';
+CardTitle.displayName = 'CardTitle';
+CardDescription.displayName = 'CardDescription';
+CardAction.displayName = 'CardAction';
+CardContent.displayName = 'CardContent';
+CardFooter.displayName = 'CardFooter';

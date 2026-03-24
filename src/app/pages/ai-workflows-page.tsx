@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styled from 'styled-components';
 import { motion } from 'motion/react';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
@@ -12,6 +13,342 @@ import { LeftPanel } from '../components/layout/left-panel';
 import { WorkflowNodesPanel } from '../components/panels/workflow-nodes-panel';
 import { mockWorkflows, templates, statusConfig } from '../data/mock/workflows-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
+import { Theme } from '@doordash/prism-react';
+import { colors, glassPanel, shadows } from '@/styles/theme';
+
+const PageContainer = styled.div`
+  height: 100%;
+  background-color: ${colors.background};
+  overflow: hidden;
+  position: relative;
+`;
+
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+`;
+
+const ContentLayout = styled.div`
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall};
+`;
+
+const CenterPanel = styled.div`
+  flex: 1;
+  ${glassPanel}
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  border: 1px solid ${colors.border};
+  overflow: auto;
+`;
+
+const CenterContent = styled.div`
+  padding: ${Theme.usage.space.xLarge};
+`;
+
+const PageHeader = styled.div`
+  margin-bottom: ${Theme.usage.space.xLarge};
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const PageTitle = styled.h1`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  color: ${colors.slate900};
+  font-weight: 600;
+`;
+
+const PageDescription = styled.p`
+  color: ${colors.slate600};
+`;
+
+const StatsGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: ${Theme.usage.space.medium};
+  margin-bottom: ${Theme.usage.space.xLarge};
+`;
+
+const StatCard = styled(motion.div)`
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: ${Theme.usage.space.medium};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const StatIconBox = styled.div<{ $color: string }>`
+  width: 40px;
+  height: 40px;
+  border-radius: ${Theme.usage.borderRadius.large};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: ${({ $color }) => `${$color}15`};
+`;
+
+const StatValue = styled.div`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  font-weight: 700;
+  color: ${colors.slate900};
+`;
+
+const StatLabel = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate600};
+`;
+
+const ActionsBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const SearchWrapper = styled.div`
+  flex: 1;
+  position: relative;
+`;
+
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const NewButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.white};
+  border: 1px solid ${colors.slate200};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.slate900};
+  cursor: pointer;
+  box-shadow: ${shadows.sm};
+  transition: background-color 200ms;
+
+  &:hover {
+    background-color: ${colors.slate50};
+  }
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const WorkflowList = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.xxLarge};
+`;
+
+const WorkflowCard = styled(motion.div)`
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: 20px;
+  cursor: pointer;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const WorkflowRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+const WorkflowContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const WorkflowTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const WorkflowTitle = styled.h3`
+  font-weight: 500;
+  color: ${colors.slate900};
+`;
+
+const WorkflowDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const WorkflowMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const WorkflowActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  opacity: 0;
+  transition: opacity 200ms;
+
+  ${WorkflowCard}:hover & {
+    opacity: 1;
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 64px 0;
+  background-color: rgba(236, 236, 240, 0.5);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  margin-bottom: ${Theme.usage.space.xxLarge};
+`;
+
+const EmptyIcon = styled(Zap)`
+  width: 48px;
+  height: 48px;
+  margin: 0 auto ${Theme.usage.space.medium};
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const EmptyText = styled.p`
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const TemplatesSection = styled.div``;
+
+const TemplatesTitle = styled.h2`
+  font-size: ${Theme.usage.fontSize.medium};
+  color: ${colors.slate900};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const TemplatesGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${Theme.usage.space.medium};
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const TemplateCard = styled(motion.div)`
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const TemplateHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const TemplateIconBox = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: ${Theme.usage.borderRadius.large};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(139, 92, 246, 0.1);
+`;
+
+const TemplateBadge = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: ${colors.muted};
+  color: ${colors.mutedForeground};
+`;
+
+const TemplateName = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const TemplateDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const TemplateFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const TemplateSteps = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: rgba(113, 113, 130, 0.6);
+`;
+
+const TemplateAction = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.violet600};
+  opacity: 0;
+  transition: opacity 200ms;
+
+  ${TemplateCard}:hover & {
+    opacity: 1;
+  }
+`;
 
 export function AIWorkflowsPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,16 +371,13 @@ export function AIWorkflowsPage() {
   };
 
   return (
-    <div className="h-full bg-background overflow-hidden relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+    <PageContainer>
+      <GradientOverlay />
 
-      {/* Gradient Orbs */}
-      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
-      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
+      <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
+      <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
-      <div className="relative z-10 h-full flex gap-2 p-2">
-      {/* Left Panel: Workflows/Nodes */}
+      <ContentLayout>
       <LeftPanel
         tabs={[
           { key: 'workflows', label: 'Workflows', icon: GitBranch },
@@ -59,178 +393,184 @@ export function AIWorkflowsPage() {
         <WorkflowNodesPanel activeTab={leftTab} />
       </LeftPanel>
 
-      {/* Center: Workflow List */}
-      <div className="flex-1 glass-panel rounded-2xl border border-border/60 dark:border-white/10 overflow-auto">
-        <div className="p-8">
-          <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <Zap className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-              <h1 className="text-2xl text-slate-900 dark:text-white font-semibold">AI Workflows</h1>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400">
-              Automate recurring data tasks — scheduled reports, alerts, pipelines, and AI analyses
-            </p>
+      <CenterPanel>
+        <CenterContent>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+            <PageHeader>
+              <TitleRow>
+                <Zap style={{ width: '24px', height: '24px', color: colors.violet600 }} />
+                <PageTitle>AI Workflows</PageTitle>
+              </TitleRow>
+              <PageDescription>
+                Automate recurring data tasks — scheduled reports, alerts, pipelines, and AI analyses
+              </PageDescription>
+            </PageHeader>
           </motion.div>
 
-          {/* Summary Stats */}
-          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-4 gap-4 mb-8">
+          <StatsGrid variants={staggerContainer} initial="hidden" animate="visible">
             {[
               { label: 'Total Workflows', value: counts.all, icon: Zap, color: 'var(--dd-primary)' },
               { label: 'Active', value: counts.active, icon: Play, color: '#10b981' },
               { label: 'Paused', value: counts.paused, icon: Pause, color: '#f59e0b' },
               { label: 'Failed', value: counts.failed, icon: AlertCircle, color: '#ef4444' },
             ].map((stat) => (
-              <motion.div key={stat.label} variants={staggerItem} className="bg-background/40 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
-                  <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
-                </div>
+              <StatCard key={stat.label} variants={staggerItem}>
+                <StatIconBox $color={stat.color}>
+                  <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
+                </StatIconBox>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</div>
-                  <div className="text-xs text-slate-600 dark:text-slate-400">{stat.label}</div>
+                  <StatValue>{stat.value}</StatValue>
+                  <StatLabel>{stat.label}</StatLabel>
                 </div>
-              </motion.div>
+              </StatCard>
             ))}
-          </motion.div>
+          </StatsGrid>
 
-          {/* Actions Bar */}
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+          <ActionsBar>
+            <SearchWrapper>
+              <SearchIcon />
               <Input
                 placeholder="Search workflows..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-background/50 border-border/60 dark:border-white/10"
+                style={{ paddingLeft: '40px', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderColor: colors.border }}
               />
-            </div>
-            <button className="inline-flex items-center gap-2 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.15] transition-colors duration-200 shadow-sm">
-              <Plus className="h-4 w-4" />
+            </SearchWrapper>
+            <NewButton>
+              <Plus style={{ height: '16px', width: '16px' }} />
               New workflow
-            </button>
-          </div>
+            </NewButton>
+          </ActionsBar>
 
-          {/* Filter Tabs */}
-          <div className="flex items-center gap-2 mb-6">
+          <FilterRow>
             {(['all', 'active', 'paused', 'failed'] as const).map((f) => (
               <Button
                 key={f}
                 variant="outline"
                 size="sm"
-                className={filter === f ? 'bg-muted text-foreground' : ''}
+                style={filter === f ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
                 onClick={() => setFilter(f)}
               >
                 {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} ({counts[f]})
               </Button>
             ))}
-          </div>
+          </FilterRow>
 
-          {/* Workflows List */}
           {filteredWorkflows.length > 0 ? (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-3 mb-10">
+            <WorkflowList variants={staggerContainer} initial="hidden" animate="visible">
               {filteredWorkflows.map((workflow) => {
                 const status = statusConfig[workflow.status];
                 const StatusIcon = status.icon;
                 return (
-                  <motion.div
+                  <WorkflowCard
                     key={workflow.id}
                     variants={staggerItem}
-                    className="bg-background/40 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl p-5 hover:shadow-card-hover transition-shadow cursor-pointer group"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-1.5">
-                          <h3 className="font-medium text-slate-900 dark:text-white">{workflow.title}</h3>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${status.bg} ${status.color}`}>
-                            <StatusIcon className="w-3 h-3" />
+                    <WorkflowRow>
+                      <WorkflowContent>
+                        <WorkflowTitleRow>
+                          <WorkflowTitle>{workflow.title}</WorkflowTitle>
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              borderRadius: '9999px',
+                              fontSize: '12px',
+                              fontWeight: 500,
+                              color: status.color,
+                              backgroundColor: status.bg,
+                              border: `1px solid ${status.borderColor}`,
+                            }}
+                          >
+                            <StatusIcon style={{ width: '12px', height: '12px' }} />
                             {status.label}
                           </span>
-                          {workflow.shared && <Users className="w-3.5 h-3.5 text-muted-foreground/60" />}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-3">{workflow.description}</p>
-                        <div className="flex items-center gap-5 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
+                          {workflow.shared && <Users style={{ width: '14px', height: '14px', color: 'rgba(113, 113, 130, 0.6)' }} />}
+                        </WorkflowTitleRow>
+                        <WorkflowDescription>{workflow.description}</WorkflowDescription>
+                        <WorkflowMeta>
+                          <MetaItem>
+                            <Calendar style={{ width: '12px', height: '12px' }} />
                             <span>{workflow.schedule}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                          </MetaItem>
+                          <MetaItem>
+                            <Clock style={{ width: '12px', height: '12px' }} />
                             <span>Last run: {workflow.lastRun}</span>
-                          </div>
+                          </MetaItem>
                           {workflow.nextRun && (
-                            <div className="flex items-center gap-1">
-                              <RefreshCw className="w-3 h-3" />
+                            <MetaItem>
+                              <RefreshCw style={{ width: '12px', height: '12px' }} />
                               <span>Next: {workflow.nextRun}</span>
-                            </div>
+                            </MetaItem>
                           )}
                           <span>{workflow.steps} steps</span>
                           <span>Success rate: {workflow.successRate}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        </WorkflowMeta>
+                      </WorkflowContent>
+                      <WorkflowActions>
                         {workflow.status === 'active' && (
-                          <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-                            <Pause className="w-3 h-3" /> Pause
+                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
+                            <Pause style={{ width: '12px', height: '12px' }} /> Pause
                           </Button>
                         )}
                         {workflow.status === 'paused' && (
-                          <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-                            <Play className="w-3 h-3" /> Resume
+                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
+                            <Play style={{ width: '12px', height: '12px' }} /> Resume
                           </Button>
                         )}
                         {workflow.status === 'failed' && (
-                          <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-                            <RefreshCw className="w-3 h-3" /> Retry
+                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
+                            <RefreshCw style={{ width: '12px', height: '12px' }} /> Retry
                           </Button>
                         )}
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                          <MoreVertical className="w-4 h-4 text-muted-foreground/60" />
+                        <Button variant="ghost" size="sm" style={{ height: '28px', width: '28px', padding: 0 }}>
+                          <MoreVertical style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />
                         </Button>
-                        <ChevronRight className="w-4 h-4 text-border" />
-                      </div>
-                    </div>
-                  </motion.div>
+                        <ChevronRight style={{ width: '16px', height: '16px', color: colors.border }} />
+                      </WorkflowActions>
+                    </WorkflowRow>
+                  </WorkflowCard>
                 );
               })}
-            </motion.div>
+            </WorkflowList>
           ) : (
-            <div className="text-center py-16 bg-muted/50 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl mb-10">
-              <Zap className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60 dark:text-slate-600" />
-              <p className="text-slate-600 dark:text-slate-400 mb-4">No workflows match your search</p>
-            </div>
+            <EmptyState>
+              <EmptyIcon />
+              <EmptyText>No workflows match your search</EmptyText>
+            </EmptyState>
           )}
 
-          {/* Templates */}
-          <div>
-            <h2 className="text-lg text-slate-900 dark:text-white mb-4">Workflow Templates</h2>
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <TemplatesSection>
+            <TemplatesTitle>Workflow Templates</TemplatesTitle>
+            <TemplatesGrid variants={staggerContainer} initial="hidden" animate="visible">
               {templates.map((template) => (
-                <motion.div
+                <TemplateCard
                   key={template.id}
                   variants={staggerItem}
-                  className="border border-border/60 dark:border-white/10 rounded-2xl p-5 bg-background/40 dark:bg-white/[0.04] hover:shadow-card-hover transition-shadow cursor-pointer group"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-violet-500/10 dark:bg-violet-500/20">
-                      <template.icon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                    </div>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">{template.category}</span>
-                  </div>
-                  <h3 className="text-sm font-medium text-foreground mb-1">{template.name}</h3>
-                  <p className="text-xs text-muted-foreground mb-3">{template.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground/60">{template.steps} steps</span>
-                    <span className="text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity text-violet-600 dark:text-violet-400">
+                  <TemplateHeader>
+                    <TemplateIconBox>
+                      <template.icon style={{ width: '20px', height: '20px', color: colors.violet600 }} />
+                    </TemplateIconBox>
+                    <TemplateBadge>{template.category}</TemplateBadge>
+                  </TemplateHeader>
+                  <TemplateName>{template.name}</TemplateName>
+                  <TemplateDescription>{template.description}</TemplateDescription>
+                  <TemplateFooter>
+                    <TemplateSteps>{template.steps} steps</TemplateSteps>
+                    <TemplateAction>
                       Use template →
-                    </span>
-                  </div>
-                </motion.div>
+                    </TemplateAction>
+                  </TemplateFooter>
+                </TemplateCard>
               ))}
-            </motion.div>
-          </div>
-        </div>
-      </div>
+            </TemplatesGrid>
+          </TemplatesSection>
+        </CenterContent>
+      </CenterPanel>
 
-      {/* Right: AI Assistant */}
       <AIAssistantSidebar
         title="Workflow Assistant"
         contextLabel="Workflows aware"
@@ -244,7 +584,7 @@ export function AIWorkflowsPage() {
         ]}
         suggestedActions={['Schedule workflow', 'Add trigger', 'View logs']}
       />
-      </div>
-    </div>
+      </ContentLayout>
+    </PageContainer>
   );
 }
