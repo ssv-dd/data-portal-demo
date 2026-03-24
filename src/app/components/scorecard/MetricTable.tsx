@@ -96,7 +96,7 @@ const Table = styled.table`
 `;
 
 const TableHead = styled.thead`
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border-top: 1px solid ${colors.border};
   border-bottom: 1px solid ${colors.border};
 `;
@@ -112,10 +112,10 @@ const TableRow = styled.tr<{ $even: boolean }>`
   border-bottom: 1px solid ${colors.border};
   cursor: pointer;
   transition: background-color 150ms;
-  background-color: ${({ $even }) => ($even ? colors.white : 'rgba(236, 236, 240, 0.1)')};
+  background-color: ${({ $even }) => ($even ? colors.white : 'rgb(var(--app-muted-rgb) / 0.1)')};
 
   &:hover {
-    background-color: rgba(236, 236, 240, 0.3);
+    background-color: rgb(var(--app-muted-rgb) / 0.3);
   }
 `;
 

@@ -17,7 +17,7 @@ const BadgeWrapper = styled.div<{ $verified: boolean }>`
   border-radius: ${radius.md};
   font-size: ${Theme.usage.fontSize.xxSmall};
   background: ${({ $verified }) =>
-    $verified ? "#f0fdf4" : "rgba(236, 236, 240, 0.5)"};
+    $verified ? "var(--app-status-success-bg-light)" : "rgb(var(--app-muted-rgb) / 0.5)"};
   color: ${({ $verified }) => ($verified ? "#15803d" : colors.mutedForeground)};
   border: 1px solid
     ${({ $verified }) => ($verified ? "#bbf7d0" : colors.border)};

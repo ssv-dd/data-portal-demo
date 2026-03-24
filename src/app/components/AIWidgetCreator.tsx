@@ -62,7 +62,7 @@ const InputGlowWrap = styled.div`
 const InputGlow = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1));
+  background: linear-gradient(to right, rgb(var(--app-purple-rgb) / 0.1), rgb(var(--app-blue-rgb) / 0.1));
   border-radius: ${radius.lg};
   filter: blur(12px);
 `;
@@ -74,11 +74,11 @@ const InputContainer = styled.div`
   padding: ${Theme.usage.space.xxSmall};
   background-color: ${colors.background};
   border-radius: ${radius.lg};
-  border: 2px solid rgba(3, 2, 19, 0.2);
+  border: 2px solid rgb(var(--app-primary-rgb) / 0.2);
   transition: border-color 150ms;
 
   &:focus-within {
-    border-color: rgba(3, 2, 19, 0.4);
+    border-color: rgb(var(--app-primary-rgb) / 0.4);
   }
 `;
 
@@ -92,7 +92,7 @@ const SuggestionCard = styled.div`
   border: 1px solid ${colors.border};
   border-radius: ${radius.lg};
   padding: ${Theme.usage.space.medium};
-  background: rgba(236, 236, 240, 0.3);
+  background: rgb(var(--app-muted-rgb) / 0.3);
 `;
 
 const SuggestionLabel = styled.p`
@@ -117,8 +117,8 @@ const SuggestionPill = styled.button`
   transition: all 150ms;
 
   &:hover {
-    border-color: rgba(3, 2, 19, 0.5);
-    background: rgba(3, 2, 19, 0.05);
+    border-color: rgb(var(--app-primary-rgb) / 0.5);
+    background: rgb(var(--app-primary-rgb) / 0.05);
   }
 `;
 
@@ -142,8 +142,8 @@ const ProcessingSection = styled.div`
 
 const QueryCard = styled(Card)`
   padding: ${Theme.usage.space.medium};
-  background: rgba(3, 2, 19, 0.05);
-  border-color: rgba(3, 2, 19, 0.2);
+  background: rgb(var(--app-primary-rgb) / 0.05);
+  border-color: rgb(var(--app-primary-rgb) / 0.2);
 `;
 
 const ThoughtStream = styled.div`
@@ -171,7 +171,7 @@ const ThoughtIcon = styled.div`
 
 const QuestionCard = styled(Card)`
   padding: ${Theme.usage.space.medium};
-  background: linear-gradient(to bottom right, #eff6ff, #eef2ff);
+  background: linear-gradient(to bottom right, var(--app-status-info-bg), #eef2ff);
   border-color: #bfdbfe;
 `;
 
@@ -184,7 +184,7 @@ const QuestionHeader = styled.div`
 
 const QuestionBubble = styled.div`
   padding: ${Theme.usage.space.xxSmall};
-  background-color: #2563eb;
+  background-color: var(--app-status-info-solid);
   border-radius: ${Theme.usage.borderRadius.full};
   flex-shrink: 0;
 `;
@@ -201,7 +201,7 @@ const AnswerBox = styled.div`
   background: ${colors.white};
   border-radius: ${radius.lg};
   border: 1px solid ${colors.border};
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 1px 2px rgb(var(--app-overlay-rgb) / 0.05);
 `;
 
 const AnswerContent = styled.div`
@@ -219,9 +219,9 @@ const OptionsContainer = styled.div`
 
 const FinalCard = styled(Card)`
   padding: 20px;
-  background: linear-gradient(to bottom right, #f0fdf4, #ecfdf5);
+  background: linear-gradient(to bottom right, var(--app-status-success-bg-light), #ecfdf5);
   border-color: #86efac;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 15px -3px rgb(var(--app-overlay-rgb) / 0.1);
 `;
 
 const FinalHeader = styled.div`
@@ -232,7 +232,7 @@ const FinalHeader = styled.div`
 
 const FinalIconWrap = styled.div`
   padding: ${Theme.usage.space.xSmall};
-  background-color: #16a34a;
+  background-color: var(--app-status-success-solid-alt);
   border-radius: ${Theme.usage.borderRadius.full};
   flex-shrink: 0;
 `;

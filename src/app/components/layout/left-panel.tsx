@@ -26,7 +26,7 @@ interface LeftPanelProps {
 const PanelContainer = styled(motion.div)<{ $collapsed: boolean }>`
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
   border-radius: ${radius['2xl']};
   overflow: hidden;
   ${({ $collapsed }) => $collapsed ? glassPanelSubtle : glassPanel}
@@ -37,7 +37,7 @@ const HeaderBar = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: ${Theme.usage.space.small};
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const HeaderTitle = styled.h3`
@@ -54,7 +54,7 @@ const CollapseButton = styled.button<{ $centered?: boolean }>`
   ${({ $centered }) => $centered && 'margin: 0 auto;'}
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgb(var(--app-overlay-rgb) / 0.04);
   }
 
   svg {
@@ -65,7 +65,7 @@ const CollapseButton = styled.button<{ $centered?: boolean }>`
 
 const SearchContainer = styled.div`
   padding: ${Theme.usage.space.small};
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const SearchWrapper = styled.div`
@@ -88,8 +88,8 @@ const SearchInput = styled.input`
   padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xxLarge};
   border-radius: ${radius.lg};
   font-size: ${Theme.usage.fontSize.xSmall};
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   color: ${colors.foreground};
   transition: all 200ms;
 
@@ -99,8 +99,8 @@ const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 58, 0, 0.1);
-    border-color: rgba(255, 58, 0, 0.4);
+    box-shadow: 0 0 0 2px rgb(var(--app-dd-primary-rgb) / 0.1);
+    border-color: rgb(var(--app-dd-primary-rgb) / 0.4);
   }
 `;
 
@@ -133,7 +133,7 @@ const TabButton = styled.button<{ $active: boolean; $collapsed: boolean }>`
     color: ${colors.mutedForeground};
     &:hover {
       color: ${colors.foreground};
-      background-color: rgba(0, 0, 0, 0.03);
+      background-color: rgb(var(--app-overlay-rgb) / 0.03);
     }
   `}
 

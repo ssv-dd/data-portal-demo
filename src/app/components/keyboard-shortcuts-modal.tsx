@@ -13,7 +13,7 @@ const ShortcutRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: ${Theme.usage.space.xSmall} 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const ShortcutDescription = styled.span`

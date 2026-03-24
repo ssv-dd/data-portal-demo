@@ -28,8 +28,8 @@ const PageContainer = styled.div`
 const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
-              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
 `;
 
 /* ─── Landing page ──────────────────────────────────────────────────── */
@@ -154,7 +154,7 @@ const QueryCardMeta = styled.div`
 const LandingEmptyState = styled.div`
   text-align: center;
   padding: 64px 0;
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
 `;
@@ -163,7 +163,7 @@ const LandingEmptyIcon = styled(Database)`
   width: 48px;
   height: 48px;
   margin: 0 auto ${Theme.usage.space.medium};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const LandingEmptyText = styled.p`
@@ -179,7 +179,7 @@ const LandingRightPanel = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgb(var(--app-surface-rgb) / 0.9);
   backdrop-filter: blur(24px);
 `;
 
@@ -220,7 +220,7 @@ const AssistantIconBox = styled.div`
   width: 48px;
   height: 48px;
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.15), rgb(var(--app-violet-rgb) / 0.05));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -360,7 +360,7 @@ const LeftPanelContainer = styled.div`
   width: 288px;
   border-radius: ${Theme.usage.borderRadius.xLarge};
   border: 1px solid ${colors.border};
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgb(var(--app-surface-rgb) / 0.9);
   backdrop-filter: blur(24px);
   display: flex;
   flex-direction: column;
@@ -372,7 +372,7 @@ const LeftPanelCollapsed = styled.div`
   width: 44px;
   border-radius: ${Theme.usage.borderRadius.xLarge};
   border: 1px solid ${colors.border};
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgb(var(--app-surface-rgb) / 0.6);
   backdrop-filter: blur(24px);
   display: flex;
   flex-direction: column;
@@ -388,7 +388,7 @@ const PanelHeader = styled.div`
   justify-content: space-between;
   padding: 0 ${Theme.usage.space.small};
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const PanelTabGroup = styled.div`
@@ -398,7 +398,7 @@ const PanelTabGroup = styled.div`
   padding: ${Theme.usage.space.xxSmall};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   background-color: ${colors.slate100};
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  border: 1px solid rgb(var(--app-accent-rgb) / 0.5);
 `;
 
 const PanelTab = styled.button<{ $active: boolean }>`
@@ -418,7 +418,7 @@ const PanelTab = styled.button<{ $active: boolean }>`
     background-color: ${colors.white};
     color: ${colors.slate900};
     box-shadow: ${shadows.sm};
-    border: 1px solid rgba(226, 232, 240, 0.5);
+    border: 1px solid rgb(var(--app-accent-rgb) / 0.5);
   ` : css`
     background: none;
     color: ${colors.slate600};
@@ -663,8 +663,8 @@ const TabBar = styled.div`
   justify-content: space-between;
   padding: 0 ${Theme.usage.space.medium};
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  background-color: rgba(248, 250, 252, 0.5);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  background-color: rgb(var(--app-slate50-rgb) / 0.5);
 `;
 
 const TabList = styled.div`
@@ -698,7 +698,7 @@ const FileTab = styled.div<{ $active: boolean }>`
   ` : css`
     background: transparent;
     color: ${colors.slate500};
-    &:hover { background-color: rgba(241, 245, 249, 0.5); }
+    &:hover { background-color: rgb(var(--app-slate100-rgb) / 0.5); }
   `}
 `;
 
@@ -774,7 +774,7 @@ const EngineSelect = styled.select`
   transition: all 200ms;
 
   &:focus {
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
+    box-shadow: 0 0 0 2px rgb(var(--app-violet-rgb) / 0.2);
   }
 `;
 
@@ -894,7 +894,7 @@ const ResultsTabBar = styled.div`
   align-items: center;
   padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const ResultsTabGroup = styled.div`
@@ -904,7 +904,7 @@ const ResultsTabGroup = styled.div`
   padding: ${Theme.usage.space.xxSmall};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   background-color: ${colors.slate100};
-  border: 1px solid rgba(226, 232, 240, 0.5);
+  border: 1px solid rgb(var(--app-accent-rgb) / 0.5);
 `;
 
 const ResultsTab = styled.button<{ $active: boolean }>`
@@ -921,7 +921,7 @@ const ResultsTab = styled.button<{ $active: boolean }>`
     background-color: ${colors.white};
     color: ${colors.slate900};
     box-shadow: ${shadows.sm};
-    border: 1px solid rgba(226, 232, 240, 0.5);
+    border: 1px solid rgb(var(--app-accent-rgb) / 0.5);
   ` : css`
     background: none;
     color: ${colors.slate600};
@@ -960,7 +960,7 @@ const RunButton = styled.button<{ $variant: 'run' | 'stop' }>`
     background-color: ${colors.emerald500};
     color: ${colors.white};
     &:hover {
-      background-color: #059669;
+      background-color: var(--app-status-success-solid);
       transform: translateY(-1px);
     }
     &:active { transform: translateY(0); }
@@ -972,7 +972,7 @@ const RunButton = styled.button<{ $variant: 'run' | 'stop' }>`
     background-color: ${colors.rose500};
     color: ${colors.white};
     &:hover {
-      background-color: #e11d48;
+      background-color: var(--app-status-error-solid);
       transform: translateY(-1px);
     }
     &:active { transform: translateY(0); }
@@ -1021,7 +1021,7 @@ const TableRow = styled.tr`
   }
 
   &:nth-child(even) {
-    background-color: rgba(248, 250, 252, 0.5);
+    background-color: rgb(var(--app-slate50-rgb) / 0.5);
   }
 `;
 
@@ -1087,7 +1087,7 @@ const RightPanelCollapsed = styled.div`
   width: 44px;
   border-radius: ${Theme.usage.borderRadius.xLarge};
   ${glassPanelSubtle}
-  background-color: rgba(245, 243, 255, 0.6);
+  background-color: rgb(var(--app-violet-rgb) / 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1110,7 +1110,7 @@ const RightTabGroup = styled.div`
   gap: ${Theme.usage.space.xxSmall};
   padding: ${Theme.usage.space.xxSmall};
   border-radius: ${Theme.usage.borderRadius.full};
-  background-color: rgba(99, 82, 175, 0.06);
+  background-color: rgb(var(--app-violet-deep-rgb) / 0.06);
 `;
 
 const RightTab = styled.button<{ $active: boolean }>`
@@ -1123,7 +1123,7 @@ const RightTab = styled.button<{ $active: boolean }>`
   transition: all 200ms;
 
   ${({ $active }) => $active ? css`
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgb(var(--app-surface-rgb) / 0.9);
     color: ${colors.foreground};
     box-shadow: ${shadows.sm};
   ` : css`
@@ -1143,7 +1143,7 @@ const RightToggle = styled.button`
   transition: all 200ms;
 
   &:hover {
-    background-color: rgba(99, 82, 175, 0.06);
+    background-color: rgb(var(--app-violet-deep-rgb) / 0.06);
     color: ${colors.foreground};
   }
 `;
@@ -1175,7 +1175,7 @@ const ChatIconBox = styled.div`
   width: 48px;
   height: 48px;
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  background: linear-gradient(to bottom right, rgba(99, 82, 175, 0.15), rgba(139, 127, 212, 0.08));
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-deep-rgb) / 0.15), rgb(var(--app-violet-deep-rgb) / 0.08));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1191,7 +1191,7 @@ const ChatTitle = styled.h3`
 
 const ChatDescription = styled.p`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.7);
+  color: rgb(var(--app-muted-fg-rgb) / 0.7);
   text-align: center;
   max-width: 240px;
   line-height: 1.625;
@@ -1209,8 +1209,8 @@ const ChatSuggestion = styled.button`
   width: 100%;
   padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
   border-radius: ${Theme.usage.borderRadius.large};
-  background-color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(99, 82, 175, 0.06);
+  background-color: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-violet-deep-rgb) / 0.06);
   color: ${colors.foreground};
   font-size: ${Theme.usage.fontSize.xxSmall};
   text-align: left;
@@ -1218,8 +1218,8 @@ const ChatSuggestion = styled.button`
   transition: all 200ms;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.8);
-    border-color: rgba(99, 82, 175, 0.12);
+    background-color: rgb(var(--app-surface-rgb) / 0.8);
+    border-color: rgb(var(--app-violet-deep-rgb) / 0.12);
     transform: translateY(-1px);
     box-shadow: ${shadows.sm};
   }
@@ -1232,10 +1232,10 @@ const KbDropdown = styled.div`
   bottom: 80px;
   left: ${Theme.usage.space.small};
   right: ${Theme.usage.space.small};
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgb(var(--app-surface-rgb) / 0.95);
   backdrop-filter: blur(24px);
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 40px rgb(var(--app-overlay-rgb) / 0.12), 0 0 1px rgb(var(--app-overlay-rgb) / 0.08);
   z-index: 50;
   overflow: hidden;
 `;
@@ -1247,7 +1247,7 @@ const KbDropdownHeader = styled.div`
 const KbDropdownLabel = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   font-weight: 600;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
@@ -1262,9 +1262,9 @@ const KbDropdownItem = styled.button<{ $selected: boolean }>`
   display: flex;
   align-items: flex-start;
   gap: ${Theme.usage.space.small};
-  background-color: ${({ $selected }) => $selected ? 'rgba(26, 26, 46, 0.03)' : 'transparent'};
+  background-color: ${({ $selected }) => $selected ? 'rgb(var(--app-fg-rgb) / 0.03)' : 'transparent'};
 
-  &:hover { background-color: rgba(26, 26, 46, 0.04); }
+  &:hover { background-color: rgb(var(--app-fg-rgb) / 0.04); }
 `;
 
 const KbItemName = styled.div`
@@ -1275,12 +1275,12 @@ const KbItemName = styled.div`
 
 const KbItemDesc = styled.div`
   font-size: 11px;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   margin-top: ${Theme.usage.space.xxxSmall};
 `;
 
 const KbDropdownFooter = styled.div`
-  border-top: 1px solid rgba(26, 26, 46, 0.04);
+  border-top: 1px solid rgb(var(--app-fg-rgb) / 0.04);
 `;
 
 const KbAddButton = styled.button`
@@ -1295,7 +1295,7 @@ const KbAddButton = styled.button`
   align-items: flex-start;
   gap: ${Theme.usage.space.small};
 
-  &:hover { background-color: rgba(26, 26, 46, 0.04); }
+  &:hover { background-color: rgb(var(--app-fg-rgb) / 0.04); }
 `;
 
 const KbAddName = styled.div`
@@ -1312,13 +1312,13 @@ const ChatInputArea = styled.div`
 
 const ChatInputBox = styled.div`
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  background-color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(99, 82, 175, 0.08);
+  background-color: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-violet-deep-rgb) / 0.08);
   transition: all 200ms;
 
   &:focus-within {
-    border-color: rgba(99, 82, 175, 0.2);
-    box-shadow: 0 0 0 3px rgba(99, 82, 175, 0.06);
+    border-color: rgb(var(--app-violet-deep-rgb) / 0.2);
+    box-shadow: 0 0 0 3px rgb(var(--app-violet-deep-rgb) / 0.06);
   }
 `;
 
@@ -1333,7 +1333,7 @@ const ChatTextarea = styled.textarea`
   outline: none;
   resize: none;
 
-  &::placeholder { color: rgba(113, 113, 130, 0.4); }
+  &::placeholder { color: rgb(var(--app-muted-fg-rgb) / 0.4); }
 `;
 
 const ChatToolbar = styled.div`
@@ -1354,12 +1354,12 @@ const ChatKbToggle = styled.button`
   border-radius: ${Theme.usage.borderRadius.large};
   border: none;
   background: none;
-  color: rgba(113, 113, 130, 0.5);
+  color: rgb(var(--app-muted-fg-rgb) / 0.5);
   cursor: pointer;
   transition: all 200ms;
 
   &:hover {
-    background-color: rgba(99, 82, 175, 0.06);
+    background-color: rgb(var(--app-violet-deep-rgb) / 0.06);
     color: ${colors.mutedForeground};
   }
 `;
@@ -1370,13 +1370,13 @@ const ChatKbBadge = styled.div`
   gap: ${Theme.usage.space.xxSmall};
   padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
   border-radius: ${Theme.usage.borderRadius.full};
-  background-color: rgba(99, 82, 175, 0.07);
+  background-color: rgb(var(--app-violet-deep-rgb) / 0.07);
   font-size: ${Theme.usage.fontSize.xxSmall};
   color: ${colors.foreground};
 `;
 
 const ChatKbRemove = styled.button`
-  color: rgba(113, 113, 130, 0.4);
+  color: rgb(var(--app-muted-fg-rgb) / 0.4);
   background: none;
   border: none;
   cursor: pointer;
@@ -1395,13 +1395,13 @@ const ChatSendButton = styled.button<{ $active: boolean }>`
   transition: all 200ms;
 
   ${({ $active }) => $active ? css`
-    background-color: #6352af;
+    background-color: var(--app-violet-button);
     color: ${colors.white};
-    box-shadow: 0 2px 8px rgba(99, 82, 175, 0.2);
-    &:hover { background-color: #5646a0; }
+    box-shadow: 0 2px 8px rgb(var(--app-violet-deep-rgb) / 0.2);
+    &:hover { background-color: var(--app-violet-button-hover); }
   ` : css`
-    background-color: rgba(99, 82, 175, 0.06);
-    color: rgba(113, 113, 130, 0.3);
+    background-color: rgb(var(--app-violet-deep-rgb) / 0.06);
+    color: rgb(var(--app-muted-fg-rgb) / 0.3);
     cursor: default;
   `}
 `;
@@ -1425,7 +1425,7 @@ const PastConvSearchIcon = styled(Search)`
   transform: translateY(-50%);
   width: 14px;
   height: 14px;
-  color: rgba(113, 113, 130, 0.4);
+  color: rgb(var(--app-muted-fg-rgb) / 0.4);
 `;
 
 const PastConvSearchInput = styled.input`
@@ -1433,13 +1433,13 @@ const PastConvSearchInput = styled.input`
   width: 100%;
   border-radius: ${Theme.usage.borderRadius.large};
   padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xLarge};
-  background-color: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(99, 82, 175, 0.06);
+  background-color: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-violet-deep-rgb) / 0.06);
   outline: none;
   transition: background-color 200ms;
 
-  &::placeholder { color: rgba(113, 113, 130, 0.5); }
-  &:focus { background-color: rgba(255, 255, 255, 0.7); }
+  &::placeholder { color: rgb(var(--app-muted-fg-rgb) / 0.5); }
+  &:focus { background-color: rgb(var(--app-surface-rgb) / 0.7); }
 `;
 
 const PastConvItem = styled.div`
@@ -1449,7 +1449,7 @@ const PastConvItem = styled.div`
   margin-bottom: ${Theme.usage.space.xxxSmall};
   transition: all 150ms;
 
-  &:hover { background-color: rgba(255, 255, 255, 0.4); }
+  &:hover { background-color: rgb(var(--app-surface-rgb) / 0.4); }
 `;
 
 const PastConvTitleRow = styled.div`
@@ -1471,13 +1471,13 @@ const PastConvTitle = styled.div`
 
 const PastConvTimestamp = styled.span`
   font-size: 10px;
-  color: rgba(113, 113, 130, 0.5);
+  color: rgb(var(--app-muted-fg-rgb) / 0.5);
   flex-shrink: 0;
 `;
 
 const PastConvPreview = styled.div`
   font-size: 11px;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1496,7 +1496,7 @@ const PastFolderButton = styled.button`
   text-align: left;
   transition: all 150ms;
 
-  &:hover { background-color: rgba(255, 255, 255, 0.4); }
+  &:hover { background-color: rgb(var(--app-surface-rgb) / 0.4); }
 `;
 
 const PastFolderName = styled.span`
@@ -1507,14 +1507,14 @@ const PastFolderName = styled.span`
 
 const PastFolderCount = styled.span`
   font-size: 10px;
-  color: rgba(113, 113, 130, 0.4);
+  color: rgb(var(--app-muted-fg-rgb) / 0.4);
   margin-left: auto;
 `;
 
 const PastFolderChildren = styled.div`
   margin-left: 20px;
   padding-left: ${Theme.usage.space.small};
-  border-left: 1px solid rgba(99, 82, 175, 0.08);
+  border-left: 1px solid rgb(var(--app-violet-deep-rgb) / 0.08);
 `;
 
 /* ─── Mock Data ─────────────────────────────────────────────────────── */
@@ -1774,12 +1774,12 @@ export function SQLStudioPage() {
 
               <LandingSearchBar>
                 <LandingSearchWrapper>
-                  <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                  <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                   <Input
                     placeholder="Search queries..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    style={{ paddingLeft: '40px', backgroundColor: 'rgba(236, 236, 240, 0.5)', borderColor: colors.border }}
+                    style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-muted-rgb) / 0.5)', borderColor: colors.border }}
                   />
                 </LandingSearchWrapper>
                 <Button
@@ -1804,10 +1804,10 @@ export function SQLStudioPage() {
                       <QueryCard onClick={() => setShowLanding(false)}>
                         <QueryCardHeader>
                           <QueryCardTitleRow>
-                            <Database style={{ width: '20px', height: '20px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                            <Database style={{ width: '20px', height: '20px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                             <QueryCardTitle>{query.title}</QueryCardTitle>
                           </QueryCardTitleRow>
-                          {query.shared && <Users style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />}
+                          {query.shared && <Users style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
                         </QueryCardHeader>
                         <QueryCardDesc>{query.description}</QueryCardDesc>
                         <QueryCardMeta>
@@ -2260,7 +2260,7 @@ export function SQLStudioPage() {
                       $selected={selectedKb.id === kb.id}
                       onClick={() => { setSelectedKb(kb); setKbDropdownOpen(false); }}
                     >
-                      <BookOpen style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.5)', marginTop: '2px', flexShrink: 0 }} />
+                      <BookOpen style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.5)', marginTop: '2px', flexShrink: 0 }} />
                       <div>
                         <KbItemName>{kb.name}</KbItemName>
                         <KbItemDesc>{kb.description}</KbItemDesc>
@@ -2269,7 +2269,7 @@ export function SQLStudioPage() {
                   ))}
                   <KbDropdownFooter>
                     <KbAddButton>
-                      <Plus style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.5)', flexShrink: 0, marginTop: '2px' }} />
+                      <Plus style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.5)', flexShrink: 0, marginTop: '2px' }} />
                       <div>
                         <KbAddName>Add Custom SQL Skills</KbAddName>
                         <KbItemDesc>Import .cursorrules, .mdc files, or paste custom SQL patterns</KbItemDesc>
@@ -2303,7 +2303,7 @@ export function SQLStudioPage() {
                         <Plus style={{ width: '16px', height: '16px' }} />
                       </ChatKbToggle>
                       <ChatKbBadge>
-                        <BookOpen style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                        <BookOpen style={{ width: '12px', height: '12px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                         <span>{selectedKb.name}</span>
                         <ChatKbRemove onClick={() => setSelectedKb(knowledgeBases[0])}>
                           <X style={{ width: '12px', height: '12px' }} />
@@ -2342,7 +2342,7 @@ export function SQLStudioPage() {
 
                 <SectionHeaderWithAction>
                   <SectionLabel>Folders</SectionLabel>
-                  <NewFolderButton title="New folder" style={{ color: 'rgba(113, 113, 130, 0.4)' }}>
+                  <NewFolderButton title="New folder" style={{ color: 'rgb(var(--app-muted-fg-rgb) / 0.4)' }}>
                     <Plus style={{ width: '12px', height: '12px' }} />
                   </NewFolderButton>
                 </SectionHeaderWithAction>
@@ -2356,8 +2356,8 @@ export function SQLStudioPage() {
                       <PastFolderName>{folder.name}</PastFolderName>
                       <PastFolderCount>{folder.items.length}</PastFolderCount>
                       {expandedChatFolders[folder.id]
-                        ? <ChevronDown style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.4)' }} />
-                        : <ChevronRight style={{ width: '12px', height: '12px', color: 'rgba(113, 113, 130, 0.4)' }} />
+                        ? <ChevronDown style={{ width: '12px', height: '12px', color: 'rgb(var(--app-muted-fg-rgb) / 0.4)' }} />
+                        : <ChevronRight style={{ width: '12px', height: '12px', color: 'rgb(var(--app-muted-fg-rgb) / 0.4)' }} />
                       }
                     </PastFolderButton>
                     {expandedChatFolders[folder.id] && (

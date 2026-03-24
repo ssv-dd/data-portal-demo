@@ -457,7 +457,7 @@ const Overlay = styled.div`
 const Backdrop = styled(motion.div)`
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgb(var(--app-overlay-rgb) / 0.3);
   backdrop-filter: blur(4px);
 `;
 
@@ -476,7 +476,7 @@ const SidePanel = styled(motion.div)`
 const PanelHeader = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-bottom: 1px solid ${colors.border};
-  background: linear-gradient(to right, ${colors.purple50}, #eff6ff);
+  background: linear-gradient(to right, ${colors.purple50}, var(--app-status-info-bg));
 `;
 
 const HeaderTopRow = styled.div`
@@ -649,7 +649,7 @@ const TipBanner = styled.div`
   margin-bottom: ${Theme.usage.space.large};
   padding: ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background-color: #eff6ff;
+  background-color: var(--app-status-info-bg);
   border: 1px solid #bfdbfe;
 `;
 
@@ -716,7 +716,7 @@ const AreaHeader = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: ${Theme.usage.space.small};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
 `;
 
 const AreaHeaderLeft = styled.div`
@@ -771,7 +771,7 @@ const MetricToggleButton = styled.button`
   transition: background-color 150ms;
 
   &:hover {
-    background-color: rgba(233, 235, 239, 0.4);
+    background-color: rgb(var(--app-accent-rgb) / 0.4);
   }
 `;
 
@@ -799,7 +799,7 @@ const DensityWarning = styled.div`
   margin-top: ${Theme.usage.space.large};
   padding: ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background-color: #fff7ed;
+  background-color: var(--app-status-warning-bg-light);
   border: 1px solid #fed7aa;
 `;
 
@@ -814,7 +814,7 @@ const DensityText = styled.p`
 const PanelFooter = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-top: 1px solid ${colors.border};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -840,7 +840,7 @@ const MetricInfoOverlay = styled(motion.div)`
 const MetricInfoBackdrop = styled.div`
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgb(var(--app-overlay-rgb) / 0.5);
 `;
 
 const MetricInfoModal = styled.div`
@@ -859,7 +859,7 @@ const MetricInfoModal = styled.div`
 const MetricInfoHeader = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-bottom: 1px solid ${colors.border};
-  background: linear-gradient(to right, #eff6ff, #eef2ff);
+  background: linear-gradient(to right, var(--app-status-info-bg), #eef2ff);
 `;
 
 const MetricInfoHeaderRow = styled.div`
@@ -921,7 +921,7 @@ const MetadataGrid = styled.div`
 const MetadataCard = styled.div`
   padding: ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border: 1px solid ${colors.border};
 `;
 
@@ -940,7 +940,7 @@ const MetadataValue = styled.p`
 const SourceCodeBox = styled.div`
   padding: ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border: 1px solid ${colors.border};
 `;
 
@@ -953,7 +953,7 @@ const SourceCode = styled.code`
 const MetricInfoFooter = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-top: 1px solid ${colors.border};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   display: flex;
   justify-content: flex-end;
 `;
@@ -1444,7 +1444,7 @@ export function ScorecardCustomization({
                       {selectedMetricInfo.category}
                     </Badge>
                     {selectedMetricInfo.popular && (
-                      <Badge style={{ backgroundColor: '#dcfce7', color: '#15803d' }}>
+                      <Badge style={{ backgroundColor: 'var(--app-status-success-bg)', color: '#15803d' }}>
                         Popular Metric
                       </Badge>
                     )}

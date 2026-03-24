@@ -42,7 +42,7 @@ const Overlay = styled.div`
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgb(var(--app-overlay-rgb) / 0.4);
   backdrop-filter: blur(2px);
   animation: ${fadeIn} 200ms ease;
 `;

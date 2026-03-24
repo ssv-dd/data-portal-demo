@@ -32,11 +32,11 @@ interface YourWorkCardProps {
 }
 
 const iconStyleMap: Record<string, { bg: string; text: string }> = {
-  '/dashboard/draft': { bg: 'rgba(219, 234, 254, 1)', text: '#2563eb' },
-  '/dashboards': { bg: 'rgba(219, 234, 254, 1)', text: '#2563eb' },
-  '/notebooks': { bg: 'rgba(237, 233, 254, 1)', text: '#7c3aed' },
-  '/ai-workflows': { bg: 'rgba(254, 243, 199, 1)', text: '#d97706' },
-  '/sql-studio': { bg: 'rgba(209, 250, 229, 1)', text: '#059669' },
+  '/dashboard/draft': { bg: 'var(--app-route-blue-bg)', text: 'var(--app-route-blue-text)' },
+  '/dashboards': { bg: 'var(--app-route-blue-bg)', text: 'var(--app-route-blue-text)' },
+  '/notebooks': { bg: 'var(--app-route-violet-bg)', text: 'var(--app-route-violet-text)' },
+  '/ai-workflows': { bg: 'var(--app-route-amber-bg)', text: 'var(--app-route-amber-text)' },
+  '/sql-studio': { bg: 'var(--app-route-emerald-bg)', text: 'var(--app-route-emerald-text)' },
 };
 
 const CardWrapper = styled(motion.div)`
@@ -74,14 +74,14 @@ const ItemButton = styled(motion.button)`
   display: flex;
   align-items: center;
   gap: ${Theme.usage.space.small};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
@@ -137,12 +137,12 @@ const SeeMoreBtn = styled.button`
 
 const Divider = styled.div`
   width: 1px;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-overlay-rgb) / 0.04);
   align-self: stretch;
 `;
 
 const HorizontalDivider = styled.div`
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-top: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   padding-top: ${Theme.usage.space.small};
   margin-top: auto;
 `;
@@ -168,15 +168,15 @@ const QuickActionBtn = styled.button<{ $size?: 'sm' | 'md' }>`
   gap: ${Theme.usage.space.xxSmall};
   border-radius: ${radius.lg};
   position: relative;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   cursor: pointer;
   transition: all 0.2s;
   padding: ${({ $size }) => ($size === 'md' ? `${Theme.usage.space.small} ${Theme.usage.space.small}` : Theme.usage.space.xSmall)};
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
@@ -193,20 +193,20 @@ const SideQuickActionBtn = styled.button`
   padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
   border-radius: ${radius.lg};
   width: 100%;
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
 function RecentItemRow({ item, index, onItemClick }: { item: RecentWorkItem; index: number; onItemClick?: (item: RecentWorkItem) => void }) {
   const Icon = item.icon;
-  const style = iconStyleMap[item.route] || { bg: 'rgba(236, 236, 240, 0.6)', text: colors.mutedForeground };
+  const style = iconStyleMap[item.route] || { bg: 'rgb(var(--app-muted-rgb) / 0.6)', text: colors.mutedForeground };
   return (
     <ItemButton
       initial={{ opacity: 0, x: -10 }}
@@ -224,7 +224,7 @@ function RecentItemRow({ item, index, onItemClick }: { item: RecentWorkItem; ind
       <Badge variant="secondary" style={{ fontSize: 10, padding: '2px 4px', flexShrink: 0 }}>
         {item.status}
       </Badge>
-      <ChevronRight style={{ width: 14, height: 14, color: 'rgba(113, 113, 130, 0.5)', flexShrink: 0, transition: 'transform 0.2s' }} />
+      <ChevronRight style={{ width: 14, height: 14, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)', flexShrink: 0, transition: 'transform 0.2s' }} />
     </ItemButton>
   );
 }

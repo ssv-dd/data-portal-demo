@@ -16,8 +16,8 @@ const OrbBase = styled(motion.div)<{ $variant: 'primary' | 'secondary' }>`
   filter: blur(64px);
   background: ${({ $variant }) =>
     $variant === 'primary'
-      ? 'linear-gradient(to bottom right, rgba(232, 121, 249, 0.25), rgba(167, 139, 250, 0.20), rgba(103, 232, 249, 0.25))'
-      : 'linear-gradient(to bottom right, rgba(196, 181, 253, 0.20), rgba(216, 180, 254, 0.15), rgba(249, 168, 212, 0.20))'};
+      ? 'linear-gradient(to bottom right, rgb(var(--app-fuchsia300-rgb) / 0.25), rgb(var(--app-violet-rgb) / 0.20), rgb(var(--app-cyan-rgb) / 0.25))'
+      : 'linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.20), rgb(var(--app-purple300-rgb) / 0.15), rgb(var(--app-pink300-rgb) / 0.20))'};
 `;
 
 export function GradientOrb({ className, style, variant = 'primary' }: GradientOrbProps) {

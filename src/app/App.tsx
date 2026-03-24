@@ -13,6 +13,7 @@ import {
   ToastProvider,
 } from '@doordash/prism-react'
 import styled, { createGlobalStyle } from 'styled-components'
+import { ThemeProvider, useTheme } from '@/app/context/theme-context'
 
 const PrismGlobalOverrides = createGlobalStyle`
   .prism-theme {
@@ -31,13 +32,16 @@ const LayerManagerWrapper = styled.div`
   }
 `
 
-export function App() {
+function AppInner() {
+  const { theme } = useTheme();
+  const colorMode = theme === 'dark' ? ColorMode.dark : ColorMode.light;
+
   return (
     <>
       <GlobalStyles />
       <PrismGlobalOverrides />
       <PrismWebGlobalStyles />
-      <PrismConfig configuration={InternalToolsConfiguration} colorMode={ColorMode.light}>
+      <PrismConfig configuration={InternalToolsConfiguration} colorMode={colorMode}>
         <Theming theme={InternalToolsThemeCollection}>
           <LayerManagerWrapper>
             <LayerManager>
@@ -49,5 +53,13 @@ export function App() {
         </Theming>
       </PrismConfig>
     </>
+  );
+}
+
+export function App() {
+  return (
+    <ThemeProvider>
+      <AppInner />
+    </ThemeProvider>
   )
 }

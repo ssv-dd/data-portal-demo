@@ -9,7 +9,7 @@ import { colors, radius, shadows } from "@/styles/theme";
 const Nav = styled.nav`
   height: 56px;
   border-bottom: 1px solid ${colors.slate200};
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--app-nav-bg);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;

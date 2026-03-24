@@ -24,8 +24,8 @@ const PageContainer = styled.div`
 const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
-              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
 `;
 
 const ContentLayout = styled.div`
@@ -89,7 +89,7 @@ const SearchIcon = styled(Search)`
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const NewButton = styled.button`
@@ -133,7 +133,7 @@ const CardsGrid = styled(motion.div)`
 `;
 
 const CardWrapper = styled.div`
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   padding: 20px;
@@ -186,7 +186,7 @@ const CardMeta = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 64px 0;
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
 `;
@@ -195,7 +195,7 @@ const EmptyIcon = styled(Grid2x2)`
   width: 48px;
   height: 48px;
   margin: 0 auto ${Theme.usage.space.medium};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const EmptyText = styled.p`
@@ -274,7 +274,7 @@ export function MyCanvasPage() {
                 placeholder="Search canvases..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '40px', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderColor: colors.border }}
+                style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
               />
             </SearchWrapper>
             <NewButton onClick={() => navigate('/dashboard/draft')}>
@@ -317,11 +317,11 @@ export function MyCanvasPage() {
                   <CardWrapper onClick={() => navigate('/dashboard/draft')}>
                     <CardHeader>
                       <CardTitleRow>
-                        <FileText style={{ width: '20px', height: '20px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                        <FileText style={{ width: '20px', height: '20px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                         <CardTitle>{canvas.title}</CardTitle>
                       </CardTitleRow>
                       {canvas.shared && (
-                        <Users style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                        <Users style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                       )}
                     </CardHeader>
                     <CardDescription>{canvas.description}</CardDescription>

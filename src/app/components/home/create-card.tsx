@@ -34,7 +34,7 @@ const HeaderIcon = styled.div`
   width: 32px;
   height: 32px;
   border-radius: ${radius.lg};
-  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.15), rgba(34, 211, 238, 0.15));
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.15), rgb(var(--app-cyan-rgb) / 0.15));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -60,15 +60,15 @@ const ActionButton = styled(motion.button)`
   align-items: center;
   justify-content: center;
   gap: ${Theme.usage.space.xSmall};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+    box-shadow: 0 1px 2px 0 rgb(var(--app-overlay-rgb) / 0.05);
   }
 `;
 
@@ -80,7 +80,7 @@ const ActionIconBox = styled.div<{ $gradient?: string }>`
   align-items: center;
   justify-content: center;
   background: ${({ $gradient }) =>
-    $gradient || 'linear-gradient(to bottom right, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.2))'};
+    $gradient || 'linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.2), rgb(var(--app-cyan-rgb) / 0.2))'};
 `;
 
 const ActionLabel = styled.span`

@@ -57,7 +57,7 @@ const Overlay = styled.div`
 const Backdrop = styled(motion.div)`
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgb(var(--app-overlay-rgb) / 0.3);
   backdrop-filter: blur(4px);
 `;
 
@@ -74,7 +74,7 @@ const ModalContainer = styled(motion.div)`
 const Header = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-bottom: 1px solid ${colors.border};
-  background: linear-gradient(to right, ${colors.purple50}, #eff6ff);
+  background: linear-gradient(to right, ${colors.purple50}, var(--app-status-info-bg));
 `;
 
 const HeaderRow = styled.div`
@@ -137,7 +137,7 @@ const RecommendBox = styled.div`
   margin-top: ${Theme.usage.space.xSmall};
   padding: ${Theme.usage.space.xSmall};
   border-radius: ${radius.md};
-  background-color: #f0fdf4;
+  background-color: var(--app-status-success-bg-light);
   border: 1px solid #bbf7d0;
 `;
 
@@ -160,7 +160,7 @@ const AdvancedToggle = styled.button`
   transition: background-color 150ms;
 
   &:hover {
-    background-color: rgba(233, 235, 239, 0.4);
+    background-color: rgb(var(--app-accent-rgb) / 0.4);
   }
 `;
 
@@ -207,7 +207,7 @@ const DetailOption = styled.button<{ $selected: boolean }>`
   text-align: left;
 
   &:hover {
-    background-color: ${({ $selected }) => $selected ? colors.purple50 : 'rgba(233, 235, 239, 0.4)'};
+    background-color: ${({ $selected }) => $selected ? colors.purple50 : 'rgb(var(--app-accent-rgb) / 0.4)'};
   }
 `;
 
@@ -255,14 +255,14 @@ const FocusOption = styled.button`
   text-align: left;
 
   &:hover {
-    background-color: rgba(233, 235, 239, 0.4);
+    background-color: rgb(var(--app-accent-rgb) / 0.4);
   }
 `;
 
 const Footer = styled.div`
   padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   border-top: 1px solid ${colors.border};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   display: flex;
   align-items: center;
   justify-content: flex-end;

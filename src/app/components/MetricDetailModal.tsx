@@ -417,10 +417,10 @@ const ActionCardStyled = styled(Card)<{ $priority: string }>`
     $priority === 'STRATEGIC' ? '#bfdbfe' :
     colors.purple200};
   background-color: ${({ $priority }) =>
-    $priority === 'IMMEDIATE' ? 'rgba(254, 205, 211, 0.3)' :
-    $priority === 'THIS WEEK' ? 'rgba(254, 240, 138, 0.3)' :
-    $priority === 'STRATEGIC' ? 'rgba(191, 219, 254, 0.3)' :
-    'rgba(233, 213, 255, 0.3)'};
+    $priority === 'IMMEDIATE' ? 'rgb(var(--app-rose200-rgb) / 0.3)' :
+    $priority === 'THIS WEEK' ? 'rgb(var(--app-yellow200-rgb) / 0.3)' :
+    $priority === 'STRATEGIC' ? 'rgb(var(--app-blue200-rgb) / 0.3)' :
+    'rgb(var(--app-purple200-rgb) / 0.3)'};
 `;
 
 const ActionHeader = styled.div`

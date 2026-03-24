@@ -55,7 +55,7 @@ const SettingsBtn = styled.button`
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(236, 236, 240, 0.6);
+    background: rgb(var(--app-muted-rgb) / 0.6);
   }
 `;
 
@@ -99,7 +99,7 @@ const AreaHeaderBtn = styled.button`
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(236, 236, 240, 0.3);
+    background: rgb(var(--app-muted-rgb) / 0.3);
   }
 `;
 
@@ -129,8 +129,8 @@ const THead = styled.thead`
 
 const ThRow = styled.tr`
   background: ${colors.white};
-  border-top: 1px solid rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgb(var(--app-overlay-rgb) / 0.02);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.02);
 `;
 
 const Th = styled.th`
@@ -141,13 +141,13 @@ const Th = styled.th`
 `;
 
 const Tr = styled.tr<{ $striped?: boolean }>`
-  border-bottom: 1px solid rgba(0, 0, 0, 0.01);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.01);
   cursor: pointer;
   transition: background 0.2s;
-  background: ${({ $striped }) => ($striped ? 'rgba(236, 236, 240, 0.1)' : 'transparent')};
+  background: ${({ $striped }) => ($striped ? 'rgb(var(--app-muted-rgb) / 0.1)' : 'transparent')};
 
   &:hover {
-    background: rgba(236, 236, 240, 0.2);
+    background: rgb(var(--app-muted-rgb) / 0.2);
   }
 `;
 
@@ -189,8 +189,8 @@ const ComingSoonBadgeWrapper = styled.span`
   gap: ${Theme.usage.space.xxSmall};
   padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
   border-radius: ${Theme.usage.borderRadius.full};
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgb(var(--app-violet-rgb) / 0.1);
+  border: 1px solid rgb(var(--app-violet-rgb) / 0.2);
 `;
 
 const ComingSoonText = styled.span`
@@ -213,7 +213,7 @@ const StripButton = styled.button`
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(236, 236, 240, 0.3);
+    background: rgb(var(--app-muted-rgb) / 0.3);
   }
 `;
 

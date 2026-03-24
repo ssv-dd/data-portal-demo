@@ -32,7 +32,7 @@ const StyledTableBody = styled.tbody`
 
 const StyledTableFooter = styled.tfoot`
   border-top: 1px solid ${colors.border};
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: rgb(var(--app-overlay-rgb) / 0.02);
   font-weight: 500;
 `;
 
@@ -41,7 +41,7 @@ const StyledTableRow = styled.tr`
   transition: background-color 100ms;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgb(var(--app-overlay-rgb) / 0.02);
   }
 
   &[data-state="selected"] {

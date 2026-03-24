@@ -27,7 +27,7 @@ interface AnalysisResponseProps {
 }
 
 const OuterContainer = styled.div`
-  background: rgba(236, 236, 240, 0.5);
+  background: rgb(var(--app-muted-rgb) / 0.5);
   border-radius: ${radius.xl};
   border: 1px solid ${colors.border};
 `;
@@ -71,7 +71,7 @@ const ConfidenceBadge = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
   border-radius: ${Theme.usage.borderRadius.full};
-  background-color: #dcfce7;
+  background-color: var(--app-status-success-bg);
   color: #15803d;
   font-weight: 500;
 `;
@@ -89,7 +89,7 @@ const IconButton = styled(Button)`
 `;
 
 const CollapseBtn = styled.button`
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   background: transparent;
   border: none;
   cursor: pointer;
@@ -131,7 +131,7 @@ const SectionCard = styled.div`
 
 const SectionHeader = styled.div`
   padding: ${Theme.usage.space.small} 20px;
-  background: rgba(236, 236, 240, 0.5);
+  background: rgb(var(--app-muted-rgb) / 0.5);
   border-bottom: 1px solid ${colors.border};
 `;
 
@@ -175,12 +175,12 @@ const MetricDescription = styled.div`
 const SourceFooter = styled.div`
   margin-top: ${Theme.usage.space.medium};
   padding-top: ${Theme.usage.space.small};
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-top: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const SourceText = styled.p`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const TableWrapper = styled.div`
@@ -206,11 +206,11 @@ const ThRow = styled.tr`
 `;
 
 const DataRow = styled.tr<{ $isFirst: boolean }>`
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   ${({ $isFirst }) =>
     $isFirst
-      ? `background: rgba(245, 243, 255, 0.4); font-weight: 500;`
-      : `&:hover { background: rgba(233, 235, 239, 0.4); }`}
+      ? `background: var(--app-violet-light-bg); font-weight: 500;`
+      : `&:hover { background: rgb(var(--app-accent-rgb) / 0.4); }`}
 `;
 
 const TdCell = styled.td<{ $align?: string }>`
@@ -290,7 +290,7 @@ const ChartSectionWrapper = styled.div`
 
 const ChartHeaderRow = styled.div`
   padding: ${Theme.usage.space.small} 20px;
-  background: rgba(236, 236, 240, 0.5);
+  background: rgb(var(--app-muted-rgb) / 0.5);
   border-bottom: 1px solid ${colors.border};
   display: flex;
   align-items: center;
@@ -299,7 +299,7 @@ const ChartHeaderRow = styled.div`
 
 const ChartTimeLabel = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const ChartBody = styled.div`
@@ -319,7 +319,7 @@ const ChartActionBtn = styled(Button)`
   height: 28px;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.4);
+    background: rgb(var(--app-accent-rgb) / 0.4);
   }
 `;
 
@@ -336,7 +336,7 @@ const NextCutsGrid = styled.div`
 `;
 
 const NextCutArrowWrap = styled.span`
-  color: rgba(113, 113, 130, 0.4);
+  color: rgb(var(--app-muted-fg-rgb) / 0.4);
   flex-shrink: 0;
   margin-top: ${Theme.usage.space.xxxSmall};
   transition: color 150ms;
@@ -356,7 +356,7 @@ const NextCutButton = styled.button`
 
   &:hover {
     border-color: ${colors.borderStrong};
-    background: rgba(233, 235, 239, 0.4);
+    background: rgb(var(--app-accent-rgb) / 0.4);
   }
 
   &:hover ${NextCutArrowWrap} {
@@ -376,7 +376,7 @@ const NextCutQuery = styled.div`
 
 const NextCutTag = styled.div`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   margin-top: ${Theme.usage.space.xxSmall};
 `;
 

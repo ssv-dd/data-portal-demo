@@ -10,7 +10,7 @@ const StyledCard = styled.div`
   flex-direction: column;
   gap: ${Theme.usage.space.large};
   border-radius: ${radius['2xl']};
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
   box-shadow: ${shadows.card};
 `;
 

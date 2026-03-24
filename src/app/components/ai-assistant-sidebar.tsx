@@ -35,7 +35,7 @@ const CollapsedPanel = styled(motion.div)`
 
 const CollapsedHeader = styled.div`
   padding: ${Theme.usage.space.small};
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   width: 100%;
   display: flex;
   justify-content: center;
@@ -50,7 +50,7 @@ const ToggleButton = styled.button`
   transition: background-color 150ms;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
+    background: rgb(var(--app-accent-rgb) / 0.6);
   }
 `;
 
@@ -90,8 +90,8 @@ const PanelTitle = styled.h3`
 
 const ContextBadge = styled.span`
   border-radius: ${radius.xl};
-  border: 1px solid rgba(167, 139, 250, 0.2);
-  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgb(var(--app-violet-rgb) / 0.2);
+  background: rgb(var(--app-violet-rgb) / 0.1);
   padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
   font-size: ${Theme.usage.fontSize.xxSmall};
   font-weight: 500;
@@ -107,13 +107,13 @@ const CollapseButton = styled.button`
   transition: background-color 150ms;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
+    background: rgb(var(--app-accent-rgb) / 0.6);
   }
 `;
 
 const KBSection = styled.div`
   padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   position: relative;
 `;
 
@@ -125,14 +125,14 @@ const KBSelectorButton = styled.button`
   gap: ${Theme.usage.space.xSmall};
   padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   font-size: ${Theme.usage.fontSize.xSmall};
   cursor: pointer;
   transition: background-color 150ms;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.4);
+    background: rgb(var(--app-accent-rgb) / 0.4);
   }
 `;
 
@@ -174,12 +174,12 @@ const KBDropdownItem = styled.button<{ $selected: boolean }>`
   padding: ${Theme.usage.space.small} ${Theme.usage.space.small};
   transition: background-color 150ms;
   text-align: left;
-  background: ${({ $selected }) => ($selected ? 'rgba(233, 235, 239, 0.4)' : 'transparent')};
+  background: ${({ $selected }) => ($selected ? 'rgb(var(--app-accent-rgb) / 0.4)' : 'transparent')};
   border: none;
   cursor: pointer;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
+    background: rgb(var(--app-accent-rgb) / 0.6);
   }
 `;
 
@@ -232,7 +232,7 @@ const SuggestionButton = styled.button`
   padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
   border-radius: ${radius.xl};
   border: 1px solid ${colors.border};
-  background: rgba(255, 255, 255, 0.4);
+  background: rgb(var(--app-surface-rgb) / 0.4);
   color: ${colors.foreground};
   font-size: ${Theme.usage.fontSize.xSmall};
   display: flex;
@@ -242,7 +242,7 @@ const SuggestionButton = styled.button`
   transition: all 200ms;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
+    background: rgb(var(--app-accent-rgb) / 0.6);
     border-color: ${colors.border};
     box-shadow: ${shadows.sm};
   }
@@ -251,7 +251,7 @@ const SuggestionButton = styled.button`
 const SuggestedActionsSection = styled.div`
   margin-top: ${Theme.usage.space.large};
   padding-top: ${Theme.usage.space.large};
-  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  border-top: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const SuggestedActionsLabel = styled.p`
@@ -274,14 +274,14 @@ const SuggestedActionButton = styled.button`
   border-radius: ${Theme.usage.borderRadius.full};
   font-size: ${Theme.usage.fontSize.xxSmall};
   font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(var(--app-surface-rgb) / 0.1);
+  background: rgb(var(--app-overlay-rgb) / 0.1);
   color: ${colors.slate700};
   cursor: pointer;
   transition: background-color 150ms;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgb(var(--app-overlay-rgb) / 0.2);
   }
 `;
 
@@ -298,17 +298,17 @@ const ChatInput = styled.input`
   border: 1px solid ${colors.border};
   color: ${colors.foreground};
   font-size: ${Theme.usage.fontSize.xSmall};
-  background: rgba(255, 255, 255, 0.5);
+  background: rgb(var(--app-surface-rgb) / 0.5);
   transition: all 200ms;
   outline: none;
 
   &::placeholder {
-    color: rgba(113, 113, 130, 0.6);
+    color: rgb(var(--app-muted-fg-rgb) / 0.6);
   }
 
   &:focus {
-    box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.2);
-    border-color: rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 0 2px rgb(var(--app-violet-rgb) / 0.2);
+    border-color: rgb(var(--app-violet-rgb) / 0.4);
   }
 `;
 
@@ -318,7 +318,7 @@ const SendBtn = styled.button`
   top: 50%;
   transform: translateY(-50%);
   padding: ${Theme.usage.space.xSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   background: transparent;
   border: none;
   cursor: pointer;

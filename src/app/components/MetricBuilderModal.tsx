@@ -167,10 +167,10 @@ const MeasureCard = styled(Card)<{ $selected: boolean }>`
   cursor: pointer;
   transition: all 200ms;
   border-color: ${({ $selected }) => $selected ? colors.primary : undefined};
-  background-color: ${({ $selected }) => $selected ? 'rgba(3, 2, 19, 0.05)' : undefined};
+  background-color: ${({ $selected }) => $selected ? 'rgb(var(--app-primary-rgb) / 0.05)' : undefined};
 
   &:hover {
-    border-color: rgba(3, 2, 19, 0.5);
+    border-color: rgb(var(--app-primary-rgb) / 0.5);
   }
 `;
 
@@ -216,7 +216,7 @@ const QueryActions = styled.div`
 
 const WarningBox = styled.div`
   padding: ${Theme.usage.space.small};
-  background-color: #fefce8;
+  background-color: var(--app-status-warning-bg);
   border: 1px solid #fef08a;
   border-radius: ${radius.lg};
   font-size: ${Theme.usage.fontSize.xSmall};
@@ -279,7 +279,7 @@ const StyledTr = styled.tr`
 
 const ExecQueryCard = styled(Card)`
   padding: ${Theme.usage.space.medium};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
 `;
 
 const ExecQueryHeader = styled.div`
@@ -422,7 +422,7 @@ ORDER BY avg_order_value DESC`);
                 </div>
 
                 {aiGenerated && (
-                  <Card style={{ padding: '16px', borderColor: colors.purple200, backgroundColor: 'rgba(250, 245, 255, 0.3)' }}>
+                  <Card style={{ padding: '16px', borderColor: colors.purple200, backgroundColor: 'rgb(var(--app-violet-rgb) / 0.03)' }}>
                     <AICardHeader>
                       <Sparkles style={{ height: '16px', width: '16px', color: colors.purple600, marginTop: '2px' }} />
                       <div style={{ flex: 1 }}>
@@ -671,7 +671,7 @@ ORDER BY avg_order_value DESC`);
                     </PreviewTableHeader>
                     <PreviewTableScroll>
                       <StyledTable>
-                        <thead style={{ backgroundColor: 'rgba(236, 236, 240, 0.5)' }}>
+                        <thead style={{ backgroundColor: 'rgb(var(--app-muted-rgb) / 0.5)' }}>
                           <tr>
                             <StyledTh>Region</StyledTh>
                             <StyledTh $align="right">Avg Order Value</StyledTh>

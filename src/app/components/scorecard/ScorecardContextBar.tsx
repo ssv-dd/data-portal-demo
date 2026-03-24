@@ -66,7 +66,7 @@ const FadeIndicator = styled.div`
   top: 0;
   bottom: ${Theme.usage.space.xxSmall};
   width: 64px;
-  background: linear-gradient(to left, ${colors.white}, rgba(255, 255, 255, 0.8), transparent);
+  background: linear-gradient(to left, ${colors.white}, rgb(var(--app-surface-rgb) / 0.8), transparent);
   pointer-events: none;
 `;
 

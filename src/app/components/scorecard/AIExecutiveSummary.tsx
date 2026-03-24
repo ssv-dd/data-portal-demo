@@ -24,7 +24,7 @@ interface AIExecutiveSummaryProps {
 const StyledCard = styled(Card)`
   padding: ${Theme.usage.space.large};
   border-color: ${colors.purple200};
-  background: linear-gradient(to right, ${colors.purple50}, #eff6ff);
+  background: linear-gradient(to right, ${colors.purple50}, var(--app-status-info-bg));
 `;
 
 const HeaderRow = styled.div`
@@ -89,7 +89,7 @@ const TooltipContent = styled.div`
   width: 320px;
   padding: ${Theme.usage.space.small};
   background-color: ${colors.white};
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
   border-radius: ${radius.xl};
   box-shadow: ${shadows.lg};
   opacity: 0;
@@ -490,7 +490,7 @@ export function AIExecutiveSummary({
             {summary.highlights.map((highlight, idx) => (
               <HighlightItem key={idx}>
                 <ItemHeader
-                  $hoverColor="rgba(240, 253, 244, 0.5)"
+                  $hoverColor="var(--app-hover-green-bg)"
                   onClick={() => toggleHighlight(idx)}
                 >
                   <ChevronIcon $expanded={expandedHighlights.includes(idx)} />
@@ -541,7 +541,7 @@ export function AIExecutiveSummary({
             {summary.concerns.map((concern, idx) => (
               <ConcernItem key={idx}>
                 <ItemHeader
-                  $hoverColor="rgba(254, 252, 232, 0.5)"
+                  $hoverColor="var(--app-hover-yellow-bg)"
                   onClick={() => toggleConcern(idx)}
                 >
                   <ChevronIcon $expanded={expandedConcerns.includes(idx)} />

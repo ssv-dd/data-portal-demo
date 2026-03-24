@@ -34,7 +34,7 @@ const HeaderLeft = styled.div`
 const IconBox = styled.div`
   padding: ${Theme.usage.space.xSmall};
   border-radius: ${radius.xl};
-  background: rgba(3, 2, 19, 0.1);
+  background: rgb(var(--app-primary-rgb) / 0.1);
 `;
 
 const AskAIBadge = styled.div`
@@ -43,7 +43,7 @@ const AskAIBadge = styled.div`
   gap: ${Theme.usage.space.xSmall};
   padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
   border-radius: ${Theme.usage.borderRadius.full};
-  background: linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+  background: linear-gradient(to right, rgb(var(--app-purple-rgb) / 0.1), rgb(var(--app-blue-rgb) / 0.1), rgb(var(--app-indigo-rgb) / 0.1));
   border: 1px solid ${colors.purple200};
 `;
 
@@ -83,8 +83,8 @@ const AskAIText = styled.span`
 
 const MainCard = styled(Card)`
   padding: ${Theme.usage.space.large};
-  background: linear-gradient(to bottom right, rgba(3, 2, 19, 0.05), ${colors.background}, ${colors.background});
-  border-color: rgba(3, 2, 19, 0.2);
+  background: linear-gradient(to bottom right, rgb(var(--app-primary-rgb) / 0.05), ${colors.background}, ${colors.background});
+  border-color: rgb(var(--app-primary-rgb) / 0.2);
 `;
 
 const SummarySection = styled.div`
@@ -139,7 +139,7 @@ const TraceabilityTrigger = styled.div`
   justify-content: space-between;
   padding: ${Theme.usage.space.small};
   border-radius: ${radius.lg};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   transition: background-color 150ms;
 
   &:hover {
@@ -193,7 +193,7 @@ const SourceRow = styled.div`
   justify-content: space-between;
   padding: ${Theme.usage.space.xSmall};
   border-radius: ${radius.md};
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
 `;
 
 const SourceInfo = styled.div`
@@ -520,12 +520,12 @@ export function AIOverviewSection({ query, onDiveDeeperClick }: AIOverviewSectio
               overflow: 'hidden',
               background: 'linear-gradient(to right, #9333ea, #db2777, #2563eb)',
               border: 0,
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 10px 15px -3px rgb(var(--app-overlay-rgb) / 0.1)',
               transition: 'all 300ms',
             }}
           >
             <motion.div
-              style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent)' }}
+              style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, transparent, rgb(var(--app-surface-rgb) / 0.3), transparent)' }}
               animate={{ x: ['-100%', '200%'] }}
               transition={{ duration: 2, repeat: Infinity, repeatDelay: 1, ease: "easeInOut" }}
             />

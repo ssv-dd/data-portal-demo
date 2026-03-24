@@ -6,75 +6,77 @@ export const prismSpace = Theme.usage.space;
 export const prismFontSize = Theme.usage.fontSize;
 export const prismBorderRadius = Theme.usage.borderRadius;
 
+export const prismColor = Theme.usage.color;
+
 export const colors = {
-  background: '#ffffff',
-  backgroundSecondary: '#fafafa',
-  foreground: '#1a1a2e',
-  card: '#ffffff',
-  cardForeground: '#1a1a2e',
-  primary: '#030213',
-  primaryForeground: '#ffffff',
-  secondary: '#f0f0f4',
-  secondaryForeground: '#030213',
-  muted: '#ececf0',
-  mutedForeground: '#717182',
-  accent: '#e9ebef',
-  accentForeground: '#030213',
-  destructive: '#d4183d',
-  destructiveForeground: '#ffffff',
-  border: 'rgba(0, 0, 0, 0.06)',
-  borderStrong: 'rgba(0, 0, 0, 0.10)',
+  background: 'var(--app-bg)',
+  backgroundSecondary: 'var(--app-bg-secondary)',
+  foreground: 'var(--app-fg)',
+  card: 'var(--app-card)',
+  cardForeground: 'var(--app-card-fg)',
+  primary: 'var(--app-primary)',
+  primaryForeground: 'var(--app-primary-fg)',
+  secondary: 'var(--app-secondary)',
+  secondaryForeground: 'var(--app-secondary-fg)',
+  muted: 'var(--app-muted)',
+  mutedForeground: 'var(--app-muted-fg)',
+  accent: 'var(--app-accent)',
+  accentForeground: 'var(--app-accent-fg)',
+  destructive: 'var(--app-destructive)',
+  destructiveForeground: 'var(--app-destructive-fg)',
+  border: 'var(--app-border)',
+  borderStrong: 'var(--app-border-strong)',
   input: 'transparent',
-  inputBackground: '#f3f3f5',
-  ddPrimary: '#FF3A00',
-  ddGray900: '#1a1a1a',
-  ddGray700: '#4a4a4a',
-  ddGray300: '#d1d5db',
-  ddGray100: '#f3f4f6',
-  ddSuccess: '#10b981',
-  ddWarning: '#f59e0b',
-  ddError: '#ef4444',
-  ddInfo: '#3b82f6',
-  violet50: '#f5f3ff',
-  violet100: '#ede9fe',
-  violet200: '#ddd6fe',
-  violet400: '#a78bfa',
-  violet500: '#8b5cf6',
-  violet600: '#7c3aed',
-  violet700: '#6d28d9',
-  cyan400: '#22d3ee',
-  slate50: '#f8fafc',
-  slate100: '#f1f5f9',
-  slate200: '#e2e8f0',
-  slate300: '#cbd5e1',
-  slate400: '#94a3b8',
-  slate500: '#64748b',
-  slate600: '#475569',
-  slate700: '#334155',
-  slate800: '#1e293b',
-  slate900: '#0f172a',
-  slate950: '#020617',
-  green600: '#16a34a',
-  red600: '#dc2626',
-  yellow600: '#ca8a04',
-  blue600: '#2563eb',
-  purple50: '#faf5ff',
-  purple100: '#f3e8ff',
-  purple200: '#e9d5ff',
-  purple400: '#c084fc',
-  purple500: '#a855f7',
-  purple600: '#9333ea',
-  purple700: '#7e22ce',
-  purple800: '#6b21a8',
-  rose50: '#fff1f2',
-  rose200: '#fecdd3',
-  rose400: '#fb7185',
-  rose500: '#f43f5e',
-  emerald400: '#34d399',
-  emerald500: '#10b981',
-  white: '#ffffff',
-  black: '#000000',
-} as const;
+  inputBackground: 'var(--app-input-bg)',
+  ddPrimary: 'var(--app-dd-primary)',
+  ddGray900: 'var(--app-fg)',
+  ddGray700: 'var(--app-muted-fg)',
+  ddGray300: 'var(--app-border)',
+  ddGray100: 'var(--app-bg-secondary)',
+  ddSuccess: 'var(--app-success)',
+  ddWarning: 'var(--app-warning)',
+  ddError: 'var(--app-error)',
+  ddInfo: 'var(--app-info)',
+  violet50: 'var(--app-violet-50)',
+  violet100: 'var(--app-violet-100)',
+  violet200: 'var(--app-violet-200)',
+  violet400: 'var(--app-violet-400)',
+  violet500: 'var(--app-violet-500)',
+  violet600: 'var(--app-violet-600)',
+  violet700: 'var(--app-violet-700)',
+  cyan400: 'var(--app-cyan-400)',
+  slate50: 'var(--app-slate-50)',
+  slate100: 'var(--app-slate-100)',
+  slate200: 'var(--app-slate-200)',
+  slate300: 'var(--app-slate-300)',
+  slate400: 'var(--app-slate-400)',
+  slate500: 'var(--app-slate-500)',
+  slate600: 'var(--app-slate-600)',
+  slate700: 'var(--app-slate-700)',
+  slate800: 'var(--app-slate-800)',
+  slate900: 'var(--app-slate-900)',
+  slate950: 'var(--app-slate-950)',
+  green600: 'var(--app-green-600)',
+  red600: 'var(--app-red-600)',
+  yellow600: 'var(--app-yellow-600)',
+  blue600: 'var(--app-blue-600)',
+  purple50: 'var(--app-purple-50)',
+  purple100: 'var(--app-purple-100)',
+  purple200: 'var(--app-purple-200)',
+  purple400: 'var(--app-purple-400)',
+  purple500: 'var(--app-purple-500)',
+  purple600: 'var(--app-purple-600)',
+  purple700: 'var(--app-purple-700)',
+  purple800: 'var(--app-purple-800)',
+  rose50: 'var(--app-rose-50)',
+  rose200: 'var(--app-rose-200)',
+  rose400: 'var(--app-rose-400)',
+  rose500: 'var(--app-rose-500)',
+  emerald400: 'var(--app-emerald-400)',
+  emerald500: 'var(--app-emerald-500)',
+  white: 'var(--app-white)',
+  black: 'var(--app-black)',
+};
 
 export const spacing = {
   0: Theme.usage.space.none,
@@ -119,28 +121,28 @@ export const fonts = {
 } as const;
 
 export const glassPanel = `
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--app-glass-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 2px 24px rgba(0, 0, 0, 0.04), 0 0 1px rgba(0, 0, 0, 0.06);
 `;
 
 export const glassPanelSubtle = `
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--app-glass-subtle-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 1px 12px rgba(0, 0, 0, 0.03), 0 0 1px rgba(0, 0, 0, 0.04);
 `;
 
 export const glassPanelChat = `
-  background: linear-gradient(165deg, rgba(245, 243, 255, 0.88) 0%, rgba(238, 240, 255, 0.82) 50%, rgba(243, 240, 255, 0.78) 100%);
+  background: var(--app-glass-chat-bg);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 2px 24px rgba(99, 82, 175, 0.06), 0 0 1px rgba(99, 82, 175, 0.1);
 `;
 
 export const glassHero = `
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--app-glass-hero-bg);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   box-shadow: 0 8px 32px rgba(139, 92, 246, 0.08), 0 0 1px rgba(0, 0, 0, 0.08);

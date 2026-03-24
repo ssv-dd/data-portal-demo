@@ -18,7 +18,7 @@ const ToolbarCard = styled(Card)`
   align-items: center;
   gap: ${Theme.usage.space.xSmall};
   padding: ${Theme.usage.space.xxSmall};
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 15px -3px rgb(var(--app-overlay-rgb) / 0.1), 0 4px 6px -4px rgb(var(--app-overlay-rgb) / 0.1);
   border: 2px solid ${colors.purple200};
 `;
 

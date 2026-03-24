@@ -19,7 +19,7 @@ export const lineClamp = (lines: number) => css`
 
 export const focusRing = css`
   &:focus-visible {
-    outline: 2px solid rgba(99, 82, 175, 0.5);
+    outline: 2px solid rgb(var(--app-violet-deep-rgb) / 0.5);
     outline-offset: 2px;
   }
 `;

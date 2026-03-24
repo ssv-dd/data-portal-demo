@@ -41,7 +41,7 @@ const StyledCard = styled(Card)<{ $compact: boolean }>`
   &:hover {
     box-shadow: ${shadows.cardHover};
     border-color: ${({ $compact }) =>
-      $compact ? 'rgba(168, 85, 247, 0.3)' : 'rgba(168, 85, 247, 0.5)'};
+      $compact ? 'rgb(var(--app-purple-rgb) / 0.3)' : 'rgb(var(--app-purple-rgb) / 0.5)'};
   }
 
   &:hover ${DashboardTitle} {
@@ -57,7 +57,7 @@ const ContentWrapper = styled.div<{ $compact: boolean }>`
 
 const ChartThumbnail = styled.div<{ $compact: boolean }>`
   width: 100%;
-  background: linear-gradient(to bottom right, ${colors.purple50}, #eff6ff);
+  background: linear-gradient(to bottom right, ${colors.purple50}, var(--app-status-info-bg));
   border-radius: ${radius.lg};
   overflow: hidden;
   height: ${({ $compact }) => ($compact ? '100px' : '160px')};

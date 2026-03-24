@@ -216,7 +216,7 @@ const SourceItem = styled.div`
   transition: background-color 150ms;
 
   &:hover {
-    background-color: rgba(236, 236, 240, 0.8);
+    background-color: rgb(var(--app-muted-rgb) / 0.8);
   }
 `;
 

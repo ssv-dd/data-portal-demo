@@ -54,7 +54,7 @@ const TabGroup = styled.div`
   display: flex;
   gap: ${Theme.usage.space.xxxSmall};
   padding: ${Theme.usage.space.xxxSmall};
-  background: rgba(236, 236, 240, 0.4);
+  background: rgb(var(--app-muted-rgb) / 0.4);
   border-radius: ${radius.lg};
 `;
 
@@ -91,15 +91,15 @@ const ItemButton = styled(motion.button)`
   display: flex;
   align-items: center;
   gap: ${Theme.usage.space.small};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
@@ -107,7 +107,7 @@ const ItemIconBox = styled.div`
   width: 32px;
   height: 32px;
   border-radius: ${radius.md};
-  background: linear-gradient(to bottom right, rgba(139, 92, 246, 0.2), rgba(34, 211, 238, 0.2));
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.2), rgb(var(--app-cyan-rgb) / 0.2));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -140,7 +140,7 @@ const CategoryBadge = styled.span`
   padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xxSmall};
   font-size: 10px;
   border-radius: ${radius.md};
-  background: rgba(236, 236, 240, 0.6);
+  background: rgb(var(--app-muted-rgb) / 0.6);
   color: ${colors.mutedForeground};
   flex-shrink: 0;
 `;
@@ -230,7 +230,7 @@ export function DiscoveryCard({
                 <ItemDescription>{item.description}</ItemDescription>
               </ItemTextContent>
               <CategoryBadge>{item.category}</CategoryBadge>
-              <ChevronRight style={{ width: 14, height: 14, color: 'rgba(113, 113, 130, 0.5)', flexShrink: 0, transition: 'transform 0.2s' }} />
+              <ChevronRight style={{ width: 14, height: 14, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)', flexShrink: 0, transition: 'transform 0.2s' }} />
             </ItemButton>
           );
         })}

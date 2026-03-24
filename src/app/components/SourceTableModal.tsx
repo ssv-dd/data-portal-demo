@@ -89,7 +89,7 @@ const StyledTable = styled.table`
 `;
 
 const TableHead = styled.thead`
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -143,10 +143,10 @@ const BoldCell = styled(TdCell)`
 
 const StyledRow = styled.tr<{ $selected: boolean }>`
   border-top: 1px solid ${colors.border};
-  background-color: ${({ $selected }) => $selected ? 'rgba(3, 2, 19, 0.05)' : 'transparent'};
+  background-color: ${({ $selected }) => $selected ? 'rgb(var(--app-primary-rgb) / 0.05)' : 'transparent'};
 
   &:hover {
-    background-color: rgba(236, 236, 240, 0.3);
+    background-color: rgb(var(--app-muted-rgb) / 0.3);
   }
 `;
 

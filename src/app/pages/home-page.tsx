@@ -34,8 +34,8 @@ const PageContainer = styled.div`
 const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
-              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
 `;
 
 const ContentLayer = styled.div`
@@ -206,7 +206,7 @@ const PurposeButton = styled.button<{ $active: boolean }>`
     background-color: ${colors.background};
     color: ${colors.foreground};
     border-color: ${colors.border};
-    &:hover { background-color: rgba(233, 235, 239, 0.4); }
+    &:hover { background-color: rgb(var(--app-accent-rgb) / 0.4); }
   `}
 `;
 
@@ -287,7 +287,7 @@ const AvatarCircle = styled.div`
 `;
 
 const LoadingBubble = styled.div`
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border-radius: ${Theme.usage.borderRadius.large};
   padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
 `;
@@ -300,7 +300,7 @@ const DotsContainer = styled.div`
 const PulseDot = styled.div`
   width: 4px;
   height: 4px;
-  background-color: rgba(113, 113, 130, 0.4);
+  background-color: rgb(var(--app-muted-fg-rgb) / 0.4);
   border-radius: ${Theme.usage.borderRadius.full};
   animation: ${pulse} 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 `;

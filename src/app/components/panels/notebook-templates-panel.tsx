@@ -45,15 +45,15 @@ const NotebookButton = styled.button`
   display: flex;
   align-items: flex-start;
   gap: ${Theme.usage.space.small};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   transition: all 200ms;
   text-align: left;
   cursor: pointer;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
@@ -61,7 +61,7 @@ const IconBox = styled.div`
   width: 32px;
   height: 32px;
   border-radius: ${radius.lg};
-  background: rgba(236, 236, 240, 0.6);
+  background: rgb(var(--app-muted-rgb) / 0.6);
   display: flex;
   align-items: center;
   justify-content: center;

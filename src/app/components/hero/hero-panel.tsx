@@ -43,7 +43,7 @@ const IconBox = styled.div`
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 6px -1px rgb(var(--app-violet-rgb) / 0.2);
 `;
 
 const Greeting = styled.h2`
@@ -69,21 +69,21 @@ const SearchInput = styled.input`
   height: 56px;
   border-radius: ${radius['2xl']};
   font-size: 15px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 2px solid rgba(196, 181, 253, 0.5);
+  background: rgb(var(--app-surface-rgb) / 0.7);
+  border: 2px solid rgb(var(--app-violet-rgb) / 0.5);
   color: ${colors.foreground};
   transition: all 0.2s;
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.12);
+  box-shadow: 0 0 20px rgb(var(--app-violet-rgb) / 0.12);
   outline: none;
 
   &::placeholder {
-    color: rgba(113, 113, 130, 0.5);
+    color: rgb(var(--app-muted-fg-rgb) / 0.5);
   }
 
   &:focus {
-    ring: 2px solid rgba(139, 92, 246, 0.25);
-    border-color: rgba(139, 92, 246, 0.5);
-    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25), 0 0 20px rgba(139, 92, 246, 0.12);
+    ring: 2px solid rgb(var(--app-violet-rgb) / 0.25);
+    border-color: rgb(var(--app-violet-rgb) / 0.5);
+    box-shadow: 0 0 0 2px rgb(var(--app-violet-rgb) / 0.25), 0 0 20px rgb(var(--app-violet-rgb) / 0.12);
   }
 `;
 
@@ -102,8 +102,8 @@ const SendButton = styled.button<{ $active: boolean }>`
   border: none;
   cursor: ${({ $active }) => ($active ? 'pointer' : 'default')};
   background: ${({ $active }) => ($active ? colors.violet600 : 'transparent')};
-  color: ${({ $active }) => ($active ? colors.white : 'rgba(113, 113, 130, 0.3)')};
-  box-shadow: ${({ $active }) => ($active ? `0 4px 6px -1px rgba(139, 92, 246, 0.25)` : 'none')};
+  color: ${({ $active }) => ($active ? colors.white : 'rgb(var(--app-muted-fg-rgb) / 0.3)')};
+  box-shadow: ${({ $active }) => ($active ? `0 4px 6px -1px rgb(var(--app-violet-rgb) / 0.25)` : 'none')};
 
   &:hover {
     background: ${({ $active }) => ($active ? colors.violet700 : 'transparent')};
@@ -121,7 +121,7 @@ const ModeToggleGroup = styled.div`
   display: flex;
   align-items: center;
   gap: ${Theme.usage.space.xxxSmall};
-  background: rgba(236, 236, 240, 0.6);
+  background: rgb(var(--app-muted-rgb) / 0.6);
   padding: ${Theme.usage.space.xxxSmall};
   border-radius: ${radius.lg};
 `;
@@ -167,7 +167,7 @@ const PurposeButton = styled.button<{ $active: boolean; $disabled: boolean }>`
 
   &:hover {
     background: ${({ $active, $disabled }) =>
-      $disabled ? undefined : $active ? colors.foreground : 'rgba(233, 235, 239, 0.4)'};
+      $disabled ? undefined : $active ? colors.foreground : 'rgb(var(--app-accent-rgb) / 0.4)'};
   }
 `;
 
@@ -181,16 +181,16 @@ const PromptChip = styled(motion.button)`
   padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
   border-radius: ${radius.md};
   font-size: ${Theme.usage.fontSize.xxSmall};
-  background: rgba(236, 236, 240, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  color: rgba(26, 26, 46, 0.8);
+  background: rgb(var(--app-muted-rgb) / 0.6);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  color: rgb(var(--app-fg-rgb) / 0.8);
   transition: all 0.2s;
   cursor: pointer;
 
   &:hover {
     color: ${colors.foreground};
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
     box-shadow: ${shadows.sm};
   }
 `;

@@ -16,8 +16,8 @@ interface MetricWidgetProps {
 const WidgetWrapper = styled(motion.div)`
   padding: ${Theme.usage.space.medium};
   border-radius: ${radius.xl};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
 `;
 
 const WidgetTitle = styled.p`

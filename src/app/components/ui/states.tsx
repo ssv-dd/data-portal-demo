@@ -30,7 +30,7 @@ const SpinnerIcon = styled(Loader2)`
 const ErrorBox = styled.div`
   padding: ${Theme.usage.space.medium};
   border-radius: ${radius.lg};
-  background-color: rgba(212, 24, 61, 0.1);
+  background-color: rgb(var(--app-destructive-rgb) / 0.1);
   color: ${colors.destructive};
   display: flex;
   align-items: center;

@@ -25,8 +25,8 @@ const PageContainer = styled.div`
 const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
-              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
 `;
 
 const ContentLayout = styled.div`
@@ -78,7 +78,7 @@ const ToolbarActions = styled.div`
 const CanvasArea = styled.div`
   flex: 1;
   overflow: auto;
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   padding: ${Theme.usage.space.xLarge};
 `;
 
@@ -93,7 +93,7 @@ const CanvasGrid = styled(motion.div)`
 const GripIcon = styled(GripVertical)`
   width: 16px;
   height: 16px;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   opacity: 0;
   transition: opacity 200ms;
   cursor: grab;
@@ -101,7 +101,7 @@ const GripIcon = styled(GripVertical)`
 `;
 
 const MoreButton = styled.button`
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
   opacity: 0;
   transition: opacity 200ms;
   background: none;
@@ -190,7 +190,7 @@ const KpiChange = styled.span<{ $isFlat: boolean }>`
 
 const KpiPeriod = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const ModalBody = styled.div`
@@ -200,7 +200,7 @@ const ModalBody = styled.div`
 `;
 
 const ModalInfoBox = styled.div`
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border-radius: ${Theme.usage.borderRadius.xLarge};
   padding: ${Theme.usage.space.medium};
 `;
@@ -241,7 +241,7 @@ export function DashboardCanvasPage() {
             <KpiTrendRow>
               {widget.kpiTrend === 'up' && <TrendingUp style={{ width: '16px', height: '16px', color: colors.green600 }} />}
               {widget.kpiTrend === 'down' && <TrendingDown style={{ width: '16px', height: '16px', color: colors.green600 }} />}
-              {widget.kpiTrend === 'flat' && <Minus style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />}
+              {widget.kpiTrend === 'flat' && <Minus style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
               <KpiChange $isFlat={widget.kpiTrend === 'flat'}>
                 {widget.kpiChange}
               </KpiChange>

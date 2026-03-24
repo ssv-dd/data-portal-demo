@@ -26,8 +26,8 @@ const PageContainer = styled.div`
 const GradientOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at top left, rgba(217, 70, 239, 0.08), transparent 35%),
-              radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 35%);
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
 `;
 
 const ContentLayout = styled.div`
@@ -80,7 +80,7 @@ const StatsGrid = styled(motion.div)`
 `;
 
 const StatCard = styled(motion.div)`
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   padding: ${Theme.usage.space.medium};
@@ -129,7 +129,7 @@ const SearchIcon = styled(Search)`
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const NewButton = styled.button`
@@ -167,7 +167,7 @@ const WorkflowList = styled(motion.div)`
 `;
 
 const WorkflowCard = styled(motion.div)`
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   padding: 20px;
@@ -237,7 +237,7 @@ const WorkflowActions = styled.div`
 const EmptyState = styled.div`
   text-align: center;
   padding: 64px 0;
-  background-color: rgba(236, 236, 240, 0.5);
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   margin-bottom: ${Theme.usage.space.xxLarge};
@@ -247,7 +247,7 @@ const EmptyIcon = styled(Zap)`
   width: 48px;
   height: 48px;
   margin: 0 auto ${Theme.usage.space.medium};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const EmptyText = styled.p`
@@ -280,7 +280,7 @@ const TemplateCard = styled(motion.div)`
   border: 1px solid ${colors.border};
   border-radius: ${Theme.usage.borderRadius.xLarge};
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
   cursor: pointer;
   transition: box-shadow 200ms;
 
@@ -303,7 +303,7 @@ const TemplateIconBox = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(139, 92, 246, 0.1);
+  background-color: rgb(var(--app-violet-rgb) / 0.1);
 `;
 
 const TemplateBadge = styled.span`
@@ -335,7 +335,7 @@ const TemplateFooter = styled.div`
 
 const TemplateSteps = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgba(113, 113, 130, 0.6);
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
 `;
 
 const TemplateAction = styled.span`
@@ -433,7 +433,7 @@ export function AIWorkflowsPage() {
                 placeholder="Search workflows..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '40px', backgroundColor: 'rgba(255, 255, 255, 0.5)', borderColor: colors.border }}
+                style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
               />
             </SearchWrapper>
             <NewButton>
@@ -487,7 +487,7 @@ export function AIWorkflowsPage() {
                             <StatusIcon style={{ width: '12px', height: '12px' }} />
                             {status.label}
                           </span>
-                          {workflow.shared && <Users style={{ width: '14px', height: '14px', color: 'rgba(113, 113, 130, 0.6)' }} />}
+                          {workflow.shared && <Users style={{ width: '14px', height: '14px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
                         </WorkflowTitleRow>
                         <WorkflowDescription>{workflow.description}</WorkflowDescription>
                         <WorkflowMeta>
@@ -526,7 +526,7 @@ export function AIWorkflowsPage() {
                           </Button>
                         )}
                         <Button variant="ghost" size="sm" style={{ height: '28px', width: '28px', padding: 0 }}>
-                          <MoreVertical style={{ width: '16px', height: '16px', color: 'rgba(113, 113, 130, 0.6)' }} />
+                          <MoreVertical style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
                         </Button>
                         <ChevronRight style={{ width: '16px', height: '16px', color: colors.border }} />
                       </WorkflowActions>

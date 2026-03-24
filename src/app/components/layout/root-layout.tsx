@@ -2,7 +2,6 @@ import { Outlet } from 'react-router';
 import { TopNav } from './top-nav';
 import { useState, useEffect } from 'react';
 import { KeyboardShortcutsModal } from '../keyboard-shortcuts-modal';
-import { ThemeProvider } from '@/app/context/theme-context';
 import styled from 'styled-components';
 import { colors } from '@/styles/theme';
 
@@ -37,14 +36,12 @@ export function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider>
-      <LayoutContainer>
-        <TopNav />
-        <MainContent>
-          <Outlet />
-        </MainContent>
-        <KeyboardShortcutsModal open={showShortcuts} onOpenChange={setShowShortcuts} />
-      </LayoutContainer>
-    </ThemeProvider>
+    <LayoutContainer>
+      <TopNav />
+      <MainContent>
+        <Outlet />
+      </MainContent>
+      <KeyboardShortcutsModal open={showShortcuts} onOpenChange={setShowShortcuts} />
+    </LayoutContainer>
   );
 }

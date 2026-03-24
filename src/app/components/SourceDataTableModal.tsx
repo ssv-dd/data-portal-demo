@@ -172,7 +172,7 @@ const SortableHead = styled(TableHead)`
   user-select: none;
 
   &:hover {
-    background-color: rgba(236, 236, 240, 0.5);
+    background-color: rgb(var(--app-muted-rgb) / 0.5);
   }
 `;
 

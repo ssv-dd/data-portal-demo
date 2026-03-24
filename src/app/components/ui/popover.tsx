@@ -13,7 +13,7 @@ const PopoverContentStyled = styled.div<{ $align?: 'start' | 'center' | 'end' }>
   z-index: 50;
   width: 288px;
   border-radius: ${radius.xl};
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
   background: ${colors.background};
   padding: ${Theme.usage.space.medium};
   box-shadow: ${shadows.popover};

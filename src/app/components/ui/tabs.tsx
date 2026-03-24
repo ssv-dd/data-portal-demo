@@ -35,7 +35,7 @@ export function Tabs({ defaultValue = '', value, onValueChange, children, style,
 const TabsListWrapper = styled.div`
   display: inline-flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.04);
+  background-color: rgb(var(--app-overlay-rgb) / 0.04);
   border-radius: ${Theme.usage.borderRadius.medium};
   padding: ${Theme.usage.space.xxxSmall};
   gap: ${Theme.usage.space.xxxSmall};
@@ -55,7 +55,7 @@ const TabButton = styled.button<{ $active: boolean }>`
   transition: all 150ms ease;
   background-color: ${({ $active }) => $active ? colors.background : 'transparent'};
   color: ${({ $active }) => $active ? colors.foreground : colors.mutedForeground};
-  box-shadow: ${({ $active }) => $active ? '0 1px 2px rgba(0,0,0,0.06)' : 'none'};
+  box-shadow: ${({ $active }) => $active ? '0 1px 2px rgb(var(--app-overlay-rgb) / 0.06)' : 'none'};
 
   &:hover {
     color: ${colors.foreground};

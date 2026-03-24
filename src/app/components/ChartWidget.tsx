@@ -145,7 +145,7 @@ const DataTable = styled.table`
 const TableHead = styled.thead`
   position: sticky;
   top: 0;
-  background: rgba(236, 236, 240, 0.5);
+  background: rgb(var(--app-muted-rgb) / 0.5);
   backdrop-filter: blur(4px);
   border-bottom: 1px solid ${colors.border};
 `;
@@ -161,7 +161,7 @@ const Tr = styled.tr`
   transition: background-color 150ms;
 
   &:hover {
-    background: rgba(236, 236, 240, 0.3);
+    background: rgb(var(--app-muted-rgb) / 0.3);
   }
 `;
 

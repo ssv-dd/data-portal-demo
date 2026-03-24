@@ -11,9 +11,9 @@ interface WatchlistTeaserProps {
 }
 
 const trendColor = {
-  up: { change: '#059669', spark: '#10b981', bg: 'rgba(236, 253, 245, 1)' },
-  down: { change: '#ef4444', spark: '#ef4444', bg: 'rgba(254, 242, 242, 1)' },
-  flat: { change: colors.mutedForeground, spark: '#9ca3af', bg: 'rgba(236, 236, 240, 0.4)' },
+  up: { change: 'var(--app-trend-up-change)', spark: 'var(--app-trend-up-spark)', bg: 'var(--app-trend-up-bg)' },
+  down: { change: 'var(--app-trend-down-change)', spark: 'var(--app-trend-down-spark)', bg: 'var(--app-trend-down-bg)' },
+  flat: { change: colors.mutedForeground, spark: '#9ca3af', bg: 'rgb(var(--app-muted-rgb) / 0.4)' },
 };
 
 const CardWrapper = styled(motion.div)`
@@ -51,7 +51,7 @@ const SettingsBtn = styled.button`
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(236, 236, 240, 0.6);
+    background: rgb(var(--app-muted-rgb) / 0.6);
   }
 `;
 
@@ -89,7 +89,7 @@ const AreaSection = styled.div`
   }
 
   & + & {
-    border-left: 1px solid rgba(0, 0, 0, 0.04);
+    border-left: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   }
 `;
 
@@ -114,12 +114,12 @@ const MetricTileWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${Theme.usage.space.xxSmall};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.03);
   transition: all 0.2s;
 
   &:hover {
-    border-color: rgba(0, 0, 0, 0.05);
+    border-color: rgb(var(--app-overlay-rgb) / 0.05);
   }
 `;
 

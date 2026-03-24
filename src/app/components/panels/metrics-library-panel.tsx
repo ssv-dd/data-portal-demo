@@ -67,15 +67,15 @@ const MetricButton = styled.button`
   display: flex;
   align-items: flex-start;
   gap: ${Theme.usage.space.small};
-  background: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
   transition: all 200ms;
   text-align: left;
   cursor: pointer;
 
   &:hover {
-    background: rgba(233, 235, 239, 0.6);
-    border-color: rgba(0, 0, 0, 0.06);
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
@@ -83,7 +83,7 @@ const IconBox = styled.div`
   width: 32px;
   height: 32px;
   border-radius: ${radius.lg};
-  background: linear-gradient(to bottom right, rgba(255, 58, 0, 0.2), rgba(168, 85, 247, 0.2));
+  background: linear-gradient(to bottom right, rgb(var(--app-dd-primary-rgb) / 0.2), rgb(var(--app-purple-rgb) / 0.2));
   display: flex;
   align-items: center;
   justify-content: center;
