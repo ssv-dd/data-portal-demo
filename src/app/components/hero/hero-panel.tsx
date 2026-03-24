@@ -68,11 +68,12 @@ export function HeroPanel({
           onChange={(e) => onSearchTermChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
           className={cn(
-            'w-full pl-4 pr-11 h-12 rounded-xl text-base',
-            'bg-background/50 border border-violet-300/40 dark:border-violet-500/30',
-            'text-foreground placeholder:text-muted-foreground/60',
-            'focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500/40',
+            'w-full pl-5 pr-14 h-14 rounded-2xl text-[15px]',
+            'bg-background/70 border-2 border-violet-300/50 dark:border-violet-500/40',
+            'text-foreground placeholder:text-muted-foreground/50',
+            'focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/50',
             'transition-all duration-200',
+            'shadow-[0_0_20px_rgba(139,92,246,0.12)]',
             'ai-glow'
           )}
           placeholder="Ask anything about your data..."
@@ -80,20 +81,20 @@ export function HeroPanel({
         <button
           onClick={onSubmit}
           className={cn(
-            'absolute right-2.5 top-1/2 -translate-y-1/2 w-7 h-7 rounded-md flex items-center justify-center transition-all',
+            'absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center transition-all',
             searchTerm.trim()
-              ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-sm'
-              : 'text-muted-foreground/40 cursor-default'
+              ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md shadow-violet-500/25'
+              : 'text-muted-foreground/30 cursor-default'
           )}
           disabled={!searchTerm.trim()}
         >
-          <Send className="w-3.5 h-3.5" />
+          <Send className="w-4 h-4" />
         </button>
       </div>
 
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg">
-          {(['chat', 'hybrid', 'notebook'] as const).map((mode) => (
+          {(['chat', 'hybrid'] as const).map((mode) => (
             <button
               key={mode}
               onClick={() => onAgentModeChange(mode)}
@@ -113,20 +114,27 @@ export function HeroPanel({
         </div>
 
         <div className="flex items-center gap-1.5">
-          {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => (
-            <button
-              key={purpose}
-              onClick={() => onAgentPurposeChange(purpose)}
-              className={cn(
-                'px-2.5 py-1 rounded-full text-xs font-medium border transition-all capitalize',
-                agentPurpose === purpose
-                  ? 'bg-foreground text-background border-foreground'
-                  : 'bg-background text-foreground border-border hover:bg-accent/40'
-              )}
-            >
-              {purpose}
-            </button>
-          ))}
+          {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => {
+            const isComingSoon = purpose === 'exploration' || purpose === 'reporting';
+            return (
+              <button
+                key={purpose}
+                onClick={() => !isComingSoon && onAgentPurposeChange(purpose)}
+                disabled={isComingSoon}
+                title={isComingSoon ? 'Coming soon' : undefined}
+                className={cn(
+                  'px-2.5 py-1 rounded-full text-xs font-medium border transition-all capitalize',
+                  isComingSoon
+                    ? 'opacity-40 cursor-not-allowed border-border/50 text-muted-foreground'
+                    : agentPurpose === purpose
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-background text-foreground border-border hover:bg-accent/40'
+                )}
+              >
+                {purpose}
+              </button>
+            );
+          })}
         </div>
       </div>
 

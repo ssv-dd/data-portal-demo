@@ -6,8 +6,8 @@ import { GradientOrb } from '../components/hero/gradient-orb';
 import { HeroPanel } from '../components/hero/hero-panel';
 import { YourWorkCard, type RecentWorkItem, type QuickAction } from '../components/home/your-work-card';
 import { DiscoveryCard } from '../components/home/discovery-card';
-import { WatchlistTeaser } from '../components/home/watchlist-teaser';
-import { productAreaWatchlists, defaultExecAreas } from '../data/mock/watchlist-data';
+import { WatchlistTable } from '../components/home/watchlist-table';
+import { productAreas } from '../data/mock/scorecard-data';
 import { AnalysisResponse } from '../components/analysis-response';
 import { Input } from '../components/ui/input';
 import { appConfig } from '@/config/app.config';
@@ -197,16 +197,17 @@ export function HomePage() {
               </div>
 
               {/* Row 2: Your Watchlist */}
-              <div className="mb-5">
-                <WatchlistTeaser
-                  areas={productAreaWatchlists}
-                  selectedAreaIds={defaultExecAreas}
+              <div className="mb-2">
+                <WatchlistTable
+                  areas={productAreas}
+                  selectedAreaIds={['company']}
+                  maxRows={5}
                   onViewFull={() => navigate('/dashboards')}
                 />
               </div>
 
               {/* Row 3: Your Work + Discover */}
-              <div className="grid xl:grid-cols-[0.85fr_1.15fr] gap-5">
+              <div className="grid xl:grid-cols-[0.85fr_1.15fr] gap-2">
                 <YourWorkCard
                   recentItems={recentWork}
                   quickActions={quickActions}

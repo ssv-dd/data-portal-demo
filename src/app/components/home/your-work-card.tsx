@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Clock, ChevronRight, Plus, type LucideIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
@@ -29,8 +30,17 @@ interface YourWorkCardProps {
   variant?: YourWorkVariant;
 }
 
+const iconStyle: Record<string, { bg: string; text: string }> = {
+  '/dashboard/draft': { bg: 'bg-blue-100 dark:bg-blue-500/15', text: 'text-blue-600 dark:text-blue-400' },
+  '/dashboards': { bg: 'bg-blue-100 dark:bg-blue-500/15', text: 'text-blue-600 dark:text-blue-400' },
+  '/notebooks': { bg: 'bg-violet-100 dark:bg-violet-500/15', text: 'text-violet-600 dark:text-violet-400' },
+  '/ai-workflows': { bg: 'bg-amber-100 dark:bg-amber-500/15', text: 'text-amber-600 dark:text-amber-400' },
+  '/sql-studio': { bg: 'bg-emerald-100 dark:bg-emerald-500/15', text: 'text-emerald-600 dark:text-emerald-400' },
+};
+
 function RecentItemRow({ item, index, onItemClick }: { item: RecentWorkItem; index: number; onItemClick?: (item: RecentWorkItem) => void }) {
   const Icon = item.icon;
+  const style = iconStyle[item.route] || { bg: 'bg-muted/60', text: 'text-muted-foreground' };
   return (
     <motion.button
       key={item.id}
@@ -49,8 +59,8 @@ function RecentItemRow({ item, index, onItemClick }: { item: RecentWorkItem; ind
         'group'
       )}
     >
-      <div className="w-8 h-8 rounded-md bg-muted/60 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-muted-foreground" />
+      <div className={cn('w-8 h-8 rounded-md flex items-center justify-center flex-shrink-0', style.bg)}>
+        <Icon className={cn('w-4 h-4', style.text)} />
       </div>
       <div className="flex-1 text-left min-w-0">
         <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
@@ -92,6 +102,11 @@ function QuickActionButton({ action, onActionClick, size = 'sm' }: { action: Qui
 }
 
 function VariantA({ recentItems, quickActions, onItemClick, onActionClick }: YourWorkCardProps) {
+  const defaultCount = 4;
+  const [showAll, setShowAll] = useState(false);
+  const visibleItems = showAll ? recentItems : recentItems.slice(0, defaultCount);
+  const hasMore = recentItems.length > defaultCount;
+
   return (
     <>
       <div className="flex items-center gap-2 mb-3">
@@ -99,17 +114,20 @@ function VariantA({ recentItems, quickActions, onItemClick, onActionClick }: You
         <h3 className="text-lg font-semibold text-foreground">Jump back in</h3>
       </div>
 
-      <div className="flex gap-2 mb-4">
-        {quickActions.map((action) => (
-          <QuickActionButton key={action.id} action={action} onActionClick={onActionClick} size="md" />
-        ))}
-      </div>
-
       <div className="space-y-1.5">
-        {recentItems.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <RecentItemRow key={item.id} item={item} index={index} onItemClick={onItemClick} />
         ))}
       </div>
+
+      {hasMore && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-2 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors text-left"
+        >
+          {showAll ? 'See less' : 'See more'}
+        </button>
+      )}
     </>
   );
 }
