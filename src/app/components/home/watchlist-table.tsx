@@ -51,6 +51,15 @@ function PlanValue({ vsPlan, vsPlanValue }: { vsPlan?: string; vsPlanValue?: num
   );
 }
 
+function ComingSoonBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/10 dark:bg-violet-400/10 border border-violet-500/20 dark:border-violet-400/20">
+      <Sparkles className="w-2.5 h-2.5 text-violet-600 dark:text-violet-400" />
+      <span className="text-[10px] font-medium text-violet-600 dark:text-violet-400">Coming Soon</span>
+    </span>
+  );
+}
+
 function sparkColor(change: number) {
   return change >= 0 ? '#10b981' : '#ef4444';
 }
@@ -92,13 +101,13 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
             >
               <table className="w-full text-xs table-fixed">
                 <colgroup>
-                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '22%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
+                  <col style={{ width: '12%' }} />
                   <col style={{ width: '10%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '34%' }} />
+                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '16%' }} />
                 </colgroup>
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-white dark:bg-slate-900 border-y border-border/20">
@@ -106,8 +115,8 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                     <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">Current Week</th>
                     <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">Prior Week</th>
                     <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">vs Prior Week</th>
-                    <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">vs Plan</th>
                     <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">Trend</th>
+                    <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">vs Plan</th>
                     <th className="text-left py-1.5 px-3 font-medium text-muted-foreground">AI Insight</th>
                   </tr>
                 </thead>
@@ -128,16 +137,13 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                         <ChangeLabel value={metric.change} label={metric.changeLabel} />
                       </td>
                       <td className="py-2 px-3 text-left">
-                        <PlanValue vsPlan={metric.vsPlan} vsPlanValue={metric.vsPlanValue} />
-                      </td>
-                      <td className="py-2 px-3 text-left">
                         <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
                       </td>
+                      <td className="py-2 px-3 text-left">
+                        <ComingSoonBadge />
+                      </td>
                       <td className="py-2 px-3">
-                        <div className="flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-violet-500 flex-shrink-0" />
-                          <span className="text-muted-foreground line-clamp-1">{metric.aiInsight.summary}</span>
-                        </div>
+                        <ComingSoonBadge />
                       </td>
                     </tr>
                   ))}
@@ -194,19 +200,18 @@ function AreaStrips({ area, defaultExpanded, maxRows, onMetricClick }: {
                     'group text-left'
                   )}
                 >
-                  <span className="text-xs text-muted-foreground w-[20%] truncate">{metric.name}</span>
-                  <span className="text-xs font-bold text-foreground w-[11%] text-right">{metric.current}</span>
-                  <span className="text-xs text-muted-foreground w-[11%] text-right">{metric.prior}</span>
-                  <span className="w-[11%] text-right"><ChangeLabel value={metric.change} label={metric.changeLabel} /></span>
-                  <span className="w-[9%] text-right text-xs">
-                    <PlanValue vsPlan={metric.vsPlan} vsPlanValue={metric.vsPlanValue} />
-                  </span>
-                  <span className="w-[12%] flex justify-center">
+                  <span className="text-xs text-muted-foreground w-[22%] truncate">{metric.name}</span>
+                  <span className="text-xs font-bold text-foreground w-[12%] text-right">{metric.current}</span>
+                  <span className="text-xs text-muted-foreground w-[12%] text-right">{metric.prior}</span>
+                  <span className="w-[12%] text-right"><ChangeLabel value={metric.change} label={metric.changeLabel} /></span>
+                  <span className="w-[10%] flex justify-center">
                     <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
                   </span>
-                  <span className="w-[26%] flex items-center gap-1 pl-2">
-                    <Sparkles className="w-3 h-3 text-violet-500 flex-shrink-0" />
-                    <span className="text-[11px] text-muted-foreground line-clamp-1">{metric.aiInsight.summary}</span>
+                  <span className="w-[16%] flex justify-center">
+                    <ComingSoonBadge />
+                  </span>
+                  <span className="w-[16%] flex justify-center">
+                    <ComingSoonBadge />
                   </span>
                 </button>
               ))}
