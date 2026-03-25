@@ -1,6 +1,7 @@
 import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import styled from 'styled-components';
 import { Theme } from '@doordash/prism-react';
@@ -133,6 +134,9 @@ const SectionHeader = styled.div`
   padding: ${Theme.usage.space.small} 20px;
   background: rgb(var(--app-muted-rgb) / 0.5);
   border-bottom: 1px solid ${colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
 
 const SectionTitle = styled.h3`
@@ -141,6 +145,29 @@ const SectionTitle = styled.h3`
   color: ${colors.foreground};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+`;
+
+const SectionActionsWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxxSmall};
+`;
+
+const ActionButton = styled(Button)`
+  font-size: 11px;
+  height: 24px;
+  padding: 0 ${Theme.usage.space.xSmall};
+  gap: ${Theme.usage.space.xxxSmall};
+  color: ${colors.mutedForeground};
+
+  &:hover {
+    color: ${colors.foreground};
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 `;
 
 const SectionBody = styled.div`
@@ -268,24 +295,11 @@ const TakeawaysBody = styled.div`
   gap: ${Theme.usage.space.medium};
 `;
 
-const HoverActionsOverlay = styled.div`
-  position: absolute;
-  top: ${Theme.usage.space.xxxLarge};
-  right: 20px;
-  opacity: 0;
-  transition: opacity 200ms;
-`;
-
 const ChartSectionWrapper = styled.div`
   background-color: ${colors.white};
   border-radius: ${radius.xl};
   border: 1px solid ${colors.border};
   overflow: hidden;
-  position: relative;
-
-  &:hover ${HoverActionsOverlay} {
-    opacity: 1;
-  }
 `;
 
 const ChartHeaderRow = styled.div`
@@ -297,6 +311,12 @@ const ChartHeaderRow = styled.div`
   justify-content: space-between;
 `;
 
+const ChartHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+`;
+
 const ChartTimeLabel = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   color: rgb(var(--app-muted-fg-rgb) / 0.6);
@@ -304,23 +324,6 @@ const ChartTimeLabel = styled.span`
 
 const ChartBody = styled.div`
   padding: 20px;
-`;
-
-const ActionsRow = styled.div`
-  display: flex;
-  gap: ${Theme.usage.space.xSmall};
-`;
-
-const ChartActionBtn = styled(Button)`
-  background-color: ${colors.white};
-  box-shadow: ${shadows.card};
-  border-color: ${colors.border};
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  height: 28px;
-
-  &:hover {
-    background: rgb(var(--app-accent-rgb) / 0.4);
-  }
 `;
 
 const NextCutsIntro = styled.p`
@@ -379,6 +382,47 @@ const NextCutTag = styled.div`
   color: rgb(var(--app-muted-fg-rgb) / 0.6);
   margin-top: ${Theme.usage.space.xxSmall};
 `;
+
+function SectionActions() {
+  const navigate = useNavigate();
+  return (
+    <SectionActionsWrapper>
+      <ActionButton
+        size="sm"
+        variant="ghost"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate('/dashboards');
+        }}
+      >
+        <LayoutDashboard />
+        Canvas
+      </ActionButton>
+      <ActionButton
+        size="sm"
+        variant="ghost"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate('/sql-studio');
+        }}
+      >
+        <Code2 />
+        SQL
+      </ActionButton>
+      <ActionButton
+        size="sm"
+        variant="ghost"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate('/notebooks');
+        }}
+      >
+        <FileText />
+        Notebook
+      </ActionButton>
+    </SectionActionsWrapper>
+  );
+}
 
 export function AnalysisResponse({ chartData, summaryData }: AnalysisResponseProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -458,6 +502,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           <SectionCard>
             <SectionHeader>
               <SectionTitle>Executive Summary by Region</SectionTitle>
+              <SectionActions />
             </SectionHeader>
             <TableWrapper>
               <StyledTable>
@@ -538,8 +583,11 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           {/* Section 4: Growth Trend Chart */}
           <ChartSectionWrapper>
             <ChartHeaderRow>
-              <SectionTitle>Subscriber Growth Trend</SectionTitle>
-              <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
+              <ChartHeaderLeft>
+                <SectionTitle>Subscriber Growth Trend</SectionTitle>
+                <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
+              </ChartHeaderLeft>
+              <SectionActions />
             </ChartHeaderRow>
             <ChartBody>
               <ResponsiveContainer width="100%" height={280}>
@@ -562,22 +610,6 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 </AreaChart>
               </ResponsiveContainer>
             </ChartBody>
-            <HoverActionsOverlay>
-              <ActionsRow>
-                <ChartActionBtn size="sm" variant="outline">
-                  <LayoutDashboard style={{ width: 14, height: 14, marginRight: '4px' }} />
-                  Add to Dashboard
-                </ChartActionBtn>
-                <ChartActionBtn size="sm" variant="outline">
-                  <Code2 style={{ width: 14, height: 14, marginRight: '4px' }} />
-                  Open SQL
-                </ChartActionBtn>
-                <ChartActionBtn size="sm" variant="outline">
-                  <FileText style={{ width: 14, height: 14, marginRight: '4px' }} />
-                  Notebook
-                </ChartActionBtn>
-              </ActionsRow>
-            </HoverActionsOverlay>
           </ChartSectionWrapper>
 
           {/* Section 5: Recommended Next Cuts */}

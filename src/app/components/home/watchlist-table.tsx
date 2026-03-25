@@ -14,9 +14,11 @@ export type WatchlistVariant = 'A' | 'B';
 interface WatchlistTableProps {
   areas: ProductArea[];
   selectedAreaIds: string[];
+  selectedMetricIds?: string[];
   maxRows?: number;
   variant?: WatchlistVariant;
   onViewFull?: () => void;
+  onCustomize?: () => void;
   onMetricClick?: (metric: Metric) => void;
 }
 
@@ -421,7 +423,7 @@ function AreaStrips({ area, defaultExpanded, maxRows, onMetricClick }: {
   );
 }
 
-export function WatchlistTable({ areas, selectedAreaIds, maxRows = 5, variant = 'A', onViewFull, onMetricClick }: WatchlistTableProps) {
+export function WatchlistTable({ areas, selectedAreaIds, selectedMetricIds, maxRows = 5, variant = 'A', onViewFull, onCustomize, onMetricClick }: WatchlistTableProps) {
   const selectedAreas = areas.filter((a) => selectedAreaIds.includes(a.id));
 
   return (
@@ -434,12 +436,9 @@ export function WatchlistTable({ areas, selectedAreaIds, maxRows = 5, variant = 
         <HeaderLeft>
           <Eye style={{ width: 20, height: 20, color: colors.violet600 }} />
           <Title>Your Watchlist</Title>
-          <SettingsBtn title="Customize watchlist">
-            <Settings2 style={{ width: 14, height: 14, color: colors.mutedForeground }} />
-          </SettingsBtn>
         </HeaderLeft>
-        <ViewFullBtn onClick={onViewFull}>
-          View full scorecard
+        <ViewFullBtn onClick={onCustomize}>
+          Customize your Watchlist
           <ChevronRight style={{ width: 14, height: 14, transition: 'transform 0.2s' }} />
         </ViewFullBtn>
       </HeaderRow>
