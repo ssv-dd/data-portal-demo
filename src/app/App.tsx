@@ -1,5 +1,6 @@
 import { RouterProvider } from 'react-router'
 import { router } from './routes'
+import { dataPortalPrismThemingOverrides } from '@/styles/prism-theming-overrides'
 import { GlobalStyles } from '@/styles/global-styles'
 import {
   ColorMode,
@@ -42,7 +43,10 @@ function AppInner() {
       <PrismGlobalOverrides />
       <PrismWebGlobalStyles />
       <PrismConfig configuration={InternalToolsConfiguration} colorMode={colorMode}>
-        <Theming theme={InternalToolsThemeCollection}>
+        <Theming
+          theme={InternalToolsThemeCollection}
+          overrides={dataPortalPrismThemingOverrides}
+        >
           <LayerManagerWrapper>
             <LayerManager>
               <ToastProvider position={ToastPosition.topEnd}>
