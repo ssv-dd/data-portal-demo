@@ -1,3 +1,9 @@
+import styled from 'styled-components';
+
+const StyledSvg = styled.svg`
+  display: inline-block;
+`;
+
 export function Sparkline({ data, color = '#10b981' }: { data: number[]; color?: string }) {
   if (!data || data.length === 0) return null;
 
@@ -14,7 +20,7 @@ export function Sparkline({ data, color = '#10b981' }: { data: number[]; color?:
     .join(' ');
 
   return (
-    <svg width="60" height="24" className="inline-block">
+    <StyledSvg width="60" height="24">
       <polyline
         points={points}
         fill="none"
@@ -22,6 +28,6 @@ export function Sparkline({ data, color = '#10b981' }: { data: number[]; color?:
         strokeWidth="2"
         vectorEffect="non-scaling-stroke"
       />
-    </svg>
+    </StyledSvg>
   );
 }

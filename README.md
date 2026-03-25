@@ -15,37 +15,65 @@ This project is a modern data analytics platform that integrates AI capabilities
 
 ## Tech Stack
 
-- **React 19** with TypeScript
+- **React 18** with TypeScript
 - **Vite 7** for build tooling
 - **React Router 7** (hash routing)
-- **Tailwind CSS v4** with custom design system
-- **Radix UI** for accessible components
+- **styled-components** and **@doordash/prism-react** for UI
 - **Monaco Editor** for SQL editing
-- **Motion** (Framer Motion) for animations
+- **Framer Motion** `^6.5.1` for animations (aligned with `@doordash/prism-react` peer dependency)
 - **Recharts** for data visualization
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher recommended)
-- npm or yarn
+- **[nvm](https://github.com/nvm-sh/nvm)** (recommended) — Node version is pinned in [`.nvmrc`](./.nvmrc) (currently **22**)
+- **npm** (bundled with Node)
+- **DoorDash npm registry auth** — this app depends on `@doordash/prism-react`, which is hosted on DoorDash Artifactory. See [Private packages (`.npmrc`)](#private-packages-npmrc) below.
 
-### Installation
+### How to run (from a clean clone)
+
+From the repo root:
 
 ```bash
-# Install dependencies
+# Load nvm if your shell doesn’t auto-load it (zsh/bash)
+source ~/.nvm/nvm.sh
+
+# Install and use the Node version from .nvmrc
+nvm install
+nvm use
+
+# Install dependencies (requires Artifactory auth — see below)
 npm install
+
+# Start the dev server → http://localhost:5180
+npm run dev
 ```
+
+If `nvm use` is already part of your workflow (e.g. direnv or shell hook), you only need `nvm use` (or `nvm install && nvm use` the first time).
+
+### Private packages (`.npmrc`)
+
+The committed [`.npmrc`](./.npmrc) does two things:
+
+1. **Scope routing** — `@doordash` and `@dash` packages are resolved from  
+   `https://ddartifacts.jfrog.io/ddartifacts/api/npm/npm-local/`
+2. **`legacy-peer-deps=true`** — avoids strict peer-resolution failures for some dependencies
+
+It does **not** store credentials. You must authenticate to that registry from your machine, for example:
+
+- Add an auth token for `ddartifacts.jfrog.io` to your **user** `~/.npmrc` (follow internal docs for generating or rotating the token), or
+- Use whatever your team documents (`npm login`, SSO, etc.) for Artifactory
+
+Until that is set up, `npm install` will typically fail when fetching `@doordash/prism-react`.
 
 ### Development
 
 ```bash
-# Start development server (runs on http://localhost:5180)
 npm run dev
 ```
 
-The dev server will automatically open in your browser. By default, it runs on port 5180 (configurable via `VITE_PORT` environment variable).
+By default the app is served at **http://localhost:5180** (override with the `VITE_PORT` environment variable).
 
 ### Build
 
@@ -158,16 +186,15 @@ import { appConfig } from '@/config/app.config'
 
 ### Design System
 
-The project uses a custom design system built on Tailwind CSS v4:
+The project uses a custom design system with Prism and styled-components:
 - Theme support (light/dark mode with persistent preference)
 - Violet/slate color scheme for headers and accents
 - DoorDash brand colors (`--dd-primary: #FF3A00`)
-- Custom shadow utilities (`shadow-card`, `shadow-card-hover`, `shadow-popover`)
-- Glassmorphism effects (`glass-panel`, `glass-panel-subtle`, `glass-panel-chat`)
+- Shared shadows and glass styles via `src/styles/theme.ts` and CSS variables in `src/styles/global-styles.ts`
 - Motion animation variants for smooth transitions
 - Consistent spacing and typography system
 
-See `src/styles/theme.css` for design tokens and `src/styles/index.css` for custom utilities.
+See `src/styles/global-styles.ts` for `--app-*` design tokens and `src/styles/theme.ts` for theme helpers used in components. Prism dark mode tokens are bridged in `src/styles/prism-theming-overrides.ts`.
 
 ## Development Notes
 

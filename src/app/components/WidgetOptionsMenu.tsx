@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './ui/dialog';
+import styled from 'styled-components';
+import { Dialog, DialogContent, DialogDescription, DialogFooter } from './ui/dialog';
 import { Button } from './ui/button';
 import { Slider } from './ui/slider';
 import { Badge } from './ui/badge';
@@ -8,13 +9,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { BarChart3, LineChart as LineChartIcon, Gauge, Check, Database, TrendingUp } from 'lucide-react';
 import { Separator } from './ui/separator';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select';
+import { colors, radius } from '@/styles/theme';
+import { Select, Theme } from '@doordash/prism-react';
 
 interface WidgetOptionsMenuProps {
   open: boolean;
@@ -49,7 +45,6 @@ const filterOptions = [
   { id: 'merchants', label: 'Merchants' },
 ];
 
-// New: Dimension options for slice/dice
 const dimensionOptions = [
   { id: 'none', label: 'No grouping' },
   { id: 'region', label: 'Region' },
@@ -60,7 +55,6 @@ const dimensionOptions = [
   { id: 'day-of-week', label: 'Day of Week' },
 ];
 
-// New: Measure/aggregation options
 const measureOptions = [
   { id: 'count', label: 'Count' },
   { id: 'sum', label: 'Sum' },
@@ -72,6 +66,93 @@ const measureOptions = [
   { id: 'mom', label: 'Month over Month %' },
   { id: 'yoy', label: 'Year over Year %' },
 ];
+
+const QuickActions = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SectionBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const SectionTitle = styled.h4`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+`;
+
+const SectionSubtitle = styled.h4`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ChartGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SliceDiceGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+`;
+
+const FieldBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PreviewBox = styled.div`
+  background-color: ${colors.muted};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+`;
+
+const PreviewHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const SliderLabels = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const CustomPeriodRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.xSmall};
+  padding-top: ${Theme.usage.space.xSmall};
+`;
+
+const CustomInputBlock = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  padding-top: ${Theme.usage.space.xxSmall};
+`;
+
+const CustomHint = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const FilterWrap = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${Theme.usage.space.xSmall};
+`;
 
 export function WidgetOptionsMenu({
   open,
@@ -92,7 +173,6 @@ export function WidgetOptionsMenu({
   const [selectedDimension, setSelectedDimension] = useState('none');
   const [selectedMeasure, setSelectedMeasure] = useState('count');
 
-  // Sync slider value when currentTimePeriod changes or dialog opens
   useEffect(() => {
     setSliderValue([currentTimePeriod]);
   }, [currentTimePeriod, open]);
@@ -100,14 +180,12 @@ export function WidgetOptionsMenu({
   const handleSliderChange = (value: number[]) => {
     setSliderValue(value);
     onTimePeriodChange(value[0]);
-    // Turn off custom time period when slider is used
     setCustomTimePeriodEnabled(false);
   };
 
   const handleCustomToggle = (checked: boolean) => {
     setCustomTimePeriodEnabled(checked);
     if (!checked) {
-      // When toggled off, revert to slider value
       setCustomTimePeriod('');
     }
   };
@@ -121,43 +199,38 @@ export function WidgetOptionsMenu({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Widget Options</DialogTitle>
+    <Dialog open={open} onOpenChange={onOpenChange} title="Widget Options">
+      <DialogContent style={{ maxWidth: '672px', maxHeight: '90vh', overflowY: 'auto' }}>
           <DialogDescription>
             Customize the chart type, dimensions, measures, and filters for this widget
           </DialogDescription>
-        </DialogHeader>
 
-        {/* Quick Actions */}
-        <div className="flex gap-2">
+        <QuickActions>
           <Button
             variant="outline"
             size="sm"
             onClick={onViewDefinition}
-            className="flex-1 gap-1"
+            style={{ flex: 1, gap: '4px' }}
           >
-            <Database className="h-4 w-4" />
+            <Database style={{ height: '16px', width: '16px' }} />
             View Definition
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={onViewSourceData}
-            className="flex-1 gap-1"
+            style={{ flex: 1, gap: '4px' }}
           >
-            <Database className="h-4 w-4" />
+            <Database style={{ height: '16px', width: '16px' }} />
             View Source Data
           </Button>
-        </div>
+        </QuickActions>
 
         <Separator />
 
-        {/* Chart Type Selection */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium">Chart Type</h4>
-          <div className="grid grid-cols-3 gap-2">
+        <SectionBlock>
+          <SectionTitle>Chart Type</SectionTitle>
+          <ChartGrid>
             {chartTypes.map((type) => {
               const Icon = type.icon;
               const isSelected = currentChartType === type.id;
@@ -165,109 +238,94 @@ export function WidgetOptionsMenu({
                 <Button
                   key={type.id}
                   variant={isSelected ? 'default' : 'outline'}
-                  className="h-auto flex-col gap-2 py-3"
+                  style={{
+                    height: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '12px',
+                    position: 'relative',
+                  }}
                   onClick={() => onChartTypeChange(type.id as 'line' | 'area' | 'bar')}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="text-xs">{type.label}</span>
-                  {isSelected && <Check className="h-3 w-3 absolute top-1 right-1" />}
+                  <Icon style={{ height: '20px', width: '20px' }} />
+                  <span style={{ fontSize: '12px' }}>{type.label}</span>
+                  {isSelected && <Check style={{ height: '12px', width: '12px', position: 'absolute', top: '4px', right: '4px' }} />}
                 </Button>
               );
             })}
-          </div>
-        </div>
+          </ChartGrid>
+        </SectionBlock>
 
         <Separator />
 
-        {/* Slice & Dice: Dimension and Measure */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-medium">Slice & Dice</h4>
+        <SectionBlock style={{ gap: '16px' }}>
+          <SectionTitle>Slice & Dice</SectionTitle>
           
-          <div className="grid grid-cols-2 gap-3">
-            {/* Dimension Selector */}
-            <div className="space-y-2">
-              <Label htmlFor="dimension" className="text-xs text-muted-foreground">
-                Group By Dimension
-              </Label>
-              <Select value={selectedDimension} onValueChange={setSelectedDimension}>
-                <SelectTrigger id="dimension">
-                  <SelectValue placeholder="Select dimension" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dimensionOptions.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <SliceDiceGrid>
+            <FieldBlock>
+              <Select
+                label="Group By Dimension"
+                value={selectedDimension}
+                onChange={(v) => setSelectedDimension(v)}
+                options={dimensionOptions.map(o => ({ name: o.label, value: o.id }))}
+              />
+            </FieldBlock>
 
-            {/* Measure Selector */}
-            <div className="space-y-2">
-              <Label htmlFor="measure" className="text-xs text-muted-foreground">
-                Aggregation Method
-              </Label>
-              <Select value={selectedMeasure} onValueChange={setSelectedMeasure}>
-                <SelectTrigger id="measure">
-                  <SelectValue placeholder="Select measure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {measureOptions.map((option) => (
-                    <SelectItem key={option.id} value={option.id}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+            <FieldBlock>
+              <Select
+                label="Aggregation Method"
+                value={selectedMeasure}
+                onChange={(v) => setSelectedMeasure(v)}
+                options={measureOptions.map(o => ({ name: o.label, value: o.id }))}
+              />
+            </FieldBlock>
+          </SliceDiceGrid>
 
-          {/* Preview of selection */}
           {selectedDimension !== 'none' && (
-            <div className="bg-muted p-3 rounded-lg text-xs">
-              <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                <TrendingUp className="h-3 w-3" />
-                <span className="font-medium">Analysis Preview:</span>
-              </div>
-              <span className="font-mono">
+            <PreviewBox>
+              <PreviewHeader>
+                <TrendingUp style={{ height: '12px', width: '12px' }} />
+                <span style={{ fontWeight: 500 }}>Analysis Preview:</span>
+              </PreviewHeader>
+              <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }}>
                 {measureOptions.find(m => m.id === selectedMeasure)?.label} by{' '}
                 {dimensionOptions.find(d => d.id === selectedDimension)?.label}
               </span>
-            </div>
+            </PreviewBox>
           )}
-        </div>
+        </SectionBlock>
 
         <Separator />
 
-        {/* Time Period Slider */}
-        <div className="space-y-4">
-          <h4 className="text-sm text-muted-foreground">Time Period</h4>
-          <div className="space-y-3">
+        <SectionBlock style={{ gap: '16px' }}>
+          <SectionSubtitle>Time Period</SectionSubtitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <Slider
               value={sliderValue}
               onValueChange={handleSliderChange}
               min={0}
               max={2}
               step={1}
-              className="w-full"
+              style={{ width: '100%' }}
               disabled={customTimePeriodEnabled}
             />
-            <div className="flex justify-between text-xs text-muted-foreground">
+            <SliderLabels>
               {timePeriods.map((period) => (
                 <span
                   key={period.value}
-                  className={sliderValue[0] === period.value && !customTimePeriodEnabled ? 'text-primary' : ''}
+                  style={{
+                    color: sliderValue[0] === period.value && !customTimePeriodEnabled ? colors.primary : undefined
+                  }}
                 >
                   {period.label}
                 </span>
               ))}
-            </div>
+            </SliderLabels>
           </div>
 
-          {/* Custom Time Period Toggle */}
-          <div className="flex items-center justify-between space-x-2 pt-2">
-            <Label htmlFor="custom-period" className="text-sm cursor-pointer flex-1">
+          <CustomPeriodRow>
+            <Label htmlFor="custom-period" style={{ fontSize: '14px', cursor: 'pointer', flex: 1 }}>
               Custom Time Period
             </Label>
             <Switch
@@ -275,47 +333,45 @@ export function WidgetOptionsMenu({
               checked={customTimePeriodEnabled}
               onCheckedChange={handleCustomToggle}
             />
-          </div>
+          </CustomPeriodRow>
 
-          {/* Custom Time Period Input */}
           {customTimePeriodEnabled && (
-            <div className="space-y-2 pt-1">
+            <CustomInputBlock>
               <Input
                 type="text"
                 placeholder="e.g., L14, L60, Last 3 months"
                 value={customTimePeriod}
                 onChange={(e) => setCustomTimePeriod(e.target.value)}
-                className="w-full"
+                style={{ width: '100%' }}
               />
-              <p className="text-xs text-muted-foreground">
+              <CustomHint>
                 Enter a custom time period (e.g., L14 for last 14 days)
-              </p>
-            </div>
+              </CustomHint>
+            </CustomInputBlock>
           )}
-        </div>
+        </SectionBlock>
 
         <Separator />
 
-        {/* Filter Pills */}
-        <div className="space-y-3">
-          <h4 className="text-sm text-muted-foreground">Filters</h4>
-          <div className="flex flex-wrap gap-2">
+        <SectionBlock>
+          <SectionSubtitle>Filters</SectionSubtitle>
+          <FilterWrap>
             {filterOptions.map((filter) => {
               const isSelected = selectedFilters.includes(filter.id);
               return (
                 <Badge
                   key={filter.id}
                   variant={isSelected ? 'default' : 'outline'}
-                  className="cursor-pointer px-3 py-1.5 hover:bg-primary/90"
+                  style={{ cursor: 'pointer', padding: '4px 12px' }}
                   onClick={() => toggleFilter(filter.id)}
                 >
                   {filter.label}
-                  {isSelected && <Check className="h-3 w-3 ml-1" />}
+                  {isSelected && <Check style={{ height: '12px', width: '12px', marginLeft: '4px' }} />}
                 </Badge>
               );
             })}
-          </div>
-        </div>
+          </FilterWrap>
+        </SectionBlock>
 
         <DialogFooter>
           <Button 
@@ -326,7 +382,7 @@ export function WidgetOptionsMenu({
                 onOpenChange(false);
               }
             }} 
-            className="w-full"
+            style={{ width: '100%' }}
           >
             Apply Changes
           </Button>

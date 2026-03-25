@@ -1,19 +1,25 @@
 import { useState, useRef, type RefObject } from 'react';
+import { Theme } from '@doordash/prism-react';
+import styled from 'styled-components';
 import { MetricDetailModal } from './MetricDetailModal';
 import { TextSelectionToolbar } from './TextSelectionToolbar';
 import { AskAIPromptModal } from './AskAIPromptModal';
 import { CommentModal } from './CommentModal';
-import { toast } from 'sonner';
+import { toast } from '@/app/lib/toast';
 import { ScorecardCustomization } from './ScorecardCustomization';
 import { AIOverviewSettingsModal, defaultAIOverviewSettings } from './AIOverviewSettingsModal';
 import type { AIOverviewSettings } from './AIOverviewSettingsModal';
 import type { Metric } from '@/types';
 import { teamMembers } from '../data/mock/collaboration-data';
-import { productAreas, sourceDashboards, aiSummariesByArea } from '../data/mock/scorecard-data';
+import { productAreas, aiSummariesByArea } from '../data/mock/scorecard-data';
 import { FeatureBadge } from './scorecard/FeatureBadge';
-import { ScorecardContextBar } from './scorecard/ScorecardContextBar';
-import { AIExecutiveSummary } from './scorecard/AIExecutiveSummary';
-import { MetricTable } from './scorecard/MetricTable';
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.large};
+`;
+
 
 interface ExecutiveScorecardProps {
   onTimeRangeChange?: (range: string) => void;
@@ -22,13 +28,12 @@ interface ExecutiveScorecardProps {
 }
 
 export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = 'business-executive' }: ExecutiveScorecardProps) {
-  const [selectedAreas, setSelectedAreas] = useState<string[]>(['company']);
-  const [expandedAreas, setExpandedAreas] = useState<string[]>(['company']);
-  const [timeRange, setTimeRange] = useState('wow');
+  const [, _setSelectedAreas] = useState<string[]>(['company']);
+  const [, _setExpandedAreas] = useState<string[]>(['company']);
+  const [, _setTimeRange] = useState('wow');
   const [selectedMetric, setSelectedMetric] = useState<Metric | null>(null);
   const [showMetricModal, setShowMetricModal] = useState(false);
 
-  // Customization states
   const [showCustomization, setShowCustomization] = useState(false);
   const [showAISettings, setShowAISettings] = useState(false);
   const [scorecardConfig, setScorecardConfig] = useState(() => {
@@ -51,7 +56,6 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
   });
   const [aiOverviewSettings, setAIOverviewSettings] = useState<AIOverviewSettings>(defaultAIOverviewSettings);
 
-  // Text selection states
   const scorecardContainerRef = useRef<HTMLDivElement>(null);
   const [selectedText, setSelectedText] = useState<string>('');
   const [selectionContext, setSelectionContext] = useState<'highlight' | 'concern' | null>(null);
@@ -59,42 +63,8 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [showNewFeatureBadge, setShowNewFeatureBadge] = useState(false);
 
-  // Sort productAreas based on desired order
-  const areaOrder = ['company', 'us-marketplace', 'us-nv', 'ads-promos', 'dd-commerce', 'canz', 'dasher'];
-  const allAreas = [...productAreas].sort((a, b) => {
-    const indexA = areaOrder.indexOf(a.id);
-    const indexB = areaOrder.indexOf(b.id);
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-    return indexA - indexB;
-  });
-
-  const aiExecutiveSummary = aiSummariesByArea[selectedAreas[0]] || aiSummariesByArea.company;
-
-  // Get dynamic column headers based on timeRange
-  const getColumnHeaders = () => {
-    switch (timeRange) {
-      case 'dod': return { current: 'Current Day', vsPrior: 'vs Prior Day' };
-      case 'wow': return { current: 'Current Week', vsPrior: 'vs Prior Week' };
-      case 'mom': return { current: 'Current Month', vsPrior: 'vs Prior Month' };
-      case 'yoy': return { current: 'Current Year', vsPrior: 'vs Prior Year' };
-      default: return { current: 'Current', vsPrior: 'vs Prior' };
-    }
-  };
-  const columnHeaders = getColumnHeaders();
-
-  const toggleArea = (areaId: string) => {
-    setSelectedAreas([areaId]);
-    if (!expandedAreas.includes(areaId)) {
-      setExpandedAreas([...expandedAreas, areaId]);
-    }
-  };
-
-  const toggleExpanded = (areaId: string) => {
-    setExpandedAreas(prev =>
-      prev.includes(areaId) ? prev.filter(id => id !== areaId) : [...prev, areaId]
-    );
-  };
+  void productAreas;
+  void aiSummariesByArea;
 
   const detectContext = (text: string) => {
     const lower = text.toLowerCase();
@@ -120,22 +90,15 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
     toast.success('Opening Data Debby chat...');
   };
 
-  const handleSubmitComment = (comment: string, mentions: string[], _contextText: string) => {
+  const handleSubmitComment = (_comment: string, mentions: string[], _contextText: string) => {
     toast.success(`Comment posted${mentions.length > 0 ? ` and ${mentions.length} team member(s) notified` : ''}`);
   };
 
-  const handleMetricClick = (metric: Metric) => {
-    setSelectedMetric(metric);
-    setShowMetricModal(true);
-  };
-
-  const handleTimeRangeChange = (range: string) => {
-    setTimeRange(range);
-    onTimeRangeChange?.(range);
-  };
+  void setSelectedMetric;
+  void onTimeRangeChange;
 
   return (
-    <div className="space-y-6" ref={scorecardContainerRef}>
+    <Container ref={scorecardContainerRef}>
       <FeatureBadge
         visible={showNewFeatureBadge}
         onDismiss={() => setShowNewFeatureBadge(false)}
@@ -159,7 +122,7 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
       /> */}
 
       {/* Company/Top-line Metrics - Temporarily commented out */}
-      {/* <div className="space-y-4">
+      {/* <MetricTableSection>
         {allAreas
           .filter(area => selectedAreas.includes(area.id))
           .map(area => (
@@ -173,7 +136,7 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
               onCustomize={() => setShowCustomization(true)}
             />
           ))}
-      </div> */}
+      </MetricTableSection> */}
 
       {/* Modals */}
       {selectedMetric && (
@@ -223,6 +186,6 @@ export function ExecutiveScorecard({ onTimeRangeChange, onOpenChat, userRole = '
         currentSettings={aiOverviewSettings}
         onSave={setAIOverviewSettings}
       />
-    </div>
+    </Container>
   );
 }

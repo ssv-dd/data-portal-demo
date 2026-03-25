@@ -167,7 +167,7 @@ All data is currently static. Backend integration is not yet implemented.
 - Reference CSS variables from `theme.css` for colors (`text-dd-primary`, `bg-muted`, etc.)
 - Use custom utilities (`shadow-card`, `glass-panel`) for common patterns
 - Prefer inline Tailwind over custom CSS unless creating reusable utilities
-- Motion animations use `motion` from `motion/react` (not `framer-motion`)
+- Motion animations use `framer-motion` **^6.5.1** (matches `@doordash/prism-react` peer dependency; do not upgrade to v12 without checking Prism)
 
 ## TypeScript
 

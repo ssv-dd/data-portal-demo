@@ -1,3 +1,4 @@
+import styled, { css } from 'styled-components';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import {
@@ -11,8 +12,9 @@ import {
   Info,
   Settings,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkline } from './Sparkline';
+import { colors, Theme } from '@/styles/theme';
 import type { Metric, ProductArea } from '@/types';
 
 interface MetricTableProps {
@@ -24,6 +26,163 @@ interface MetricTableProps {
   onCustomize: () => void;
 }
 
+const StyledCard = styled(Card)`
+  overflow: hidden;
+`;
+
+const statusBorderColors: Record<string, string> = {
+  excellent: colors.blue600,
+  healthy: colors.emerald500,
+  warning: colors.ddWarning,
+  critical: colors.ddError,
+};
+
+const AreaHeader = styled.div<{ $status: string }>`
+  padding: ${Theme.usage.space.medium};
+  border-left: 4px solid ${({ $status }) => statusBorderColors[$status] || colors.ddError};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const ExpandToggle = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  cursor: pointer;
+  flex: 1;
+  transition: opacity 150ms;
+
+  &:hover {
+    opacity: 0.7;
+  }
+`;
+
+const AreaName = styled.h3`
+  font-weight: 600;
+  font-size: ${Theme.usage.fontSize.medium};
+`;
+
+const ActionsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const QuickViewInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.large};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const CustomizeButton = styled(Button)`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const TableWrapper = styled.div`
+  overflow-x: auto;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const TableHead = styled.thead`
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  border-top: 1px solid ${colors.border};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const ThCell = styled.th<{ $align?: string; $width?: string }>`
+  text-align: ${({ $align }) => $align || 'left'};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  font-weight: 500;
+  width: ${({ $width }) => $width || 'auto'};
+`;
+
+const TableRow = styled.tr<{ $even: boolean }>`
+  border-bottom: 1px solid ${colors.border};
+  cursor: pointer;
+  transition: background-color 150ms;
+  background-color: ${({ $even }) => ($even ? colors.white : 'rgb(var(--app-muted-rgb) / 0.1)')};
+
+  &:hover {
+    background-color: rgb(var(--app-muted-rgb) / 0.3);
+  }
+`;
+
+const TdCell = styled.td<{ $align?: string }>`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  text-align: ${({ $align }) => $align || 'left'};
+`;
+
+const CategoryCell = styled(TdCell)`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetricNameWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const MetricName = styled.span`
+  font-weight: 500;
+`;
+
+const CurrentValue = styled(TdCell)`
+  font-weight: 600;
+`;
+
+const changeColorStyles = {
+  positive: css`color: ${colors.green600};`,
+  negative: css`color: ${colors.red600};`,
+};
+
+const ChangeCell = styled.div<{ $positive: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: ${Theme.usage.space.xxSmall};
+  ${({ $positive }) => $positive ? changeColorStyles.positive : changeColorStyles.negative}
+`;
+
+const ChangeLabel = styled.span`
+  font-weight: 500;
+`;
+
+const VsPlanValue = styled.span<{ $positive: boolean }>`
+  ${({ $positive }) => $positive ? changeColorStyles.positive : changeColorStyles.negative}
+`;
+
+const AiInsightCell = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const AiInsightText = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+const iconStyle = (color: string) => ({ height: '16px', width: '16px', color });
+const smallIconStyle = (color: string) => ({ height: '12px', width: '12px', color });
+const chevronStyle = { height: '20px', width: '20px', color: colors.mutedForeground };
+
 export function MetricTable({
   area,
   columnHeaders,
@@ -34,61 +193,48 @@ export function MetricTable({
 }: MetricTableProps) {
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'excellent': return <CheckCircle2 className="h-4 w-4 text-blue-600" />;
-      case 'healthy': return <CheckCircle2 className="h-4 w-4 text-green-600" />;
-      case 'warning': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      default: return <CheckCircle2 className="h-4 w-4 text-muted-foreground" />;
+      case 'excellent': return <CheckCircle2 style={iconStyle(colors.blue600)} />;
+      case 'healthy': return <CheckCircle2 style={iconStyle(colors.green600)} />;
+      case 'warning': return <AlertTriangle style={iconStyle(colors.yellow600)} />;
+      case 'critical': return <AlertTriangle style={iconStyle(colors.red600)} />;
+      default: return <CheckCircle2 style={iconStyle(colors.mutedForeground)} />;
     }
   };
 
   return (
-    <Card className="overflow-hidden">
-      {/* Area Header */}
-      <div
-        className={`p-4 border-l-4 ${
-          area.overallStatus === 'excellent' ? 'border-blue-500' :
-          area.overallStatus === 'healthy' ? 'border-green-500' :
-          area.overallStatus === 'warning' ? 'border-yellow-500' :
-          'border-red-500'
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <div
-            className="flex items-center gap-3 cursor-pointer hover:opacity-70 transition-opacity flex-1"
-            onClick={onToggleExpand}
-          >
+    <StyledCard>
+      <AreaHeader $status={area.overallStatus}>
+        <HeaderRow>
+          <ExpandToggle onClick={onToggleExpand}>
             {expanded ? (
-              <ChevronDown className="h-5 w-5 text-muted-foreground" />
+              <ChevronDown style={chevronStyle} />
             ) : (
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <ChevronRight style={chevronStyle} />
             )}
-            <h3 className="font-semibold text-lg">{area.name}</h3>
-          </div>
-          <div className="flex items-center gap-4">
+            <AreaName>{area.name}</AreaName>
+          </ExpandToggle>
+          <ActionsRow>
             {!expanded && area.quickView && (
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <QuickViewInfo>
                 <span>{area.quickView.metric1}</span>
                 <span>{area.quickView.metric2}</span>
-              </div>
+              </QuickViewInfo>
             )}
-            <Button
+            <CustomizeButton
               variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 onCustomize();
               }}
-              className="flex items-center gap-2"
             >
-              <Settings className="h-4 w-4" />
+              <Settings style={{ height: '16px', width: '16px' }} />
               Customize
-            </Button>
-          </div>
-        </div>
-      </div>
+            </CustomizeButton>
+          </ActionsRow>
+        </HeaderRow>
+      </AreaHeader>
 
-      {/* Expanded Table */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -97,77 +243,76 @@ export function MetricTable({
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-muted/50 border-y">
+            <TableWrapper>
+              <Table>
+                <TableHead>
                   <tr>
-                    <th className="text-left py-3 px-4 font-medium w-[12%]">Category</th>
-                    <th className="text-left py-3 px-4 font-medium w-[22%]">Metric</th>
-                    <th className="text-right py-3 px-4 font-medium w-[10%]">{columnHeaders.current}</th>
-                    <th className="text-right py-3 px-4 font-medium w-[10%]">{columnHeaders.vsPrior}</th>
-                    <th className="text-right py-3 px-4 font-medium w-[10%]">vs Q1 Plan</th>
-                    <th className="text-center py-3 px-4 font-medium w-[10%]">Trend (7D)</th>
-                    <th className="text-center py-3 px-4 font-medium w-[8%]">Status</th>
-                    <th className="text-center py-3 px-4 font-medium w-[18%]">AI Insight</th>
+                    <ThCell $width="12%">Category</ThCell>
+                    <ThCell $width="22%">Metric</ThCell>
+                    <ThCell $align="right" $width="10%">{columnHeaders.current}</ThCell>
+                    <ThCell $align="right" $width="10%">{columnHeaders.vsPrior}</ThCell>
+                    <ThCell $align="right" $width="10%">vs Q1 Plan</ThCell>
+                    <ThCell $align="center" $width="10%">Trend (7D)</ThCell>
+                    <ThCell $align="center" $width="8%">Status</ThCell>
+                    <ThCell $align="center" $width="18%">AI Insight</ThCell>
                   </tr>
-                </thead>
+                </TableHead>
                 <tbody>
                   {area.metrics.map((metric, idx) => (
-                    <tr
+                    <TableRow
                       key={metric.id}
-                      className={`border-b hover:bg-muted/30 transition-colors cursor-pointer ${
-                        idx % 2 === 0 ? 'bg-white' : 'bg-muted/10'
-                      }`}
+                      $even={idx % 2 === 0}
                       onClick={() => onMetricClick(metric)}
                     >
-                      <td className="py-3 px-4 text-xs text-muted-foreground">{metric.category}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{metric.name}</span>
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right font-semibold">{metric.current}</td>
-                      <td className="py-3 px-4 text-right">
-                        <div className={`flex items-center justify-end gap-1 ${
-                          metric.change > 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {metric.change > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                          <span className="font-medium">{metric.changeLabel}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
+                      <CategoryCell>{metric.category}</CategoryCell>
+                      <TdCell>
+                        <MetricNameWrapper>
+                          <MetricName>{metric.name}</MetricName>
+                          <Info style={smallIconStyle(colors.mutedForeground)} />
+                        </MetricNameWrapper>
+                      </TdCell>
+                      <CurrentValue $align="right">{metric.current}</CurrentValue>
+                      <TdCell $align="right">
+                        <ChangeCell $positive={metric.change > 0}>
+                          {metric.change > 0
+                            ? <TrendingUp style={smallIconStyle('currentColor')} />
+                            : <TrendingDown style={smallIconStyle('currentColor')} />
+                          }
+                          <ChangeLabel>{metric.changeLabel}</ChangeLabel>
+                        </ChangeCell>
+                      </TdCell>
+                      <TdCell $align="right">
                         {metric.vsPlan && (
-                          <span className={metric.vsPlanValue && metric.vsPlanValue > 0 ? 'text-green-600' : 'text-red-600'}>
+                          <VsPlanValue $positive={!!(metric.vsPlanValue && metric.vsPlanValue > 0)}>
                             {metric.vsPlan}
-                          </span>
+                          </VsPlanValue>
                         )}
-                      </td>
-                      <td className="py-3 px-4 text-center">
+                      </TdCell>
+                      <TdCell $align="center">
                         <Sparkline
                           data={metric.trend}
                           color={metric.change > 0 ? '#10b981' : '#ef4444'}
                         />
-                      </td>
-                      <td className="py-3 px-4 text-center">
+                      </TdCell>
+                      <TdCell $align="center">
                         {getStatusIcon(metric.status)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="h-4 w-4 text-purple-500 shrink-0" />
-                          <span className="text-xs text-muted-foreground line-clamp-2">
+                      </TdCell>
+                      <TdCell>
+                        <AiInsightCell>
+                          <Sparkles style={{ ...iconStyle(colors.purple500), flexShrink: 0 }} />
+                          <AiInsightText>
                             {metric.aiInsight.summary}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
+                          </AiInsightText>
+                        </AiInsightCell>
+                      </TdCell>
+                    </TableRow>
                   ))}
                 </tbody>
-              </table>
-            </div>
+              </Table>
+            </TableWrapper>
           </motion.div>
         )}
       </AnimatePresence>
-    </Card>
+    </StyledCard>
   );
 }

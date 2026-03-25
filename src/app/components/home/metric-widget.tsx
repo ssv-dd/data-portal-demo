@@ -1,6 +1,8 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 
 interface MetricWidgetProps {
   title: string;
@@ -10,6 +12,44 @@ interface MetricWidgetProps {
   points?: number[];
   className?: string;
 }
+
+const WidgetWrapper = styled(motion.div)`
+  padding: ${Theme.usage.space.medium};
+  border-radius: ${radius.xl};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+`;
+
+const WidgetTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const ContentRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+`;
+
+const ValueText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  font-weight: 600;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const ChangeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const ChangeText = styled.span<{ $positive: boolean }>`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${({ $positive }) => ($positive ? '#22c55e' : '#ef4444')};
+`;
 
 export function MetricWidget({
   title,
@@ -21,7 +61,6 @@ export function MetricWidget({
 }: MetricWidgetProps) {
   const isPositive = trend === 'up' || (change !== undefined && change > 0);
 
-  // Simple sparkline SVG
   const renderSparkline = () => {
     if (points.length === 0) return null;
 
@@ -40,55 +79,45 @@ export function MetricWidget({
       .join(' ');
 
     return (
-      <svg width={width} height={height} className="opacity-60">
+      <svg width={width} height={height} style={{ opacity: 0.6 }}>
         <path
           d={pathData}
           fill="none"
-          stroke="currentColor"
+          stroke={isPositive ? '#22c55e' : '#ef4444'}
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={isPositive ? 'text-green-500' : 'text-red-500'}
         />
       </svg>
     );
   };
 
   return (
-    <motion.div
+    <WidgetWrapper
+      className={className}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn(
-        'p-4 rounded-xl',
-        'bg-background/40 border border-border/40',
-        className
-      )}
     >
-      <p className="text-xs text-muted-foreground mb-2">{title}</p>
-      <div className="flex items-end justify-between">
+      <WidgetTitle>{title}</WidgetTitle>
+      <ContentRow>
         <div>
-          <p className="text-2xl font-semibold text-foreground mb-1">{value}</p>
+          <ValueText>{value}</ValueText>
           {change !== undefined && (
-            <div className="flex items-center gap-1">
+            <ChangeRow>
               {isPositive ? (
-                <TrendingUp className="w-3 h-3 text-green-500" />
+                <TrendingUp style={{ width: 12, height: 12, color: '#22c55e' }} />
               ) : (
-                <TrendingDown className="w-3 h-3 text-red-500" />
+                <TrendingDown style={{ width: 12, height: 12, color: '#ef4444' }} />
               )}
-              <span
-                className={cn(
-                  'text-xs font-medium',
-                  isPositive ? 'text-green-500' : 'text-red-500'
-                )}
-              >
+              <ChangeText $positive={isPositive}>
                 {change > 0 ? '+' : ''}
                 {change}%
-              </span>
-            </div>
+              </ChangeText>
+            </ChangeRow>
           )}
         </div>
         {renderSparkline()}
-      </div>
-    </motion.div>
+      </ContentRow>
+    </WidgetWrapper>
   );
 }

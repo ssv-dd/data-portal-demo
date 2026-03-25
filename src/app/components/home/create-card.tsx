@@ -1,6 +1,7 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Plus, type LucideIcon } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { colors, radius, glassPanel, Theme } from '@/styles/theme';
 
 export interface CreateAction {
   id: string;
@@ -15,59 +16,113 @@ interface CreateCardProps {
   onActionClick?: (action: CreateAction) => void;
 }
 
+const CardWrapper = styled(motion.div)`
+  ${glassPanel}
+  border-radius: ${radius['2xl']};
+  padding: ${Theme.usage.space.large};
+  border: 1px solid ${colors.border};
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const HeaderIcon = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.15), rgb(var(--app-cyan-rgb) / 0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Title = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.small};
+`;
+
+const ActionButton = styled(motion.button)`
+  padding: ${Theme.usage.space.medium};
+  border-radius: ${radius.xl};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${Theme.usage.space.xSmall};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+    box-shadow: 0 1px 2px 0 rgb(var(--app-overlay-rgb) / 0.05);
+  }
+`;
+
+const ActionIconBox = styled.div<{ $gradient?: string }>`
+  width: 48px;
+  height: 48px;
+  border-radius: ${radius.xl};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ $gradient }) =>
+    $gradient || 'linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.2), rgb(var(--app-cyan-rgb) / 0.2))'};
+`;
+
+const ActionLabel = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  text-align: center;
+`;
+
 export function CreateCard({ actions, onActionClick }: CreateCardProps) {
   return (
-    <motion.div
+    <CardWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.05 }}
-      className="glass-panel rounded-2xl p-6 border border-border/60 dark:border-white/10"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500/15 to-cyan-400/15 dark:from-violet-500/25 dark:to-cyan-400/25 flex items-center justify-center">
-          <Plus className="w-5 h-5 text-violet-600 dark:text-violet-300" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">Quick create</h3>
-      </div>
+      <Header>
+        <HeaderIcon>
+          <Plus style={{ width: 20, height: 20, color: colors.violet600 }} />
+        </HeaderIcon>
+        <Title>Quick create</Title>
+      </Header>
 
-      <div className="grid grid-cols-2 gap-3">
+      <Grid>
         {actions.map((action, index) => {
           const Icon = action.icon;
           return (
-            <motion.button
+            <ActionButton
               key={action.id}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onActionClick?.(action)}
-              className={cn(
-                'p-4 rounded-xl',
-                'flex flex-col items-center justify-center gap-2',
-                'bg-background/40 border border-border/40',
-                'dark:bg-white/[0.04] dark:border-white/10',
-                'hover:bg-accent/60 hover:border-border/60',
-                'dark:hover:bg-white/[0.08] dark:hover:border-white/20',
-                'hover:shadow-sm',
-                'transition-all duration-200',
-                'group'
-              )}
             >
-              <div
-                className={cn(
-                  'w-12 h-12 rounded-xl flex items-center justify-center',
-                  action.gradient ||
-                    'bg-gradient-to-br from-violet-500/20 to-cyan-400/20 dark:from-violet-500/30 dark:to-cyan-400/30'
-                )}
-              >
-                <Icon className="w-6 h-6 text-violet-600 dark:text-violet-300 group-hover:scale-110 transition-transform" />
-              </div>
-              <span className="text-sm font-medium text-foreground text-center">
-                {action.label}
-              </span>
-            </motion.button>
+              <ActionIconBox $gradient={action.gradient}>
+                <Icon style={{ width: 24, height: 24, color: colors.violet600, transition: 'transform 0.2s' }} />
+              </ActionIconBox>
+              <ActionLabel>{action.label}</ActionLabel>
+            </ActionButton>
           );
         })}
-      </div>
-    </motion.div>
+      </Grid>
+    </CardWrapper>
   );
 }

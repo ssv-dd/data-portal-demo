@@ -1,5 +1,7 @@
-import { GitBranch, Database, Filter, Zap, Mail, Webhook } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { Database, Filter, Zap, Mail, Webhook } from 'lucide-react';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 import type { LucideIcon } from 'lucide-react';
 
 interface WorkflowNode {
@@ -59,74 +61,145 @@ const nodes: WorkflowNode[] = [
   },
 ];
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const WorkflowCard = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  transition: all 200ms;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const WorkflowHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const WorkflowName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const StatusBadge = styled.span<{ $status: string }>`
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background-color: ${({ $status }) =>
+    $status === 'Running' ? 'var(--app-status-success-bg)' :
+    $status === 'Active' ? '#dbeafe' :
+    'rgb(var(--app-muted-rgb) / 0.6)'};
+  color: ${({ $status }) =>
+    $status === 'Running' ? '#15803d' :
+    $status === 'Active' ? '#1d4ed8' :
+    colors.mutedForeground};
+`;
+
+const NodeButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  transition: all 200ms;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const IconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  background: linear-gradient(to bottom right, rgb(var(--app-dd-primary-rgb) / 0.2), rgb(var(--app-purple-rgb) / 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TextContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const NodeName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const NodeType = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 export function WorkflowNodesPanel({
   activeTab,
   onNodeClick,
 }: WorkflowNodesPanelProps) {
   if (activeTab === 'workflows') {
     return (
-      <div className="space-y-2">
+      <Container>
         {workflows.map((workflow) => (
-          <div
-            key={workflow.id}
-            className={cn(
-              'p-3 rounded-lg',
-              'bg-background/40 border border-border/40',
-              'hover:bg-accent/60 hover:border-border/60',
-              'transition-all duration-200'
-            )}
-          >
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <p className="text-sm font-medium text-foreground">{workflow.name}</p>
-              <span
-                className={cn(
-                  'px-2 py-0.5 text-xs rounded-full',
-                  workflow.status === 'Running'
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : workflow.status === 'Active'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                    : 'bg-muted/60 text-muted-foreground'
-                )}
-              >
+          <WorkflowCard key={workflow.id}>
+            <WorkflowHeader>
+              <WorkflowName>{workflow.name}</WorkflowName>
+              <StatusBadge $status={workflow.status}>
                 {workflow.status}
-              </span>
-            </div>
-          </div>
+              </StatusBadge>
+            </WorkflowHeader>
+          </WorkflowCard>
         ))}
-      </div>
+      </Container>
     );
   }
 
-  // Nodes tab
   return (
-    <div className="space-y-2">
+    <Container>
       {nodes.map((node) => {
         const Icon = node.icon;
         return (
-          <button
+          <NodeButton
             key={node.id}
             onClick={() => onNodeClick?.(node)}
-            className={cn(
-              'w-full p-3 rounded-lg',
-              'flex items-start gap-3',
-              'bg-background/40 border border-border/40',
-              'hover:bg-accent/60 hover:border-border/60',
-              'transition-all duration-200',
-              'group text-left'
-            )}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-dd-primary/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-4 h-4 text-dd-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {node.name}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">{node.type}</p>
-            </div>
-          </button>
+            <IconBox>
+              <Icon style={{ width: '16px', height: '16px', color: colors.ddPrimary }} />
+            </IconBox>
+            <TextContent>
+              <NodeName>{node.name}</NodeName>
+              <NodeType>{node.type}</NodeType>
+            </TextContent>
+          </NodeButton>
         );
       })}
-    </div>
+    </Container>
   );
 }

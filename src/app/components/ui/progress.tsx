@@ -1,30 +1,22 @@
+import React from 'react';
+import { ProgressBar } from '@doordash/prism-react';
 
-import * as React from "react";
-import * as ProgressPrimitive from "@radix-ui/react-progress";
-
-import { cn } from "./utils";
-
-function Progress({
-  className,
-  value,
-  ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
-  return (
-    <ProgressPrimitive.Root
-      data-slot="progress"
-      className={cn(
-        "bg-primary/10 relative h-2 w-full overflow-hidden rounded-full",
-        className,
-      )}
-      {...props}
-    >
-      <ProgressPrimitive.Indicator
-        data-slot="progress-indicator"
-        className="bg-primary h-full w-full flex-1 transition-all duration-500 ease-out rounded-full"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-      />
-    </ProgressPrimitive.Root>
-  );
+interface ProgressProps {
+  value?: number;
+  max?: number;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export { Progress };
+export const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
+  ({ value = 0, max = 100, className, style }, _ref) => {
+    const progress = Math.min(Math.max((value / max) * 100, 0), 100);
+    return (
+      <div className={className} style={style}>
+        <ProgressBar progress={progress} ariaLabel="Progress" />
+      </div>
+    );
+  }
+);
+
+Progress.displayName = 'Progress';

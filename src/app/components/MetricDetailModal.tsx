@@ -1,10 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import styled from 'styled-components';
+import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import {
-  Sparkles,
   AlertCircle,
   CheckCircle2,
   MapPin,
@@ -14,6 +14,8 @@ import {
   Bell
 } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Theme } from '@doordash/prism-react';
+import { colors } from '@/styles/theme';
 
 interface Metric {
   id: string;
@@ -41,9 +43,7 @@ interface MetricDetailModalProps {
   metric: Metric;
 }
 
-// Mock detailed data for drill-down
 const getDetailedAnalysis = (_metricId: string) => {
-  // This would come from LLM in production
   return {
     what: {
       title: 'What Happened',
@@ -172,7 +172,6 @@ const getDetailedAnalysis = (_metricId: string) => {
   };
 };
 
-// Mock time series data
 const timeSeriesData = [
   { date: 'Dec 15', value: 3.55, label: '3.55' },
   { date: 'Dec 22', value: 3.58, label: '3.58' },
@@ -198,235 +197,513 @@ const geographyData = [
   { region: 'Northeast', value: 4.1, color: '#ef4444' }
 ];
 
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+const MetricValue = styled.div`
+  text-align: right;
+`;
+
+const CurrentValue = styled.div`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  font-weight: 700;
+`;
+
+const ChangeLabel = styled.div<{ $positive: boolean }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${({ $positive }) => $positive ? colors.green600 : colors.red600};
+`;
+
+const BadgeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-top: ${Theme.usage.space.small};
+`;
+
+const ScrollContent = styled.div`
+  flex: 1;
+  overflow-y: auto;
+`;
+
+const CardPadded = styled(Card)`
+  padding: ${Theme.usage.space.medium};
+`;
+
+const SectionTitle = styled.h3`
+  font-weight: 600;
+  margin-bottom: ${Theme.usage.space.xSmall};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SectionTitle3 = styled.h3`
+  font-weight: 600;
+  margin-bottom: ${Theme.usage.space.small};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const DescText = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const AssessmentText = styled.div<{ $positive: boolean }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${({ $positive }) => $positive ? colors.green600 : colors.foreground};
+`;
+
+const DriverBlock = styled.div<{ $borderColor?: string }>`
+  margin-bottom: ${Theme.usage.space.small};
+  padding-left: ${Theme.usage.space.medium};
+  border-left: 2px solid ${({ $borderColor }) => $borderColor || colors.border};
+`;
+
+const DriverHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const DriverName = styled.span`
+  font-weight: 500;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const DetailList = styled.ul`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const SubSectionLabel = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const SpacedSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const SegmentList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const SegmentRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const MutedText = styled.span`
+  color: ${colors.mutedForeground};
+`;
+
+const GreenText = styled.span`
+  color: ${colors.green600};
+  font-weight: 500;
+`;
+
+const SmallMuted = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const GeoLabel = styled.span`
+  color: ${colors.mutedForeground};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const FlexCenter = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ForecastText = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const ForecastBadgeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding-top: ${Theme.usage.space.xSmall};
+`;
+
+const ImplicationList = styled.ul`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const ImplicationSub = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const GreenLabel = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: #15803d;
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const YellowLabel = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: #a16207;
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const RelatedList = styled.ul`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+  list-style: none;
+  padding: 0;
+  margin: 0;
+`;
+
+const RelatedItem = styled.li`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ChartTitle = styled.h3`
+  font-weight: 600;
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const ActionCardStyled = styled(Card)<{ $priority: string }>`
+  padding: ${Theme.usage.space.medium};
+  border-color: ${({ $priority }) =>
+    $priority === 'IMMEDIATE' ? '#fecdd3' :
+    $priority === 'THIS WEEK' ? '#fef08a' :
+    $priority === 'STRATEGIC' ? '#bfdbfe' :
+    colors.purple200};
+  background-color: ${({ $priority }) =>
+    $priority === 'IMMEDIATE' ? 'rgb(var(--app-rose200-rgb) / 0.3)' :
+    $priority === 'THIS WEEK' ? 'rgb(var(--app-yellow200-rgb) / 0.3)' :
+    $priority === 'STRATEGIC' ? 'rgb(var(--app-blue200-rgb) / 0.3)' :
+    'rgb(var(--app-purple200-rgb) / 0.3)'};
+`;
+
+const ActionHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const ActionTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ActionTitle = styled.h4`
+  font-weight: 600;
+`;
+
+const ActionDesc = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const ActionMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  padding-top: ${Theme.usage.space.medium};
+`;
+
+const TabsContentStyled = styled(TabsContent)`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+  margin-top: ${Theme.usage.space.medium};
+`;
+
+const ActionsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const getPriorityBadgeStyle = (priority: string) => {
+  switch (priority) {
+    case 'IMMEDIATE': return { backgroundColor: '#fee2e2', color: '#b91c1c', borderColor: '#fecdd3' };
+    case 'THIS WEEK': return { backgroundColor: '#fef9c3', color: '#a16207', borderColor: '#fef08a' };
+    case 'STRATEGIC': return { backgroundColor: '#dbeafe', color: '#1d4ed8', borderColor: '#bfdbfe' };
+    default: return { backgroundColor: colors.purple100, color: colors.purple700, borderColor: colors.purple200 };
+  }
+};
+
 export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailModalProps) {
   const analysis = getDetailedAnalysis(metric.id);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <div className="flex items-start justify-between">
+    <Dialog open={open} onOpenChange={onOpenChange} title={`AI Analysis: ${metric.name}`}>
+      <DialogContent style={{ maxWidth: '1152px', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <HeaderRow>
             <div>
-              <DialogTitle className="text-2xl flex items-center gap-2">
-                <Sparkles className="h-6 w-6 text-purple-600" />
-                AI Analysis: {metric.name}
-              </DialogTitle>
-              <DialogDescription className="mt-2">
+              <DialogDescription style={{ marginTop: '8px' }}>
                 {metric.description}
               </DialogDescription>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">{metric.current}</div>
-              <div className={`text-sm ${metric.change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <MetricValue>
+              <CurrentValue>{metric.current}</CurrentValue>
+              <ChangeLabel $positive={metric.change > 0}>
                 {metric.changeLabel} vs prior
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 mt-3">
-            <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+              </ChangeLabel>
+            </MetricValue>
+          </HeaderRow>
+          <BadgeRow>
+            <Badge style={{ backgroundColor: colors.purple100, color: colors.purple700, borderColor: colors.purple200 }}>
               Confidence: {metric.aiInsight.confidence}%
             </Badge>
-            <Badge className="bg-muted text-foreground border-border/60">
+            <Badge style={{ backgroundColor: colors.muted, color: colors.foreground, borderColor: colors.border }}>
               Last updated: 5 mins ago
             </Badge>
             {metric.status === 'excellent' && (
-              <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
+              <Badge style={{ backgroundColor: '#dbeafe', color: '#1d4ed8', borderColor: '#bfdbfe' }}>
+                <CheckCircle2 style={{ height: '12px', width: '12px', marginRight: '4px' }} />
                 Excellent Performance
               </Badge>
             )}
             {metric.status === 'warning' && (
-              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                <AlertCircle className="h-3 w-3 mr-1" />
+              <Badge style={{ backgroundColor: '#fef9c3', color: '#a16207', borderColor: '#fef08a' }}>
+                <AlertCircle style={{ height: '12px', width: '12px', marginRight: '4px' }} />
                 Needs Attention
               </Badge>
             )}
-          </div>
-        </DialogHeader>
+          </BadgeRow>
 
-        <div className="flex-1 overflow-y-auto">
-          <Tabs defaultValue="analysis" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+        <ScrollContent>
+          <Tabs defaultValue="analysis" style={{ width: '100%' }}>
+            <TabsList style={{ display: 'grid', width: '100%', gridTemplateColumns: 'repeat(3, 1fr)' }}>
               <TabsTrigger value="analysis">AI Analysis</TabsTrigger>
               <TabsTrigger value="charts">Charts & Trends</TabsTrigger>
               <TabsTrigger value="actions">Recommended Actions</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="analysis" className="space-y-4 mt-4">
-              {/* What Happened */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
+            <TabsContentStyled value="analysis">
+              <CardPadded>
+                <SectionTitle>
                   🎯 {analysis.what.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-2">{analysis.what.description}</p>
-                <div className={`text-sm font-medium ${analysis.what.assessment.includes('POSITIVE') ? 'text-green-600' : 'text-foreground'}`}>
+                </SectionTitle>
+                <DescText>{analysis.what.description}</DescText>
+                <AssessmentText $positive={analysis.what.assessment.includes('POSITIVE')}>
                   ✅ {analysis.what.assessment}
-                </div>
-              </Card>
+                </AssessmentText>
+              </CardPadded>
 
-              {/* Why It Moved */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <CardPadded>
+                <SectionTitle3>
                   📊 {analysis.why.title}
-                </h3>
+                </SectionTitle3>
 
-                <div className="mb-4">
-                  <div className="text-sm font-medium mb-2">Primary Drivers (72% of the change):</div>
+                <div style={{ marginBottom: '16px' }}>
+                  <SubSectionLabel>Primary Drivers (72% of the change):</SubSectionLabel>
                   {analysis.why.primaryDrivers.map((driver, idx) => (
-                    <div key={idx} className="mb-3 pl-4 border-l-2 border-blue-500">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{idx + 1}. {driver.name}</span>
-                        <Badge variant="outline" className="text-xs">{driver.contribution}% of lift</Badge>
-                      </div>
-                      <ul className="text-xs text-muted-foreground space-y-1">
+                    <DriverBlock key={idx} $borderColor="#3b82f6">
+                      <DriverHeader>
+                        <DriverName>{idx + 1}. {driver.name}</DriverName>
+                        <Badge variant="outline" style={{ fontSize: '12px' }}>{driver.contribution}% of lift</Badge>
+                      </DriverHeader>
+                      <DetailList>
                         {driver.details.map((detail, i) => (
                           <li key={i}>• {detail}</li>
                         ))}
-                      </ul>
-                    </div>
+                      </DetailList>
+                    </DriverBlock>
                   ))}
                 </div>
 
                 <div>
-                  <div className="text-sm font-medium mb-2">Secondary Factors (28% of the change):</div>
+                  <SubSectionLabel>Secondary Factors (28% of the change):</SubSectionLabel>
                   {analysis.why.secondaryFactors.map((factor, idx) => (
-                    <div key={idx} className="mb-2 pl-4 border-l-2 border-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-sm">{idx + 3}. {factor.name}</span>
-                        <Badge variant="outline" className="text-xs">{factor.contribution}%</Badge>
-                      </div>
-                      <ul className="text-xs text-muted-foreground space-y-1">
+                    <DriverBlock key={idx}>
+                      <DriverHeader>
+                        <DriverName>{idx + 3}. {factor.name}</DriverName>
+                        <Badge variant="outline" style={{ fontSize: '12px' }}>{factor.contribution}%</Badge>
+                      </DriverHeader>
+                      <DetailList>
                         {factor.details.map((detail, i) => (
                           <li key={i}>• {detail}</li>
                         ))}
-                      </ul>
-                    </div>
+                      </DetailList>
+                    </DriverBlock>
                   ))}
                 </div>
-              </Card>
+              </CardPadded>
 
-              {/* Who Drove It */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <CardPadded>
+                <SectionTitle3>
                   👥 {analysis.who.title}
-                </h3>
+                </SectionTitle3>
 
-                <div className="space-y-4">
+                <SpacedSection>
                   <div>
-                    <div className="text-sm font-medium mb-2">By User Type:</div>
-                    <div className="space-y-2">
+                    <SubSectionLabel>By User Type:</SubSectionLabel>
+                    <SegmentList>
                       {analysis.who.byUserType.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{item.segment}</span>
-                          <div className="flex items-center gap-2">
+                        <SegmentRow key={idx}>
+                          <MutedText>{item.segment}</MutedText>
+                          <FlexCenter>
                             {item.change !== null && (
-                              <span className="text-green-600 font-medium">+{item.change}%</span>
+                              <GreenText>+{item.change}%</GreenText>
                             )}
-                            <span className="text-xs text-muted-foreground">{item.impact}</span>
-                          </div>
-                        </div>
+                            <SmallMuted>{item.impact}</SmallMuted>
+                          </FlexCenter>
+                        </SegmentRow>
                       ))}
-                    </div>
+                    </SegmentList>
                   </div>
 
                   <div>
-                    <div className="text-sm font-medium mb-2">By Geography:</div>
-                    <div className="space-y-2">
+                    <SubSectionLabel>By Geography:</SubSectionLabel>
+                    <SegmentList>
                       {analysis.who.byGeography.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground flex items-center gap-2">
-                            <MapPin className="h-3 w-3" />
+                        <SegmentRow key={idx}>
+                          <GeoLabel>
+                            <MapPin style={{ height: '12px', width: '12px' }} />
                             {item.region}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-green-600 font-medium">+{item.change}%</span>
-                            <span className="text-xs text-muted-foreground">({item.note})</span>
-                          </div>
-                        </div>
+                          </GeoLabel>
+                          <FlexCenter>
+                            <GreenText>+{item.change}%</GreenText>
+                            <SmallMuted>({item.note})</SmallMuted>
+                          </FlexCenter>
+                        </SegmentRow>
                       ))}
-                    </div>
+                    </SegmentList>
                   </div>
 
                   <div>
-                    <div className="text-sm font-medium mb-2">By Product:</div>
-                    <div className="space-y-2">
+                    <SubSectionLabel>By Product:</SubSectionLabel>
+                    <SegmentList>
                       {analysis.who.byProduct.map((item, idx) => (
-                        <div key={idx} className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">{item.product}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{item.share}% of volume</span>
-                            <span className="text-xs text-muted-foreground">({item.note})</span>
-                          </div>
-                        </div>
+                        <SegmentRow key={idx}>
+                          <MutedText>{item.product}</MutedText>
+                          <FlexCenter>
+                            <span style={{ fontWeight: 500 }}>{item.share}% of volume</span>
+                            <SmallMuted>({item.note})</SmallMuted>
+                          </FlexCenter>
+                        </SegmentRow>
                       ))}
-                    </div>
+                    </SegmentList>
                   </div>
-                </div>
-              </Card>
+                </SpacedSection>
+              </CardPadded>
 
-              {/* Forecast */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <CardPadded>
+                <SectionTitle3>
                   🔮 {analysis.forecast.title}
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <p><span className="font-medium">Expected trajectory:</span> {analysis.forecast.expected}</p>
-                  <p><span className="font-medium">Retention campaign impact:</span> {analysis.forecast.retentionImpact}</p>
-                  <p><span className="font-medium">Risk factors:</span> {analysis.forecast.riskFactors}</p>
-                  <div className="flex items-center gap-2 pt-2">
-                    <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                </SectionTitle3>
+                <ForecastText>
+                  <p><span style={{ fontWeight: 500 }}>Expected trajectory:</span> {analysis.forecast.expected}</p>
+                  <p><span style={{ fontWeight: 500 }}>Retention campaign impact:</span> {analysis.forecast.retentionImpact}</p>
+                  <p><span style={{ fontWeight: 500 }}>Risk factors:</span> {analysis.forecast.riskFactors}</p>
+                  <ForecastBadgeRow>
+                    <Badge style={{ backgroundColor: '#fef9c3', color: '#a16207', borderColor: '#fef08a' }}>
                       Confidence: {analysis.forecast.confidence}%
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{analysis.forecast.confidenceNote}</span>
-                  </div>
-                </div>
-              </Card>
+                    <SmallMuted>{analysis.forecast.confidenceNote}</SmallMuted>
+                  </ForecastBadgeRow>
+                </ForecastText>
+              </CardPadded>
 
-              {/* Business Implications */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <CardPadded>
+                <SectionTitle3>
                   💡 {analysis.implications.title}
-                </h3>
-                <div className="space-y-3">
+                </SectionTitle3>
+                <ImplicationSub>
                   <div>
-                    <div className="text-sm font-medium text-green-700 mb-1">This is a strong positive signal:</div>
-                    <ul className="text-sm text-muted-foreground space-y-1">
+                    <GreenLabel>This is a strong positive signal:</GreenLabel>
+                    <ImplicationList>
                       {analysis.implications.positive.map((item, idx) => (
                         <li key={idx}>• {item}</li>
                       ))}
-                    </ul>
+                    </ImplicationList>
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-yellow-700 mb-1">However:</div>
-                    <ul className="text-sm text-muted-foreground space-y-1">
+                    <YellowLabel>However:</YellowLabel>
+                    <ImplicationList>
                       {analysis.implications.however.map((item, idx) => (
                         <li key={idx}>• {item}</li>
                       ))}
-                    </ul>
+                    </ImplicationList>
                   </div>
-                </div>
-              </Card>
+                </ImplicationSub>
+              </CardPadded>
 
-              {/* Related Metrics */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
+              <CardPadded>
+                <SectionTitle>
                   📎 Related Metrics to Watch
-                </h3>
-                <ul className="text-sm text-muted-foreground space-y-1">
+                </SectionTitle>
+                <RelatedList>
                   {analysis.relatedMetrics.map((metricItem, idx) => (
-                    <li key={idx} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-3 w-3" />
+                    <RelatedItem key={idx}>
+                      <CheckCircle2 style={{ height: '12px', width: '12px' }} />
                       {metricItem}
-                    </li>
+                    </RelatedItem>
                   ))}
-                </ul>
-              </Card>
-            </TabsContent>
+                </RelatedList>
+              </CardPadded>
+            </TabsContentStyled>
 
-            <TabsContent value="charts" className="space-y-4 mt-4">
-              {/* Time Series Chart */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-4">90-Day Trend</h3>
+            <TabsContentStyled value="charts">
+              <CardPadded>
+                <ChartTitle>90-Day Trend</ChartTitle>
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={timeSeriesData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -443,11 +720,10 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </Card>
+              </CardPadded>
 
-              {/* Segment Breakdown */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-4">By User Segment</h3>
+              <CardPadded>
+                <ChartTitle>By User Segment</ChartTitle>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={segmentData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -457,11 +733,10 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
                     <Bar dataKey="value" fill="#8b5cf6" />
                   </BarChart>
                 </ResponsiveContainer>
-              </Card>
+              </CardPadded>
 
-              {/* Geography Breakdown */}
-              <Card className="p-4">
-                <h3 className="font-semibold mb-4">By Geography</h3>
+              <CardPadded>
+                <ChartTitle>By Geography</ChartTitle>
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={geographyData}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -471,59 +746,49 @@ export function MetricDetailModal({ open, onOpenChange, metric }: MetricDetailMo
                     <Bar dataKey="value" fill="#10b981" />
                   </BarChart>
                 </ResponsiveContainer>
-              </Card>
-            </TabsContent>
+              </CardPadded>
+            </TabsContentStyled>
 
-            <TabsContent value="actions" className="space-y-4 mt-4">
-              <div className="space-y-3">
+            <TabsContentStyled value="actions">
+              <ActionsContainer>
                 {analysis.actions.map((action, idx) => (
-                  <Card key={idx} className={`p-4 ${
-                    action.priority === 'IMMEDIATE' ? 'border-red-200 bg-red-50/30' :
-                    action.priority === 'THIS WEEK' ? 'border-yellow-200 bg-yellow-50/30' :
-                    action.priority === 'STRATEGIC' ? 'border-blue-200 bg-blue-50/30' :
-                    'border-purple-200 bg-purple-50/30'
-                  }`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge className={
-                          action.priority === 'IMMEDIATE' ? 'bg-red-100 text-red-700 border-red-200' :
-                          action.priority === 'THIS WEEK' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                          action.priority === 'STRATEGIC' ? 'bg-blue-100 text-blue-700 border-blue-200' :
-                          'bg-purple-100 text-purple-700 border-purple-200'
-                        }>
+                  <ActionCardStyled key={idx} $priority={action.priority}>
+                    <ActionHeader>
+                      <ActionTitleRow>
+                        <Badge style={getPriorityBadgeStyle(action.priority)}>
                           {action.priority}
                         </Badge>
-                        <h4 className="font-semibold">{action.title}</h4>
-                      </div>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-3">{action.description}</p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
+                        <ActionTitle>{action.title}</ActionTitle>
+                      </ActionTitleRow>
+                    </ActionHeader>
+                    <ActionDesc>{action.description}</ActionDesc>
+                    <ActionMeta>
+                      <MetaItem>
+                        <Users style={{ height: '12px', width: '12px' }} />
                         <span>Owner: {action.owner}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                      </MetaItem>
+                      <MetaItem>
+                        <Calendar style={{ height: '12px', width: '12px' }} />
                         <span>Timeline: {action.timeline}</span>
-                      </div>
-                    </div>
-                  </Card>
+                      </MetaItem>
+                    </ActionMeta>
+                  </ActionCardStyled>
                 ))}
-              </div>
+              </ActionsContainer>
 
-              <div className="flex gap-2 pt-4">
-                <Button className="flex-1">
-                  <ExternalLink className="h-4 w-4 mr-2" />
+              <ButtonRow>
+                <Button style={{ flex: 1 }}>
+                  <ExternalLink style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                   View Source Dashboard
                 </Button>
-                <Button variant="outline" className="flex-1">
-                  <Bell className="h-4 w-4 mr-2" />
+                <Button variant="outline" style={{ flex: 1 }}>
+                  <Bell style={{ height: '16px', width: '16px', marginRight: '8px' }} />
                   Set Alert if Drops Below 3.9
                 </Button>
-              </div>
-            </TabsContent>
+              </ButtonRow>
+            </TabsContentStyled>
           </Tabs>
-        </div>
+        </ScrollContent>
       </DialogContent>
     </Dialog>
   );

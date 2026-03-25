@@ -1,0 +1,335 @@
+{
+  "skill_name": "prism-react",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to add a submit button with a loading state to my form",
+      "expected_output": "Skill reads button.md. Response includes ButtonState enum with Loading and Success values. Shows onAnimationEnd callback. Provides TypeScript import from @doordash/prism-react.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "What props does TextField accept?",
+      "expected_output": "Skill reads textfield.md. Returns a comprehensive prop table including value, onChange, label, placeholder, isDisabled, isReadOnly, error, warning, hint, and other props. Includes correct TypeScript types for each prop.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "How do I use the Prism DatePicker?",
+      "expected_output": "Skill reads datepicker.md. Returns DatePicker API with DateValue type, value/onChange controlled pattern, and a working usage example. Includes CalendarDate import from @internationalized/date.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Build me a modal confirmation dialog",
+      "expected_output": "Skill reads modal.md. Response includes ModalManager wrapper, isOpen/onOpenChange props, LayerManager requirement at app root, and a TypeScript usage example with open/close state.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "I'm building a search input for filtering results",
+      "expected_output": "Skill reads searchfield.md. Returns SearchField component with value, onChange, onClear, label props and a controlled usage example.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Show me how to use a Toast notification",
+      "expected_output": "Skill reads toast.md. Returns useToast hook, addToast function, ToastType enum values, and a usage example showing how to trigger a toast on a user action.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "I need a phone number input that supports international numbers",
+      "expected_output": "Skill reads intlphonefield.md. Returns IntlPhoneField component with value, onChange (including country code), defaultCountry prop, and a TypeScript usage example.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "Add a breadcrumb navigation to the top of my page",
+      "expected_output": "Skill reads breadcrumbs.md. Returns Breadcrumbs component with Breadcrumbs.Item children, href prop, and a usage example with multiple breadcrumb items.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "I need a tag component to label items as 'New' or 'Sale'",
+      "expected_output": "Skill reads tag.md. Returns Tag component with label prop, TagVariant enum, and a usage example.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "How do I display a loading spinner while data fetches?",
+      "expected_output": "Skill reads loading.md. Returns Loading component with size prop, LoadingSize enum values, and a usage example showing conditional rendering during async operations.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "What are all the size options for Button?",
+      "expected_output": "Skill reads button.md. Returns ButtonSize enum with all values (sm, md, lg). Includes the size prop description and default value.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "How do I make a TextField read-only vs disabled?",
+      "expected_output": "Skill reads textfield.md and/or field-common-props.md. Correctly distinguishes isReadOnly (user cannot edit but value is still submitted) vs isDisabled (user cannot interact, value not submitted). Provides both prop descriptions.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "prompt": "What's the onChange signature for Select?",
+      "expected_output": "Skill reads select.md. Returns the exact onChange signature: (value: string) => void. Does not conflate with other event-based onChange signatures.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "prompt": "What props control Modal's open/close behavior?",
+      "expected_output": "Skill reads modal.md. Returns isOpen (boolean), onOpenChange ((isOpen: boolean) => void), onEnter (optional callback when modal opens), and onExit (optional callback when modal closes).",
+      "files": []
+    },
+    {
+      "id": 15,
+      "prompt": "How do I pass an error message to EmailField?",
+      "expected_output": "Skill reads emailfield.md or field-common-props.md. Returns the error prop accepting a string. Notes that error puts the field into an error state and displays the message below the field.",
+      "files": []
+    },
+    {
+      "id": 16,
+      "prompt": "What Icon sizes are available?",
+      "expected_output": "Skill reads icon.md. Returns IconSize enum with all size values (xs, sm, md, lg, xl or similar). Includes the size prop and how to use it.",
+      "files": []
+    },
+    {
+      "id": 17,
+      "prompt": "How do I make a BottomSheet non-dismissible?",
+      "expected_output": "Skill reads bottomsheet.md. Returns isDismissable={false} prop. Notes that by default the BottomSheet can be dismissed by clicking the overlay or pressing Escape.",
+      "files": []
+    },
+    {
+      "id": 18,
+      "prompt": "What's the difference between hint and warning on a form field?",
+      "expected_output": "Skill reads field-common-props.md. Correctly explains: hint shows helpful guidance text below the field; warning shows a non-blocking yellow state with a message; error shows a blocking red state. All three display text below the field but with different semantic meanings.",
+      "files": []
+    },
+    {
+      "id": 19,
+      "prompt": "How do I set the maximum value on a NumberField?",
+      "expected_output": "Skill reads numberfield.md. Returns maxValue prop with its type (number). Also notes minValue prop is available for setting a minimum.",
+      "files": []
+    },
+    {
+      "id": 20,
+      "prompt": "What props does Avatar accept for displaying a user?",
+      "expected_output": "Skill reads avatar.md. Returns key props: src (image URL), alt (accessibility label), initials (fallback text), size (AvatarSize enum). Notes that initials are shown when src is not provided or fails to load.",
+      "files": []
+    },
+    {
+      "id": 21,
+      "prompt": "How do I use IconButton with an accessibility label?",
+      "expected_output": "Skill reads iconbutton.md. Returns aria-label prop requirement for icon-only buttons. Notes that without aria-label the button is inaccessible. Provides a usage example with aria-label.",
+      "files": []
+    },
+    {
+      "id": 22,
+      "prompt": "What are the valid values for Banner's variant prop?",
+      "expected_output": "Skill reads banner.md. Returns BannerVariant enum with all values (info, success, warning, error or similar). Includes which variant to use for which scenario.",
+      "files": []
+    },
+    {
+      "id": 23,
+      "prompt": "Write a controlled TextField that validates on blur",
+      "expected_output": "Skill reads textfield.md and field-common-props.md. Generates a complete TypeScript React component with: useState for value and error, onBlur validation handler, error prop wired to state, onChange handler, and correct import from @doordash/prism-react.",
+      "files": []
+    },
+    {
+      "id": 24,
+      "prompt": "Create a Button that shows a spinner while submitting and a checkmark on success",
+      "expected_output": "Skill reads button.md. Generates TypeScript code using ButtonState enum with ButtonState.Loading and ButtonState.Success values. Includes state prop and onAnimationEnd to reset state after success animation completes. Import from @doordash/prism-react.",
+      "files": []
+    },
+    {
+      "id": 25,
+      "prompt": "Build a Modal with a NavBar header and action buttons in the footer",
+      "expected_output": "Skill reads modal.md. Generates TypeScript code using ModalManager, includes NavBar as header, ModalFooter with action buttons. Wraps in LayerManager at app root. Shows isOpen state and onOpenChange handler.",
+      "files": []
+    },
+    {
+      "id": 26,
+      "prompt": "Implement a Select component for choosing a country",
+      "expected_output": "Skill reads select.md. Generates TypeScript code with controlled value/onChange pattern, Select.Option children with value and label, and proper import from @doordash/prism-react. Code should be syntactically valid.",
+      "files": []
+    },
+    {
+      "id": 27,
+      "prompt": "Create a form with email and password fields, with a submit button",
+      "expected_output": "Skill reads emailfield.md, passwordfield.md, button.md. Generates a TypeScript form component with EmailField, PasswordField, and Button components. All imported from @doordash/prism-react. Includes controlled state for each field.",
+      "files": []
+    },
+    {
+      "id": 28,
+      "prompt": "Show me how to display a Toast notification on form success",
+      "expected_output": "Skill reads toast.md. Generates TypeScript code using useToast hook, calling addToast with type and message. Shows integration with a form submission handler. Includes ToastType enum import from @doordash/prism-react.",
+      "files": []
+    },
+    {
+      "id": 29,
+      "prompt": "Build a ListCell with a checkbox for a multi-select list",
+      "expected_output": "Skill reads listcell.md and/or checkboxlistcell.md. Generates TypeScript code using CheckboxListCell with isSelected and onSelectionChange props. Shows how to wire it to external selection state for a list of items.",
+      "files": []
+    },
+    {
+      "id": 30,
+      "prompt": "Create a responsive image using Prism's image component",
+      "expected_output": "Skill reads responsivepicture.md. Generates TypeScript code using ResponsivePicture with src, alt, and sources props. Shows correct usage pattern.",
+      "files": []
+    },
+    {
+      "id": 31,
+      "prompt": "Set up LayerManager in my app's root component",
+      "expected_output": "Skill reads layermanager.md. Returns clear guidance: LayerManager must be a single instance at the app root, wrapping the entire application. Provides a code example showing placement in the root App component. Explicitly warns against multiple instances.",
+      "files": []
+    },
+    {
+      "id": 32,
+      "prompt": "Use Stack to vertically space a list of form fields",
+      "expected_output": "Skill reads stack.md. Generates TypeScript code using Stack with size prop, wrapping form field children. Shows correct import from @doordash/prism-react and demonstrates the spacing behavior.",
+      "files": []
+    },
+    {
+      "id": 33,
+      "prompt": "Should I use Modal or BottomSheet for a confirmation on mobile?",
+      "expected_output": "Skill reads modal.md and bottomsheet.md or references SKILL.md component selection guide. Explains BottomSheet is designed for mobile UX with slide-up animation from the bottom; Modal is a centered overlay better suited for desktop. Recommends BottomSheet for mobile-primary confirmation dialogs.",
+      "files": []
+    },
+    {
+      "id": 34,
+      "prompt": "What's the difference between DatePicker and DateField?",
+      "expected_output": "Skill references SKILL.md component selection guide or reads both datepicker.md and datefield.md. Correctly explains: DatePicker provides a calendar UI for selecting dates; DateField is a structured text input for typed date entry. Recommends DatePicker when users need to browse dates, DateField when they know the date.",
+      "files": []
+    },
+    {
+      "id": 35,
+      "prompt": "When should I use Popover vs Tooltip?",
+      "expected_output": "Skill reads popover.md and tooltip.md or SKILL.md selection guide. Correctly explains: Tooltip is for read-only informational labels triggered on hover (non-interactive); Popover is for interactive content triggered on click. Notes Tooltip should not contain interactive elements.",
+      "files": []
+    },
+    {
+      "id": 36,
+      "prompt": "I need to show navigation tabs — ButtonTabs or NavBar?",
+      "expected_output": "Skill reads buttontabs.md and navbar.md or SKILL.md catalog. Explains ButtonTabs is for in-page tab switching between content sections; NavBar is a page-level navigation header. Recommends ButtonTabs for content tabs within a page, NavBar for top-level page navigation.",
+      "files": []
+    },
+    {
+      "id": 37,
+      "prompt": "Stack vs Inline — when do I use each?",
+      "expected_output": "Skill reads stack.md and inline.md or SKILL.md layout primitives guide. Explains Stack is for vertical (column) layouts; Inline is for horizontal (row) layouts. Both accept a size prop for spacing. Recommends Stack for form fields listed vertically, Inline for horizontally arranged items.",
+      "files": []
+    },
+    {
+      "id": 38,
+      "prompt": "Should I use Tag or Badge for status indicators?",
+      "expected_output": "Skill reads tag.md and any badge reference. Differentiates based on interactive vs. display use cases. If no Badge component exists in Prism, clarifies that Tag is the correct component for status labels.",
+      "files": []
+    },
+    {
+      "id": 39,
+      "prompt": "I need a dropdown — Select or Autocomplete?",
+      "expected_output": "Skill reads select.md and autocomplete.md or SKILL.md catalog. Explains Select is for choosing from a finite, known set of options shown in a dropdown list; Autocomplete adds search/filter functionality for large option sets where users type to narrow results. Recommends Select for small lists, Autocomplete for large or searchable datasets.",
+      "files": []
+    },
+    {
+      "id": 40,
+      "prompt": "PhoneField or IntlPhoneField for our checkout form?",
+      "expected_output": "Skill reads phonefield.md and intlphonefield.md. Correctly explains PhoneField is for US phone numbers only (formats as US number); IntlPhoneField includes a country selector and handles international formats. Recommends IntlPhoneField for checkout forms that may have international customers.",
+      "files": []
+    },
+    {
+      "id": 41,
+      "prompt": "How do I prevent click events from bubbling out of a Modal?",
+      "expected_output": "Skill reads modal.md, layermanager.md, or sheet.md. Explains the Portal event bubbling issue: components rendered in a Portal/LayerManager are visually inside the modal but DOM-wise are at the document root, so events can bubble outside the modal's React tree. Provides the stopPropagation workaround pattern.",
+      "files": []
+    },
+    {
+      "id": 42,
+      "prompt": "Build a BottomSheet with a custom header and scrollable body",
+      "expected_output": "Skill reads bottomsheet.md. Returns sub-components: BottomSheetHeader for the header area and BottomSheetBody for the scrollable content area. Generates a TypeScript usage example using these sub-components correctly.",
+      "files": []
+    },
+    {
+      "id": 43,
+      "prompt": "I need a form inside a Sidesheet with a NavBar",
+      "expected_output": "Skill reads sheet.md or sidesheet reference. Returns Sidesheet component with LayerManager requirement. Shows how to include NavBar inside the Sidesheet header. Generates a TypeScript usage example.",
+      "files": []
+    },
+    {
+      "id": 44,
+      "prompt": "How do I use AnchoredLayer to build a custom dropdown?",
+      "expected_output": "Skill reads anchoredlayer.md. Returns useAnchoredLayer hook, AnchoredLayerContent component, trigger ref pattern, and placement options. Generates a TypeScript example showing a trigger element and a positioned dropdown layer.",
+      "files": []
+    },
+    {
+      "id": 45,
+      "prompt": "Set up an Autocomplete with category groupings",
+      "expected_output": "Skill reads autocomplete.md. Returns AutocompleteCategoryProps structure with label and results fields. Shows how to structure results as an array of categories, each with a label and array of result items. Generates a TypeScript usage example.",
+      "files": []
+    },
+    {
+      "id": 46,
+      "prompt": "Build a table with sortable columns using the Table component",
+      "expected_output": "Skill reads table.md. Returns Table.Column with allowsSorting prop, onSortChange callback, and sortDescriptor state. Generates a TypeScript example showing a sortable table with at least 2 columns.",
+      "files": []
+    },
+    {
+      "id": 47,
+      "prompt": "How do I implement FocusLock for an accessible custom overlay?",
+      "expected_output": "Skill reads focuslock.md. Returns FocusLock component with isActive prop (boolean controlling whether focus is trapped) and returnFocus prop (returns focus to trigger element on close). Generates a TypeScript usage example inside a custom overlay component.",
+      "files": []
+    },
+    {
+      "id": 48,
+      "prompt": "Create a multi-step form with a ProgressBar",
+      "expected_output": "Skill reads progressbar.md. Returns ProgressBar with value (current step) and maxValue (total steps) props. Generates a TypeScript example showing ProgressBar integrated with a multi-step form, updating value as the user progresses.",
+      "files": []
+    },
+    {
+      "id": 49,
+      "prompt": "I'm getting weird z-index issues with my Modal",
+      "expected_output": "Skill reads modal.md or layermanager.md. Identifies LayerManager as the root cause if not set up correctly. Explains that Modal, BottomSheet, Toast, and other overlay components require a single LayerManager at the app root to manage stacking context. Provides guidance on correct setup.",
+      "files": []
+    },
+    {
+      "id": 50,
+      "prompt": "My Toast notifications aren't appearing",
+      "expected_output": "Skill reads toast.md or layermanager.md. Asks about/explains LayerManager setup as the primary culprit. Also checks that useToast is used inside a component that is a descendant of LayerManager. Provides troubleshooting steps.",
+      "files": []
+    },
+    {
+      "id": 51,
+      "prompt": "How do I use Icon without importing the full icon set?",
+      "expected_output": "Skill reads icon.md. Explains the correct named import pattern for individual icons to enable tree-shaking (e.g., import { IconName } from '@doordash/prism-react'). Warns against barrel imports that would bundle all icons.",
+      "files": []
+    },
+    {
+      "id": 52,
+      "prompt": "Can I nest a LayerManager inside another component?",
+      "expected_output": "Skill reads layermanager.md. Explicitly warns against multiple LayerManager instances. States it must be a single instance at the app root. Explains that multiple instances cause z-index and stacking context issues with Modals, Toasts, and other overlay components.",
+      "files": []
+    },
+    {
+      "id": 53,
+      "prompt": "How do I use TextField without a visible label?",
+      "expected_output": "Skill reads textfield.md or field-common-props.md. Explains that while the label prop can be hidden visually, an accessible label is required for screen readers. Returns the aria-label prop or the hideLabel/isLabelHidden prop if it exists in the API, or explains using label with visual hiding.",
+      "files": []
+    },
+    {
+      "id": 54,
+      "prompt": "I want to style a Prism Button with custom CSS",
+      "expected_output": "Skill reads button.md. Recommends using the built-in variant, size, and other props to achieve desired visual styles rather than overriding with custom CSS. Notes that custom CSS overrides break design system consistency and may break with future updates. Lists available variant options.",
+      "files": []
+    },
+    {
+      "id": 55,
+      "prompt": "Can I use multiple BottomSheets stacked on top of each other?",
+      "expected_output": "Skill reads bottomsheet.md, sheet.md, or layermanager.md. Explains LayerManager's stacking behavior for multiple overlays. Notes whether nested/stacked BottomSheets are supported, and if so, how LayerManager handles the z-index ordering.",
+      "files": []
+    }
+  ]
+}

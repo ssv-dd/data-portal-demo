@@ -1,7 +1,7 @@
-import { motion } from 'motion/react';
-import { Sparkles, Send, MessageSquare, Layers, BookOpen } from 'lucide-react';
-// Sparkles used only for greeting icon
-import { cn } from '../ui/utils';
+import { motion } from 'framer-motion';
+import { Sparkles, Send, MessageSquare, Layers } from 'lucide-react';
+import styled from 'styled-components';
+import { colors, radius, shadows, glassHero, Theme } from '@/styles/theme';
 
 type AgentMode = 'chat' | 'hybrid' | 'notebook';
 type AgentPurpose = 'analysis' | 'exploration' | 'reporting';
@@ -20,6 +20,181 @@ interface HeroPanelProps {
   onAgentPurposeChange: (purpose: AgentPurpose) => void;
 }
 
+const PanelWrapper = styled(motion.div)`
+  ${glassHero}
+  border-radius: ${radius['2xl']};
+  padding: 20px ${Theme.usage.space.large};
+  border: 1px solid ${colors.border};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const IconBox = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: ${radius.lg};
+  background: linear-gradient(to bottom right, ${colors.violet500}, ${colors.cyan400});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgb(var(--app-violet-rgb) / 0.2);
+`;
+
+const Greeting = styled.h2`
+  font-size: ${Theme.usage.fontSize.xLarge};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const SubText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding-left: 20px;
+  padding-right: 56px;
+  height: 56px;
+  border-radius: ${radius['2xl']};
+  font-size: 15px;
+  background: rgb(var(--app-surface-rgb) / 0.7);
+  border: 2px solid rgb(var(--app-violet-rgb) / 0.5);
+  color: ${colors.foreground};
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgb(var(--app-violet-rgb) / 0.12);
+  outline: none;
+
+  &::placeholder {
+    color: rgb(var(--app-muted-fg-rgb) / 0.5);
+  }
+
+  &:focus {
+    ring: 2px solid rgb(var(--app-violet-rgb) / 0.25);
+    border-color: rgb(var(--app-violet-rgb) / 0.5);
+    box-shadow: 0 0 0 2px rgb(var(--app-violet-rgb) / 0.25), 0 0 20px rgb(var(--app-violet-rgb) / 0.12);
+  }
+`;
+
+const SendButton = styled.button<{ $active: boolean }>`
+  position: absolute;
+  right: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: ${radius.xl};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: none;
+  cursor: ${({ $active }) => ($active ? 'pointer' : 'default')};
+  background: ${({ $active }) => ($active ? colors.violet600 : 'transparent')};
+  color: ${({ $active }) => ($active ? colors.white : 'rgb(var(--app-muted-fg-rgb) / 0.3)')};
+  box-shadow: ${({ $active }) => ($active ? `0 4px 6px -1px rgb(var(--app-violet-rgb) / 0.25)` : 'none')};
+
+  &:hover {
+    background: ${({ $active }) => ($active ? colors.violet700 : 'transparent')};
+  }
+`;
+
+const ControlsRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const ModeToggleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxxSmall};
+  background: rgb(var(--app-muted-rgb) / 0.6);
+  padding: ${Theme.usage.space.xxxSmall};
+  border-radius: ${radius.lg};
+`;
+
+const ModeButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.md};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  background: ${({ $active }) => ($active ? colors.background : 'transparent')};
+  color: ${({ $active }) => ($active ? colors.foreground : colors.mutedForeground)};
+  box-shadow: ${({ $active }) => ($active ? shadows.sm : 'none')};
+
+  &:hover {
+    color: ${colors.foreground};
+  }
+`;
+
+const PurposeGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const PurposeButton = styled.button<{ $active: boolean; $disabled: boolean }>`
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.full};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 0.2s;
+  text-transform: capitalize;
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${({ $disabled }) => ($disabled ? 0.4 : 1)};
+  background: ${({ $active }) => ($active ? colors.foreground : colors.background)};
+  color: ${({ $active }) => ($active ? colors.background : colors.foreground)};
+  border: 1px solid ${({ $active }) => ($active ? colors.foreground : colors.border)};
+
+  &:hover {
+    background: ${({ $active, $disabled }) =>
+      $disabled ? undefined : $active ? colors.foreground : 'rgb(var(--app-accent-rgb) / 0.4)'};
+  }
+`;
+
+const PromptsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const PromptChip = styled(motion.button)`
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.md};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  background: rgb(var(--app-muted-rgb) / 0.6);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  color: rgb(var(--app-fg-rgb) / 0.8);
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    color: ${colors.foreground};
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+    box-shadow: ${shadows.sm};
+  }
+`;
+
 export function HeroPanel({
   userName,
   greeting = 'Good morning',
@@ -33,132 +208,88 @@ export function HeroPanel({
   agentPurpose,
   onAgentPurposeChange,
 }: HeroPanelProps) {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      onSubmit();
-    }
-  };
-
   return (
-    <motion.div
+    <PanelWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="glass-hero rounded-2xl px-6 py-5 border border-border/60 dark:border-white/10"
     >
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center flex-shrink-0 shadow-lg shadow-violet-500/20">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div className="flex-1">
-          <h2 className="text-xl font-semibold text-foreground">
+      <HeaderRow>
+        <IconBox>
+          <Sparkles style={{ width: 20, height: 20, color: colors.white }} />
+        </IconBox>
+        <div style={{ flex: 1 }}>
+          <Greeting>
             {greeting}, {userName}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            What would you like to explore today?
-          </p>
+          </Greeting>
+          <SubText>What would you like to explore today?</SubText>
         </div>
-      </div>
+      </HeaderRow>
 
-      <div className="relative mb-3">
-        <input
+      <InputWrapper>
+        <SearchInput
           type="text"
           value={searchTerm}
           onChange={(e) => onSearchTermChange(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); onSubmit(); } }}
-          className={cn(
-            'w-full pl-5 pr-14 h-14 rounded-2xl text-[15px]',
-            'bg-background/70 border-2 border-violet-300/50 dark:border-violet-500/40',
-            'text-foreground placeholder:text-muted-foreground/50',
-            'focus:outline-none focus:ring-2 focus:ring-violet-500/25 focus:border-violet-500/50',
-            'transition-all duration-200',
-            'shadow-[0_0_20px_rgba(139,92,246,0.12)]',
-            'ai-glow'
-          )}
           placeholder="Ask anything about your data..."
         />
-        <button
+        <SendButton
           onClick={onSubmit}
-          className={cn(
-            'absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl flex items-center justify-center transition-all',
-            searchTerm.trim()
-              ? 'bg-violet-600 text-white hover:bg-violet-700 shadow-md shadow-violet-500/25'
-              : 'text-muted-foreground/30 cursor-default'
-          )}
+          $active={!!searchTerm.trim()}
           disabled={!searchTerm.trim()}
         >
-          <Send className="w-4 h-4" />
-        </button>
-      </div>
+          <Send style={{ width: 16, height: 16 }} />
+        </SendButton>
+      </InputWrapper>
 
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-lg">
+      <ControlsRow>
+        <ModeToggleGroup>
           {(['chat', 'hybrid'] as const).map((mode) => (
-            <button
+            <ModeButton
               key={mode}
               onClick={() => onAgentModeChange(mode)}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                agentMode === mode
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
+              $active={agentMode === mode}
             >
-              {mode === 'chat' && <MessageSquare className="w-3.5 h-3.5" />}
-              {mode === 'hybrid' && <Layers className="w-3.5 h-3.5" />}
-              {mode === 'notebook' && <BookOpen className="w-3.5 h-3.5" />}
+              {mode === 'chat' && <MessageSquare style={{ width: 14, height: 14 }} />}
+              {mode === 'hybrid' && <Layers style={{ width: 14, height: 14 }} />}
               {mode.charAt(0).toUpperCase() + mode.slice(1)}
-            </button>
+            </ModeButton>
           ))}
-        </div>
+        </ModeToggleGroup>
 
-        <div className="flex items-center gap-1.5">
+        <PurposeGroup>
           {(['analysis', 'exploration', 'reporting'] as const).map((purpose) => {
             const isComingSoon = purpose === 'exploration' || purpose === 'reporting';
             return (
-              <button
+              <PurposeButton
                 key={purpose}
                 onClick={() => !isComingSoon && onAgentPurposeChange(purpose)}
                 disabled={isComingSoon}
                 title={isComingSoon ? 'Coming soon' : undefined}
-                className={cn(
-                  'px-2.5 py-1 rounded-full text-xs font-medium border transition-all capitalize',
-                  isComingSoon
-                    ? 'opacity-40 cursor-not-allowed border-border/50 text-muted-foreground'
-                    : agentPurpose === purpose
-                      ? 'bg-foreground text-background border-foreground'
-                      : 'bg-background text-foreground border-border hover:bg-accent/40'
-                )}
+                $active={agentPurpose === purpose}
+                $disabled={isComingSoon}
               >
                 {purpose}
-              </button>
+              </PurposeButton>
             );
           })}
-        </div>
-      </div>
+        </PurposeGroup>
+      </ControlsRow>
 
-      <div className="flex flex-wrap gap-1.5">
+      <PromptsRow>
         {prompts.map((prompt, index) => (
-          <motion.button
+          <PromptChip
             key={index}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05 }}
             onClick={() => onPromptClick?.(prompt)}
-            className={cn(
-              'px-3 py-1.5 rounded-md text-xs',
-              'bg-muted/60 border border-border/40',
-              'text-foreground/80 hover:text-foreground',
-              'hover:bg-accent/60 hover:border-border/60',
-              'transition-all duration-200',
-              'hover:shadow-sm'
-            )}
           >
             {prompt}
-          </motion.button>
+          </PromptChip>
         ))}
-      </div>
-    </motion.div>
+      </PromptsRow>
+    </PanelWrapper>
   );
 }

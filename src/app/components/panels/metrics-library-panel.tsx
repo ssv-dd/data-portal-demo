@@ -1,5 +1,7 @@
+import styled from 'styled-components';
 import { BarChart3, TrendingUp, Users, DollarSign, ShoppingCart } from 'lucide-react';
-import { cn } from '../ui/utils';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius } from '@/styles/theme';
 import type { LucideIcon } from 'lucide-react';
 
 interface Metric {
@@ -52,38 +54,84 @@ const metrics: Metric[] = [
   },
 ];
 
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const MetricButton = styled.button`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  transition: all 200ms;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const IconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.lg};
+  background: linear-gradient(to bottom right, rgb(var(--app-dd-primary-rgb) / 0.2), rgb(var(--app-purple-rgb) / 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TextContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const MetricName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const MetricCategory = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
 export function MetricsLibraryPanel({ onMetricAdd }: MetricsLibraryPanelProps) {
   return (
-    <div className="space-y-2">
+    <Container>
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
-          <button
+          <MetricButton
             key={metric.id}
             onClick={() => onMetricAdd?.(metric)}
-            className={cn(
-              'w-full p-3 rounded-lg',
-              'flex items-start gap-3',
-              'bg-background/40 border border-border/40',
-              'hover:bg-accent/60 hover:border-border/60',
-              'transition-all duration-200',
-              'group text-left'
-            )}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-dd-primary/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
-              <Icon className="w-4 h-4 text-dd-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
-                {metric.name}
-              </p>
-              <p className="text-xs text-muted-foreground truncate">
-                {metric.category}
-              </p>
-            </div>
-          </button>
+            <IconBox>
+              <Icon style={{ width: '16px', height: '16px', color: colors.ddPrimary }} />
+            </IconBox>
+            <TextContent>
+              <MetricName>{metric.name}</MetricName>
+              <MetricCategory>{metric.category}</MetricCategory>
+            </TextContent>
+          </MetricButton>
         );
       })}
-    </div>
+    </Container>
   );
 }

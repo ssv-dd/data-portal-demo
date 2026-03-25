@@ -1,116 +1,124 @@
-"use client";
+import React from 'react';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors } from '@/styles/theme';
 
-import * as React from "react";
+const TableWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+`;
 
-import { cn } from "./utils";
+const StyledTable = styled.table`
+  width: 100%;
+  caption-side: bottom;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  border-collapse: collapse;
+`;
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
-  );
-}
+const StyledTableHeader = styled.thead`
+  border-bottom: 1px solid ${colors.border};
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return (
-    <thead
-      data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
-      {...props}
-    />
-  );
-}
+  tr {
+    border-bottom: 1px solid ${colors.border};
+  }
+`;
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody
-      data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
-    />
-  );
-}
+const StyledTableBody = styled.tbody`
+  tr:last-child {
+    border-bottom: none;
+  }
+`;
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
-  return (
-    <tfoot
-      data-slot="table-footer"
-      className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const StyledTableFooter = styled.tfoot`
+  border-top: 1px solid ${colors.border};
+  background-color: rgb(var(--app-overlay-rgb) / 0.02);
+  font-weight: 500;
+`;
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-  return (
-    <tr
-      data-slot="table-row"
-      className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+const StyledTableRow = styled.tr`
+  border-bottom: 1px solid ${colors.border};
+  transition: background-color 100ms;
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
-  return (
-    <th
-      data-slot="table-head"
-      className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+  &:hover {
+    background-color: rgb(var(--app-overlay-rgb) / 0.02);
+  }
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return (
-    <td
-      data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+  &[data-state="selected"] {
+    background-color: ${colors.muted};
+  }
+`;
 
-function TableCaption({
-  className,
-  ...props
-}: React.ComponentProps<"caption">) {
-  return (
-    <caption
-      data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
-      {...props}
-    />
-  );
-}
+const StyledTableHead = styled.th`
+  height: 40px;
+  padding: 0 ${Theme.usage.space.medium};
+  text-align: left;
+  vertical-align: middle;
+  font-weight: 500;
+  color: ${colors.mutedForeground};
+  white-space: nowrap;
 
-export {
-  Table,
-  TableHeader,
-  TableBody,
-  TableFooter,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableCaption,
-};
+  &:has([role="checkbox"]) {
+    padding-right: 0;
+  }
+`;
+
+const StyledTableCell = styled.td`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  vertical-align: middle;
+
+  &:has([role="checkbox"]) {
+    padding-right: 0;
+  }
+`;
+
+const StyledTableCaption = styled.caption`
+  margin-top: ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+`;
+
+export const Table = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTableElement>>(
+  (props, ref) => (
+    <TableWrapper>
+      <StyledTable ref={ref} {...props} />
+    </TableWrapper>
+  )
+);
+
+export const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
+  (props, ref) => <StyledTableHeader ref={ref} {...props} />
+);
+
+export const TableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
+  (props, ref) => <StyledTableBody ref={ref} {...props} />
+);
+
+export const TableFooter = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
+  (props, ref) => <StyledTableFooter ref={ref} {...props} />
+);
+
+export const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
+  (props, ref) => <StyledTableRow ref={ref} {...props} />
+);
+
+export const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
+  (props, ref) => <StyledTableHead ref={ref} {...props} />
+);
+
+export const TableCell = React.forwardRef<HTMLTableCellElement, React.TdHTMLAttributes<HTMLTableCellElement>>(
+  (props, ref) => <StyledTableCell ref={ref} {...props} />
+);
+
+export const TableCaption = React.forwardRef<HTMLTableCaptionElement, React.HTMLAttributes<HTMLElement>>(
+  (props, ref) => <StyledTableCaption ref={ref} {...props} />
+);
+
+Table.displayName = 'Table';
+TableHeader.displayName = 'TableHeader';
+TableBody.displayName = 'TableBody';
+TableFooter.displayName = 'TableFooter';
+TableRow.displayName = 'TableRow';
+TableHead.displayName = 'TableHead';
+TableCell.displayName = 'TableCell';
+TableCaption.displayName = 'TableCaption';

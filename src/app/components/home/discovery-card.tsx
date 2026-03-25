@@ -1,7 +1,8 @@
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Users, TrendingUp, Zap, ChevronRight, type LucideIcon } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { colors, radius, shadows, glassPanel, Theme } from '@/styles/theme';
 
 export interface DiscoveryItem {
   id: string;
@@ -26,6 +27,139 @@ const tabs = [
   { key: 'trending' as TabKey, label: 'Trending', icon: TrendingUp },
   { key: 'recent' as TabKey, label: 'Recently published', icon: Zap },
 ];
+
+const CardWrapper = styled(motion.div)`
+  ${glassPanel}
+  border-radius: ${radius['2xl']};
+  padding: 20px;
+  border: 1px solid ${colors.border};
+  display: flex;
+  flex-direction: column;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const Title = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const TabGroup = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.xxxSmall};
+  padding: ${Theme.usage.space.xxxSmall};
+  background: rgb(var(--app-muted-rgb) / 0.4);
+  border-radius: ${radius.lg};
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.md};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  background: ${({ $active }) => ($active ? colors.background : 'transparent')};
+  color: ${({ $active }) => ($active ? colors.foreground : colors.mutedForeground)};
+  box-shadow: ${({ $active }) => ($active ? shadows.sm : 'none')};
+
+  &:hover {
+    color: ${colors.foreground};
+  }
+`;
+
+const ItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const ItemButton = styled(motion.button)`
+  width: 100%;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const ItemIconBox = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.md};
+  background: linear-gradient(to bottom right, rgb(var(--app-violet-rgb) / 0.2), rgb(var(--app-cyan-rgb) / 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const ItemTextContent = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const ItemTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ItemDescription = styled.p`
+  font-size: 11px;
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const CategoryBadge = styled.span`
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xxSmall};
+  font-size: 10px;
+  border-radius: ${radius.md};
+  background: rgb(var(--app-muted-rgb) / 0.6);
+  color: ${colors.mutedForeground};
+  flex-shrink: 0;
+`;
+
+const SeeMoreButton = styled.button`
+  margin-top: ${Theme.usage.space.xSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.violet600};
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${colors.violet700};
+  }
+`;
 
 export function DiscoveryCard({
   team,
@@ -53,83 +187,60 @@ export function DiscoveryCard({
   const hasMore = allItems.length > defaultCount;
 
   return (
-    <motion.div
+    <CardWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="glass-panel rounded-2xl p-5 border border-border/60 dark:border-white/10 flex flex-col"
     >
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-foreground">Trending in your org</h3>
-        <div className="flex gap-0.5 p-0.5 bg-muted/40 rounded-lg">
+      <HeaderRow>
+        <Title>Trending in your org</Title>
+        <TabGroup>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
-              <button
+              <TabButton
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); setShowAll(false); }}
-                className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all duration-200',
-                  activeTab === tab.key
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
+                $active={activeTab === tab.key}
               >
-                <Icon className="w-3.5 h-3.5" />
+                <Icon style={{ width: 14, height: 14 }} />
                 {tab.label}
-              </button>
+              </TabButton>
             );
           })}
-        </div>
-      </div>
+        </TabGroup>
+      </HeaderRow>
 
-      <div className="space-y-1">
+      <ItemList>
         {items.map((item, index) => {
           const Icon = item.icon;
           return (
-            <motion.button
+            <ItemButton
               key={item.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onItemClick?.(item)}
-              className={cn(
-                'w-full px-3 py-2 rounded-lg',
-                'flex items-center gap-2.5',
-                'bg-background/40 border border-border/40',
-                'dark:bg-white/[0.04] dark:border-white/10',
-                'hover:bg-accent/60 hover:border-border/60',
-                'dark:hover:bg-white/[0.08] dark:hover:border-white/20',
-                'transition-all duration-200',
-                'group text-left'
-              )}
             >
-              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-violet-500/20 to-cyan-400/20 dark:from-violet-500/30 dark:to-cyan-400/30 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-4 h-4 text-violet-600 dark:text-violet-300" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  {item.description}
-                </p>
-              </div>
-              <span className="px-1.5 py-0.5 text-[10px] rounded-md bg-muted/60 text-muted-foreground flex-shrink-0">
-                {item.category}
-              </span>
-              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-            </motion.button>
+              <ItemIconBox>
+                <Icon style={{ width: 16, height: 16, color: colors.violet600 }} />
+              </ItemIconBox>
+              <ItemTextContent>
+                <ItemTitle>{item.title}</ItemTitle>
+                <ItemDescription>{item.description}</ItemDescription>
+              </ItemTextContent>
+              <CategoryBadge>{item.category}</CategoryBadge>
+              <ChevronRight style={{ width: 14, height: 14, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)', flexShrink: 0, transition: 'transform 0.2s' }} />
+            </ItemButton>
           );
         })}
-      </div>
+      </ItemList>
 
       {hasMore && (
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="mt-2 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors text-left"
-        >
+        <SeeMoreButton onClick={() => setShowAll(!showAll)}>
           {showAll ? 'See less' : 'See more'}
-        </button>
+        </SeeMoreButton>
       )}
-    </motion.div>
+    </CardWrapper>
   );
 }

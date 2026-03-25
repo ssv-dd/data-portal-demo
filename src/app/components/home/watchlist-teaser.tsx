@@ -1,6 +1,7 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Eye, ChevronRight, Settings2 } from 'lucide-react';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { colors, radius, glassPanel, Theme } from '@/styles/theme';
 import type { ProductAreaWatchlist, WatchlistMetric } from '@/app/data/mock/watchlist-data';
 
 interface WatchlistTeaserProps {
@@ -10,10 +11,151 @@ interface WatchlistTeaserProps {
 }
 
 const trendColor = {
-  up: { change: 'text-emerald-600 dark:text-emerald-400', spark: '#10b981', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
-  down: { change: 'text-red-500 dark:text-red-400', spark: '#ef4444', bg: 'bg-red-50 dark:bg-red-500/10' },
-  flat: { change: 'text-muted-foreground', spark: '#9ca3af', bg: 'bg-muted/40' },
+  up: { change: 'var(--app-trend-up-change)', spark: 'var(--app-trend-up-spark)', bg: 'var(--app-trend-up-bg)' },
+  down: { change: 'var(--app-trend-down-change)', spark: 'var(--app-trend-down-spark)', bg: 'var(--app-trend-down-bg)' },
+  flat: { change: colors.mutedForeground, spark: '#9ca3af', bg: 'rgb(var(--app-muted-rgb) / 0.4)' },
 };
+
+const CardWrapper = styled(motion.div)`
+  ${glassPanel}
+  border-radius: ${radius['2xl']};
+  padding: ${Theme.usage.space.medium} 20px;
+  border: 1px solid ${colors.border};
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const Title = styled.h3`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const SettingsBtn = styled.button`
+  padding: ${Theme.usage.space.xxSmall};
+  border-radius: ${radius.md};
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgb(var(--app-muted-rgb) / 0.6);
+  }
+`;
+
+const ViewFullBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  color: ${colors.violet600};
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${colors.violet700};
+  }
+`;
+
+const AreasGrid = styled.div<{ $cols: number }>`
+  display: grid;
+  grid-template-columns: repeat(${({ $cols }) => $cols}, 1fr);
+`;
+
+const AreaSection = styled.div`
+  min-width: 0;
+  padding: 0 ${Theme.usage.space.medium};
+
+  &:first-child {
+    padding-left: 0;
+  }
+  &:last-child {
+    padding-right: 0;
+  }
+
+  & + & {
+    border-left: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  }
+`;
+
+const AreaLabel = styled.p`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const TileGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const MetricTileWrapper = styled.div`
+  border-radius: ${radius.xl};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xxSmall};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.03);
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: rgb(var(--app-overlay-rgb) / 0.05);
+  }
+`;
+
+const MetricName = styled.p`
+  font-size: 10px;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const MetricValueRow = styled.div`
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const MetricValue = styled.p`
+  font-size: ${Theme.usage.fontSize.small};
+  font-weight: 700;
+  color: ${colors.foreground};
+  line-height: 1.25;
+`;
+
+const MetricChange = styled.span<{ $color: string; $bg: string }>`
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xxSmall};
+  border-radius: ${radius.md};
+  color: ${({ $color }) => $color};
+  background: ${({ $bg }) => $bg};
+`;
 
 function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   if (!data || data.length === 0) return null;
@@ -28,7 +170,7 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   const fillPoints = `0,${h} ${points} ${w},${h}`;
 
   return (
-    <svg width={w} height={h} className="flex-shrink-0">
+    <svg width={w} height={h} style={{ flexShrink: 0 }}>
       <defs>
         <linearGradient id={`fill-${color.replace('#', '')}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity={0.2} />
@@ -44,78 +186,64 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
 function MetricTile({ metric }: { metric: WatchlistMetric }) {
   const { change: changeColor, spark: sparkColor, bg } = trendColor[metric.trend];
   return (
-    <div className={cn(
-      'rounded-xl px-3 py-2 flex flex-col gap-1',
-      'bg-background/40 border border-border/30',
-      'dark:bg-white/[0.03] dark:border-white/[0.06]',
-      'hover:border-border/50 dark:hover:border-white/10 transition-all'
-    )}>
-      <p className="text-[10px] text-muted-foreground uppercase tracking-wide truncate">{metric.name}</p>
-      <div className="flex items-end justify-between gap-1">
+    <MetricTileWrapper>
+      <MetricName>{metric.name}</MetricName>
+      <MetricValueRow>
         <div>
-          <p className="text-base font-bold text-foreground leading-tight">{metric.value}</p>
-          <span className={cn('text-[11px] font-semibold inline-block px-1.5 py-0.5 rounded-md', changeColor, bg)}>
+          <MetricValue>{metric.value}</MetricValue>
+          <MetricChange $color={changeColor} $bg={bg}>
             {metric.change}
-          </span>
+          </MetricChange>
         </div>
         <MiniSparkline data={metric.sparkline} color={sparkColor} />
-      </div>
-    </div>
+      </MetricValueRow>
+    </MetricTileWrapper>
   );
 }
 
-function AreaSection({ area }: { area: ProductAreaWatchlist }) {
+function AreaSectionComp({ area }: { area: ProductAreaWatchlist }) {
   const topMetrics = area.metrics.slice(0, 2);
   return (
-    <div className="min-w-0 px-4 first:pl-0 last:pr-0">
-      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">{area.shortName}</p>
-      <div className="grid grid-cols-2 gap-2">
+    <AreaSection>
+      <AreaLabel>{area.shortName}</AreaLabel>
+      <TileGrid>
         {topMetrics.map((metric) => (
           <MetricTile key={metric.id} metric={metric} />
         ))}
-      </div>
-    </div>
+      </TileGrid>
+    </AreaSection>
   );
 }
 
 export function WatchlistTeaser({ areas, selectedAreaIds, onViewFull }: WatchlistTeaserProps) {
   const selectedAreas = areas.filter((a) => selectedAreaIds.includes(a.id));
+  const cols = Math.min(Math.max(selectedAreas.length, 1), 4);
 
   return (
-    <motion.div
+    <CardWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.15 }}
-      className="glass-panel rounded-2xl px-5 py-4 border border-border/60 dark:border-white/10"
     >
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-          <h3 className="text-sm font-semibold text-foreground">Your Watchlist</h3>
-          <button className="p-1 rounded-md hover:bg-muted/60 transition-colors" title="Customize watchlist">
-            <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        </div>
-        <button
-          onClick={onViewFull}
-          className="flex items-center gap-1 text-xs font-medium text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors group"
-        >
+      <HeaderRow>
+        <HeaderLeft>
+          <Eye style={{ width: 16, height: 16, color: colors.violet600 }} />
+          <Title>Your Watchlist</Title>
+          <SettingsBtn title="Customize watchlist">
+            <Settings2 style={{ width: 14, height: 14, color: colors.mutedForeground }} />
+          </SettingsBtn>
+        </HeaderLeft>
+        <ViewFullBtn onClick={onViewFull}>
           View full scorecard
-          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-        </button>
-      </div>
+          <ChevronRight style={{ width: 14, height: 14, transition: 'transform 0.2s' }} />
+        </ViewFullBtn>
+      </HeaderRow>
 
-      <div className={cn(
-        'grid divide-x divide-border/40 dark:divide-white/10',
-        selectedAreas.length === 1 && 'grid-cols-1',
-        selectedAreas.length === 2 && 'grid-cols-2',
-        selectedAreas.length === 3 && 'grid-cols-3',
-        selectedAreas.length >= 4 && 'grid-cols-4',
-      )}>
+      <AreasGrid $cols={cols}>
         {selectedAreas.map((area) => (
-          <AreaSection key={area.id} area={area} />
+          <AreaSectionComp key={area.id} area={area} />
         ))}
-      </div>
-    </motion.div>
+      </AreasGrid>
+    </CardWrapper>
   );
 }

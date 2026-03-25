@@ -1,16 +1,318 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Plus, BookOpen, Search, FileText, Clock, Users, FileCode2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
 import { NotebookTemplatesPanel } from '../components/panels/notebook-templates-panel';
 import { notebookTemplates, mockNotebooks } from '../data/mock/notebooks-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
+import { Theme } from '@doordash/prism-react';
+import { colors, glassPanel, shadows } from '@/styles/theme';
+
+const PageContainer = styled.div`
+  height: 100%;
+  background-color: ${colors.background};
+  overflow: hidden;
+  position: relative;
+`;
+
+const GradientOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgb(var(--app-fuchsia-rgb) / 0.08), transparent 35%),
+              radial-gradient(circle at bottom right, rgb(var(--app-blue-rgb) / 0.08), transparent 35%);
+`;
+
+const ContentLayout = styled.div`
+  position: relative;
+  z-index: 10;
+  height: 100%;
+  display: flex;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.xSmall};
+`;
+
+const CenterPanel = styled.div`
+  flex: 1;
+  ${glassPanel}
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  border: 1px solid ${colors.border};
+  overflow: auto;
+`;
+
+const CenterContent = styled.div`
+  padding: ${Theme.usage.space.xLarge};
+`;
+
+const PageHeader = styled.div`
+  margin-bottom: ${Theme.usage.space.xLarge};
+`;
+
+const TitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const PageTitle = styled.h1`
+  font-size: ${Theme.usage.fontSize.xxLarge};
+  color: ${colors.slate900};
+  font-weight: 600;
+`;
+
+const PageDescription = styled.p`
+  color: ${colors.slate600};
+`;
+
+const ActionsBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const SearchWrapper = styled.div`
+  flex: 1;
+  position: relative;
+`;
+
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
+`;
+
+const NewButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  background-color: ${colors.white};
+  border: 1px solid ${colors.slate200};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.slate900};
+  cursor: pointer;
+  box-shadow: ${shadows.sm};
+  transition: background-color 200ms;
+
+  &:hover {
+    background-color: ${colors.slate50};
+  }
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const CardsGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${Theme.usage.space.large};
+  margin-bottom: ${Theme.usage.space.xxLarge};
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const NotebookCard = styled(motion.div)`
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: 20px;
+  cursor: pointer;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const CardHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const CardTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const CardTitle = styled.h3`
+  font-weight: 500;
+  color: ${colors.slate900};
+`;
+
+const CardDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const CardFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate600};
+`;
+
+const CardMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const CardMetaRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+`;
+
+const LanguageBadge = styled.span`
+  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xxSmall};
+  background-color: ${colors.muted};
+  border-radius: ${Theme.usage.borderRadius.small};
+  color: ${colors.mutedForeground};
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 64px 0;
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  margin-bottom: ${Theme.usage.space.xxLarge};
+`;
+
+const EmptyIcon = styled(FileText)`
+  width: 48px;
+  height: 48px;
+  margin: 0 auto ${Theme.usage.space.medium};
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
+`;
+
+const EmptyText = styled.p`
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const TemplatesSection = styled.div``;
+
+const TemplatesTitle = styled.h2`
+  font-size: ${Theme.usage.fontSize.medium};
+  color: ${colors.slate900};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const TemplatesGrid = styled(motion.div)`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: ${Theme.usage.space.large};
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+`;
+
+const TemplateCard = styled(motion.div)`
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  padding: ${Theme.usage.space.large};
+  background-color: rgb(var(--app-surface-rgb) / 0.4);
+  cursor: pointer;
+  transition: box-shadow 200ms;
+
+  &:hover {
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const TemplateIconBox = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: ${Theme.usage.borderRadius.large};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgb(var(--app-violet-rgb) / 0.1);
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const TemplateName = styled.h3`
+  font-size: ${Theme.usage.fontSize.small};
+  font-weight: 500;
+  color: ${colors.slate900};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const TemplateDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.slate600};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const TemplateCells = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.slate600};
+`;
+
+const ModalFormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const ModalField = styled.div``;
+
+const ModalSelect = styled.select`
+  width: 100%;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border: 1px solid ${colors.border};
+  border-radius: ${Theme.usage.borderRadius.small};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  background-color: ${colors.background};
+`;
+
+const ModalInfoBox = styled.div`
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  padding: ${Theme.usage.space.medium};
+  border-radius: ${Theme.usage.borderRadius.large};
+  border: 1px solid ${colors.border};
+`;
+
+const ModalInfoText = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.foreground};
+`;
+
+const ModalActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${Theme.usage.space.xSmall};
+`;
 
 export function NotebooksPage() {
   const [showScaffoldModal, setShowScaffoldModal] = useState(false);
@@ -37,7 +339,6 @@ export function NotebooksPage() {
     setNotebookOwner('');
   };
 
-  // Sync filter with left panel tab
   const handleTabChange = (tab: string) => {
     setLeftTab(tab);
     if (tab === 'recent') setFilter('all');
@@ -46,16 +347,13 @@ export function NotebooksPage() {
   };
 
   return (
-    <div className="h-full bg-background overflow-hidden relative">
-      {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,70,239,0.08),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.15),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.12),transparent_30%)]" />
+    <PageContainer>
+      <GradientOverlay />
 
-      {/* Gradient Orbs */}
-      <GradientOrb variant="primary" className="left-[-120px] top-[-20px]" />
-      <GradientOrb variant="secondary" className="right-[-80px] top-[120px]" />
+      <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
+      <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
-      <div className="relative z-10 h-full flex gap-2 p-2">
-      {/* Left Panel: Recent/Templates/Shared */}
+      <ContentLayout>
       <LeftPanel
         tabs={[
           { key: 'recent', label: 'Recent', icon: Clock },
@@ -70,114 +368,106 @@ export function NotebooksPage() {
         <NotebookTemplatesPanel activeTab={leftTab} />
       </LeftPanel>
 
-      {/* Center: Notebook Grid */}
-      <div className="flex-1 glass-panel rounded-2xl border border-border/60 dark:border-white/10 overflow-auto">
-        <div className="p-8">
-          <motion.div variants={fadeInUp} initial="hidden" animate="visible" className="mb-8">
-            <div className="flex items-center gap-3 mb-3">
-              <BookOpen className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-              <h1 className="text-2xl text-slate-900 dark:text-white font-semibold">Notebooks</h1>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400">
-              Clone existing notebooks or create new ones from templates
-            </p>
+      <CenterPanel>
+        <CenterContent>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+            <PageHeader>
+              <TitleRow>
+                <BookOpen style={{ width: '24px', height: '24px', color: colors.violet600 }} />
+                <PageTitle>Notebooks</PageTitle>
+              </TitleRow>
+              <PageDescription>
+                Clone existing notebooks or create new ones from templates
+              </PageDescription>
+            </PageHeader>
           </motion.div>
 
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+          <ActionsBar>
+            <SearchWrapper>
+              <SearchIcon />
               <Input
                 placeholder="Search notebooks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-background/50 border-border/60 dark:border-white/10"
+                style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
               />
-            </div>
-            <button
-              className="inline-flex items-center gap-2 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.15] transition-colors duration-200 shadow-sm"
-              onClick={() => setShowScaffoldModal(true)}
-            >
-              <Plus className="h-4 w-4" />
+            </SearchWrapper>
+            <NewButton onClick={() => setShowScaffoldModal(true)}>
+              <Plus style={{ height: '16px', width: '16px' }} />
               New Notebook
-            </button>
-          </div>
+            </NewButton>
+          </ActionsBar>
 
-          <div className="flex items-center gap-2 mb-6">
-            <Button variant="outline" size="sm" className={filter === 'all' ? 'bg-muted text-foreground' : ''} onClick={() => { setFilter('all'); setLeftTab('recent'); }}>All</Button>
-            <Button variant="outline" size="sm" className={filter === 'mine' ? 'bg-muted text-foreground' : ''} onClick={() => { setFilter('mine'); setLeftTab('templates'); }}>My Notebooks</Button>
-            <Button variant="outline" size="sm" className={filter === 'shared' ? 'bg-muted text-foreground' : ''} onClick={() => { setFilter('shared'); setLeftTab('shared'); }}>Shared with me</Button>
-          </div>
+          <FilterRow>
+            <Button variant="outline" size="sm" style={filter === 'all' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => { setFilter('all'); setLeftTab('recent'); }}>All</Button>
+            <Button variant="outline" size="sm" style={filter === 'mine' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => { setFilter('mine'); setLeftTab('templates'); }}>My Notebooks</Button>
+            <Button variant="outline" size="sm" style={filter === 'shared' ? { backgroundColor: colors.muted, color: colors.foreground } : {}} onClick={() => { setFilter('shared'); setLeftTab('shared'); }}>Shared with me</Button>
+          </FilterRow>
 
           {filteredNotebooks.length > 0 ? (
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <CardsGrid variants={staggerContainer} initial="hidden" animate="visible">
               {filteredNotebooks.map((notebook) => (
-                <motion.div
+                <NotebookCard
                   key={notebook.id}
                   variants={staggerItem}
-                  className="bg-background/40 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl p-5 hover:shadow-card-hover transition-shadow cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-muted-foreground/60 dark:text-slate-500" />
-                      <h3 className="font-medium text-slate-900 dark:text-white">{notebook.title}</h3>
-                    </div>
-                    {notebook.shared && <Users className="w-4 h-4 text-muted-foreground/60 dark:text-slate-500" />}
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{notebook.description}</p>
-                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-500">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                  <CardHeader>
+                    <CardTitleRow>
+                      <FileText style={{ width: '20px', height: '20px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
+                      <CardTitle>{notebook.title}</CardTitle>
+                    </CardTitleRow>
+                    {notebook.shared && <Users style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
+                  </CardHeader>
+                  <CardDescription>{notebook.description}</CardDescription>
+                  <CardFooter>
+                    <CardMeta>
+                      <Clock style={{ width: '12px', height: '12px' }} />
                       <span>{notebook.lastEdited}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
+                    </CardMeta>
+                    <CardMetaRight>
                       <span>{notebook.cells} cells</span>
-                      <span className="px-1.5 py-0.5 bg-muted dark:bg-white/10 rounded text-muted-foreground dark:text-slate-400">{notebook.language}</span>
-                    </div>
-                  </div>
-                </motion.div>
+                      <LanguageBadge>{notebook.language}</LanguageBadge>
+                    </CardMetaRight>
+                  </CardFooter>
+                </NotebookCard>
               ))}
-            </motion.div>
+            </CardsGrid>
           ) : (
-            <div className="text-center py-16 bg-muted/50 dark:bg-white/[0.04] border border-border/60 dark:border-white/10 rounded-2xl mb-10">
-              <FileText className="w-12 h-12 mx-auto mb-4 text-muted-foreground/60 dark:text-slate-600" />
-              <p className="text-slate-600 dark:text-slate-400 mb-4">No notebooks found</p>
-              <button
-                className="inline-flex items-center gap-2 rounded-2xl bg-white dark:bg-white/10 border border-slate-200 dark:border-white/20 px-4 py-2 text-sm font-semibold text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/[0.15] transition-colors duration-200 shadow-sm"
-                onClick={() => setShowScaffoldModal(true)}
-              >
-                <Plus className="h-4 w-4" />
+            <EmptyState>
+              <EmptyIcon />
+              <EmptyText>No notebooks found</EmptyText>
+              <NewButton onClick={() => setShowScaffoldModal(true)}>
+                <Plus style={{ height: '16px', width: '16px' }} />
                 Create your first notebook
-              </button>
-            </div>
+              </NewButton>
+            </EmptyState>
           )}
 
-          <div>
-            <h2 className="text-lg text-slate-900 dark:text-white mb-4">Get Started with Templates</h2>
-            <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <TemplatesSection>
+            <TemplatesTitle>Get Started with Templates</TemplatesTitle>
+            <TemplatesGrid variants={staggerContainer} initial="hidden" animate="visible">
               {notebookTemplates.map((template) => (
-                <motion.div
+                <TemplateCard
                   key={template.id}
                   variants={staggerItem}
-                  className="border border-border/60 dark:border-white/10 rounded-2xl p-6 bg-background/40 dark:bg-white/[0.04] hover:shadow-card-hover transition-shadow cursor-pointer group"
                   onClick={() => {
                     setSelectedTemplate(template.id);
                     setShowScaffoldModal(true);
                   }}
                 >
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-4 bg-violet-500/10 dark:bg-violet-500/20">
-                    <template.icon className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                  </div>
-                  <h3 className="text-base font-medium text-slate-900 dark:text-white mb-1">{template.name}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">{template.description}</p>
-                  <span className="text-xs text-slate-600 dark:text-slate-500">{template.cells} pre-configured cells</span>
-                </motion.div>
+                  <TemplateIconBox>
+                    <template.icon style={{ width: '20px', height: '20px', color: colors.violet600 }} />
+                  </TemplateIconBox>
+                  <TemplateName>{template.name}</TemplateName>
+                  <TemplateDescription>{template.description}</TemplateDescription>
+                  <TemplateCells>{template.cells} pre-configured cells</TemplateCells>
+                </TemplateCard>
               ))}
-            </motion.div>
-          </div>
-        </div>
-      </div>
+            </TemplatesGrid>
+          </TemplatesSection>
+        </CenterContent>
+      </CenterPanel>
 
-      {/* Right: AI Assistant */}
       <AIAssistantSidebar
         title="Notebook Assistant"
         contextLabel="Notebooks aware"
@@ -191,19 +481,14 @@ export function NotebooksPage() {
         ]}
         suggestedActions={['Run cell', 'Add markdown', 'Import library']}
       />
-      </div>
+      </ContentLayout>
 
-      <Dialog open={showScaffoldModal} onOpenChange={setShowScaffoldModal}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Create New Notebook</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label className="mb-1.5">Template</Label>
-              <select
-                className="w-full px-3 py-2 border border-border/60 rounded-md text-sm bg-background"
+      <Dialog open={showScaffoldModal} onOpenChange={setShowScaffoldModal} title="Create New Notebook">
+        <DialogContent style={{ maxWidth: '512px' }}>
+          <ModalFormGroup>
+            <ModalField>
+              <Label style={{ marginBottom: '4px' }}>Template</Label>
+              <ModalSelect
                 value={selectedTemplate || ''}
                 onChange={(e) => setSelectedTemplate(e.target.value)}
               >
@@ -213,50 +498,50 @@ export function NotebooksPage() {
                     {template.name}
                   </option>
                 ))}
-              </select>
-            </div>
+              </ModalSelect>
+            </ModalField>
 
-            <div>
-              <Label className="mb-1.5">Notebook Name</Label>
+            <ModalField>
+              <Label style={{ marginBottom: '4px' }}>Notebook Name</Label>
               <Input
                 placeholder="e.g., Q1 Revenue Analysis"
                 value={notebookName}
                 onChange={(e) => setNotebookName(e.target.value)}
               />
-            </div>
+            </ModalField>
 
-            <div>
-              <Label className="mb-1.5">Owner</Label>
+            <ModalField>
+              <Label style={{ marginBottom: '4px' }}>Owner</Label>
               <Input
                 placeholder="e.g., J. Smith"
                 value={notebookOwner}
                 onChange={(e) => setNotebookOwner(e.target.value)}
               />
-            </div>
+            </ModalField>
 
             {selectedTemplate && (
-              <div className="bg-muted/50 p-4 rounded-lg border border-border/60">
-                <p className="text-sm text-foreground">
+              <ModalInfoBox>
+                <ModalInfoText>
                   This template includes pre-configured cells for data loading, exploration, and visualization.
-                </p>
-              </div>
+                </ModalInfoText>
+              </ModalInfoBox>
             )}
 
-            <div className="flex justify-end gap-2">
+            <ModalActions>
               <Button variant="outline" onClick={() => setShowScaffoldModal(false)}>
                 Cancel
               </Button>
               <Button
-                className="bg-dd-primary text-white"
+                style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
                 onClick={handleCreateNotebook}
                 disabled={!selectedTemplate || !notebookName}
               >
                 Create Notebook
               </Button>
-            </div>
-          </div>
+            </ModalActions>
+          </ModalFormGroup>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageContainer>
   );
 }

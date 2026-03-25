@@ -1,22 +1,22 @@
-import * as React from "react";
-import * as LabelPrimitive from "@radix-ui/react-label";
+import React from 'react';
+import styled from 'styled-components';
+import { Theme } from '@doordash/prism-react';
+import { colors } from '@/styles/theme';
 
-import { cn } from "./utils";
+const StyledLabel = styled.label`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  line-height: 1;
+  color: ${colors.foreground};
 
-function Label({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
-  return (
-    <LabelPrimitive.Root
-      data-slot="label"
-      className={cn(
-        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+  &[data-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;
 
-export { Label };
+export const Label = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLLabelElement>>(
+  (props, ref) => <StyledLabel ref={ref} {...props} />
+);
+
+Label.displayName = 'Label';

@@ -1,7 +1,8 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Clock, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
-import { cn } from '../ui/utils';
+import styled from 'styled-components';
+import { colors, radius, glassPanel, Theme } from '@/styles/theme';
 
 export interface RecentWorkItem {
   id: string;
@@ -17,61 +18,131 @@ interface RecentWorkCardProps {
   onItemClick?: (item: RecentWorkItem) => void;
 }
 
+const CardWrapper = styled(motion.div)`
+  ${glassPanel}
+  border-radius: ${radius['2xl']};
+  padding: ${Theme.usage.space.large};
+  border: 1px solid ${colors.border};
+`;
+
+const Header = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const Title = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const ItemList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const ItemButton = styled(motion.button)`
+  width: 100%;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgb(var(--app-accent-rgb) / 0.6);
+    border-color: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const IconBox = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: ${radius.lg};
+  background: rgb(var(--app-muted-rgb) / 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const TextContent = styled.div`
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+`;
+
+const ItemTitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ItemMeta = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ActionsGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  flex-shrink: 0;
+`;
+
 export function RecentWorkCard({ items, onItemClick }: RecentWorkCardProps) {
   return (
-    <motion.div
+    <CardWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="glass-panel rounded-2xl p-6 border border-border/60 dark:border-white/10"
     >
-      <div className="flex items-center gap-2 mb-4">
-        <Clock className="w-5 h-5 text-muted-foreground" />
-        <h3 className="text-lg font-semibold text-foreground">Continue working</h3>
-      </div>
+      <Header>
+        <Clock style={{ width: 20, height: 20, color: colors.mutedForeground }} />
+        <Title>Continue working</Title>
+      </Header>
 
-      <div className="space-y-2">
+      <ItemList>
         {items.map((item, index) => {
           const Icon = item.icon;
           return (
-            <motion.button
+            <ItemButton
               key={item.id}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => onItemClick?.(item)}
-              className={cn(
-                'w-full p-3 rounded-xl',
-                'flex items-center gap-3',
-                'bg-background/40 border border-border/40',
-                'dark:bg-white/[0.04] dark:border-white/10',
-                'hover:bg-accent/60 hover:border-border/60',
-                'dark:hover:bg-white/[0.08] dark:hover:border-white/20',
-                'transition-all duration-200',
-                'group'
-              )}
             >
-              <div className="w-10 h-10 rounded-lg bg-muted/60 flex items-center justify-center flex-shrink-0">
-                <Icon className="w-5 h-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 text-left min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {item.title}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {item.meta}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Badge variant="secondary" className="text-xs">
+              <IconBox>
+                <Icon style={{ width: 20, height: 20, color: colors.mutedForeground }} />
+              </IconBox>
+              <TextContent>
+                <ItemTitle>{item.title}</ItemTitle>
+                <ItemMeta>{item.meta}</ItemMeta>
+              </TextContent>
+              <ActionsGroup>
+                <Badge variant="secondary" style={{ fontSize: '12px' }}>
                   {item.status}
                 </Badge>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
-              </div>
-            </motion.button>
+                <ChevronRight style={{ width: 16, height: 16, color: colors.mutedForeground, transition: 'transform 0.2s' }} />
+              </ActionsGroup>
+            </ItemButton>
           );
         })}
-      </div>
-    </motion.div>
+      </ItemList>
+    </CardWrapper>
   );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import styled from 'styled-components';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
@@ -15,8 +16,10 @@ import {
   Settings,
   Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '@/app/lib/toast';
+import { Theme } from '@doordash/prism-react';
+import { colors, radius, shadows } from '@/styles/theme';
 
 interface MetricOption {
   id: string;
@@ -34,7 +37,7 @@ interface ProductAreaConfig {
   id: string;
   name: string;
   enabled: boolean;
-  selectedMetrics: string[]; // metric IDs
+  selectedMetrics: string[];
 }
 
 interface ScorecardCustomizationProps {
@@ -43,10 +46,9 @@ interface ScorecardCustomizationProps {
   userRole: string;
   currentConfig: ProductAreaConfig[];
   onSave: (config: ProductAreaConfig[]) => void;
-  onChange?: (config: ProductAreaConfig[]) => void; // New: for live updates
+  onChange?: (config: ProductAreaConfig[]) => void;
 }
 
-// All available metrics organized by product area
 const availableMetricsByArea: Record<string, MetricOption[]> = {
   company: [
     { 
@@ -407,7 +409,6 @@ const productAreaLabels: Record<string, string> = {
   product: 'Product Experience'
 };
 
-// Role-based default configurations
 const getRoleDefaults = (role: string): ProductAreaConfig[] => {
   switch (role) {
     case 'business-executive':
@@ -445,6 +446,517 @@ const getRoleDefaults = (role: string): ProductAreaConfig[] => {
       ];
   }
 };
+
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+`;
+
+const Backdrop = styled(motion.div)`
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--app-overlay-rgb) / 0.3);
+  backdrop-filter: blur(4px);
+`;
+
+const SidePanel = styled(motion.div)`
+  margin-left: auto;
+  position: relative;
+  width: 100%;
+  max-width: 576px;
+  background-color: ${colors.white};
+  box-shadow: ${shadows['2xl']};
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const PanelHeader = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-bottom: 1px solid ${colors.border};
+  background: linear-gradient(to right, ${colors.purple50}, var(--app-status-info-bg));
+`;
+
+const HeaderTopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const HeaderTitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PanelTitle = styled.h2`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+`;
+
+const StatsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xSmall};
+`;
+
+const StatusGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const StatusText = styled.span<{ $color: string }>`
+  color: ${({ $color }) => $color};
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+`;
+
+const ContentArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+`;
+
+const SearchSection = styled.div`
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const SearchInputWrapper = styled.div`
+  position: relative;
+`;
+
+const SearchIconStyled = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  width: 16px;
+  color: ${colors.mutedForeground};
+  opacity: 0.6;
+`;
+
+const ResultsSection = styled.div`
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const SectionLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.small};
+`;
+
+const ResultsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  max-height: 384px;
+  overflow-y: auto;
+`;
+
+const SearchResultButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background-color: ${colors.white};
+  cursor: pointer;
+  text-align: left;
+  transition: all 200ms;
+
+  &:hover {
+    border-color: ${colors.purple400};
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const ResultTextContent = styled.div`
+  flex: 1;
+`;
+
+const ResultName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const ResultMeta = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const EmptyResults = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  text-align: center;
+  padding: ${Theme.usage.space.medium} 0;
+`;
+
+const CurrentMetricCard = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background-color: ${colors.white};
+  transition: all 200ms;
+
+  &:hover {
+    border-color: ${colors.borderStrong};
+  }
+`;
+
+const MetricCardText = styled.div`
+  flex: 1;
+`;
+
+const MetricCardName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const MetricCardArea = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetricCardActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const IconButton = styled(Button)`
+  flex-shrink: 0;
+  height: 32px;
+  width: 32px;
+  padding: 0;
+`;
+
+const TipBanner = styled.div`
+  margin-bottom: ${Theme.usage.space.large};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background-color: var(--app-status-info-bg);
+  border: 1px solid #bfdbfe;
+`;
+
+const TipText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: #1e3a5f;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const QuickAddSection = styled.div`
+  margin-bottom: ${Theme.usage.space.large};
+`;
+
+const QuickAddButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.xl};
+  border: 1px solid ${colors.border};
+  background-color: ${colors.white};
+  cursor: pointer;
+  transition: all 200ms;
+
+  &:hover {
+    border-color: ${colors.purple400};
+    box-shadow: ${shadows.cardHover};
+  }
+`;
+
+const QuickAddText = styled.div`
+  flex: 1;
+  text-align: left;
+`;
+
+const QuickAddName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const QuickAddArea = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ProductAreasContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const AreaCard = styled.div`
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.xl};
+  overflow: hidden;
+`;
+
+const AreaHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+`;
+
+const AreaHeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  flex: 1;
+`;
+
+const AreaToggleButton = styled.button`
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+`;
+
+const AreaInfo = styled.div`
+  flex: 1;
+`;
+
+const AreaName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const AreaMetricCount = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const MetricsList = styled.div`
+  padding: ${Theme.usage.space.small};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.xSmall};
+  background-color: ${colors.white};
+`;
+
+const MetricToggleButton = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 150ms;
+
+  &:hover {
+    background-color: rgb(var(--app-accent-rgb) / 0.4);
+  }
+`;
+
+const MetricToggleIcon = styled.div`
+  flex-shrink: 0;
+  margin-top: ${Theme.usage.space.xxxSmall};
+`;
+
+const MetricToggleText = styled.div`
+  flex: 1;
+`;
+
+const MetricToggleName = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const MetricToggleDesc = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const DensityWarning = styled.div`
+  margin-top: ${Theme.usage.space.large};
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background-color: var(--app-status-warning-bg-light);
+  border: 1px solid #fed7aa;
+`;
+
+const DensityText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: #9a3412;
+  display: flex;
+  align-items: flex-start;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const PanelFooter = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-top: 1px solid ${colors.border};
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${Theme.usage.space.small};
+`;
+
+const FooterRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const MetricInfoOverlay = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${Theme.usage.space.medium};
+`;
+
+const MetricInfoBackdrop = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgb(var(--app-overlay-rgb) / 0.5);
+`;
+
+const MetricInfoModal = styled.div`
+  position: relative;
+  background-color: ${colors.white};
+  border-radius: ${radius.xl};
+  box-shadow: ${shadows['2xl']};
+  max-width: 672px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MetricInfoHeader = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-bottom: 1px solid ${colors.border};
+  background: linear-gradient(to right, var(--app-status-info-bg), #eef2ff);
+`;
+
+const MetricInfoHeaderRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
+
+const MetricInfoTitle = styled.h3`
+  font-weight: 600;
+  font-size: ${Theme.usage.fontSize.medium};
+  color: ${colors.foreground};
+`;
+
+const MetricInfoSubtitle = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  margin-top: ${Theme.usage.space.xxSmall};
+`;
+
+const MetricInfoContent = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+`;
+
+const MetricInfoSections = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const BadgeGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const InfoSectionTitle = styled.h4`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const InfoSectionText = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: ${colors.mutedForeground};
+  line-height: 1.625;
+`;
+
+const MetadataGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: ${Theme.usage.space.medium};
+  padding-top: ${Theme.usage.space.xSmall};
+`;
+
+const MetadataCard = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  border: 1px solid ${colors.border};
+`;
+
+const MetadataLabel = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const MetadataValue = styled.p`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+`;
+
+const SourceCodeBox = styled.div`
+  padding: ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  border: 1px solid ${colors.border};
+`;
+
+const SourceCode = styled.code`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.foreground};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+`;
+
+const MetricInfoFooter = styled.div`
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
+  border-top: 1px solid ${colors.border};
+  background-color: rgb(var(--app-muted-rgb) / 0.5);
+  display: flex;
+  justify-content: flex-end;
+`;
 
 export function ScorecardCustomization({ 
   isOpen, 
@@ -509,7 +1021,6 @@ export function ScorecardCustomization({
   };
 
   const handleAddPopularMetric = (areaId: string, metricId: string) => {
-    // First enable the area if not already
     let updated = config.map(area => {
       if (area.id === areaId && !area.enabled) {
         return { ...area, enabled: true };
@@ -517,7 +1028,6 @@ export function ScorecardCustomization({
       return area;
     });
     
-    // Then add the metric
     updated = updated.map(area => {
       if (area.id === areaId && !area.selectedMetrics.includes(metricId)) {
         return { ...area, selectedMetrics: [...area.selectedMetrics, metricId] };
@@ -543,7 +1053,6 @@ export function ScorecardCustomization({
     return allPopular.slice(0, 3);
   };
 
-  // Get all currently selected metrics across all areas
   const getAllSelectedMetrics = () => {
     const selected: (MetricOption & { areaId: string; areaName: string })[] = [];
     config.forEach(area => {
@@ -560,13 +1069,11 @@ export function ScorecardCustomization({
     return selected;
   };
 
-  // Handle removing a metric from current list
   const handleRemoveMetric = (areaId: string, metricId: string) => {
     handleToggleMetric(areaId, metricId);
     toast.success('Metric removed from scorecard');
   };
 
-  // Search and filter metrics
   const getSearchResults = () => {
     if (!searchQuery.trim()) return [];
     
@@ -589,307 +1096,292 @@ export function ScorecardCustomization({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex">
-        {/* Backdrop */}
-        <motion.div
+      <Overlay>
+        <Backdrop
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         />
 
-        {/* Side Panel */}
-        <motion.div
+        <SidePanel
           initial={{ x: '100%' }}
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-          className="ml-auto relative w-full max-w-xl bg-white dark:bg-gray-900 shadow-2xl overflow-hidden flex flex-col"
         >
-          {/* Header */}
-          <div className="px-6 py-4 border-b bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-purple-600" />
-                <h2 className="text-lg font-semibold">Customize Your Scorecard</h2>
-              </div>
+          <PanelHeader>
+            <HeaderTopRow>
+              <HeaderTitleGroup>
+                <Settings style={{ height: '20px', width: '20px', color: colors.purple600 }} />
+                <PanelTitle>Customize Your Scorecard</PanelTitle>
+              </HeaderTitleGroup>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
-                className="shrink-0"
+                style={{ flexShrink: 0 }}
               >
-                <X className="h-5 w-5" />
+                <X style={{ height: '20px', width: '20px' }} />
               </Button>
-            </div>
+            </HeaderTopRow>
             
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs font-medium">
+            <StatsRow>
+              <StatusGroup>
+                <Badge variant="outline" style={{ fontSize: '12px', fontWeight: 500 }}>
                   {totalMetrics} {totalMetrics === 1 ? 'metric' : 'metrics'}
                 </Badge>
                 {totalMetrics <= 10 ? (
-                  <span className="text-green-600 flex items-center gap-1">
-                    <CheckCircle2 className="h-3 w-3" />
+                  <StatusText $color={colors.green600}>
+                    <CheckCircle2 style={{ height: '12px', width: '12px' }} />
                     Optimal
-                  </span>
+                  </StatusText>
                 ) : totalMetrics <= 20 ? (
-                  <span className="text-yellow-600 flex items-center gap-1">
-                    <Info className="h-3 w-3" />
+                  <StatusText $color={colors.yellow600}>
+                    <Info style={{ height: '12px', width: '12px' }} />
                     Balanced
-                  </span>
+                  </StatusText>
                 ) : (
-                  <span className="text-orange-600 flex items-center gap-1">
-                    <Info className="h-3 w-3" />
+                  <StatusText $color="#ea580c">
+                    <Info style={{ height: '12px', width: '12px' }} />
                     Dense
-                  </span>
+                  </StatusText>
                 )}
-              </div>
-            </div>
-          </div>
+              </StatusGroup>
+            </StatsRow>
+          </PanelHeader>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-6 py-4">
-            {/* Search Bar */}
-            <div className="mb-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+          <ContentArea>
+            <SearchSection>
+              <SearchInputWrapper>
+                <SearchIconStyled />
                 <Input
                   type="text"
                   placeholder="Search metrics..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  style={{ paddingLeft: '40px' }}
                 />
-              </div>
-            </div>
+              </SearchInputWrapper>
+            </SearchSection>
 
-            {/* Search Results */}
             {searchQuery.trim() && (
-              <div className="mb-6">
-                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">
+              <ResultsSection>
+                <SectionLabel>
                   Search Results ({getSearchResults().length})
-                </p>
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                </SectionLabel>
+                <ResultsList>
                   {getSearchResults().length > 0 ? (
                     getSearchResults().map((metric) => {
                       const area = config.find(a => a.id === metric.areaId);
                       const isSelected = area?.selectedMetrics.includes(metric.id) ?? false;
 
                       return (
-                        <button
+                        <SearchResultButton
                           key={metric.id}
                           onClick={() => handleToggleMetric(metric.areaId, metric.id)}
-                          className="w-full flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-card-hover transition-all text-left"
                         >
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
-                            <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.areaName} • {metric.category}</p>
-                          </div>
-                          <Badge className={isSelected ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 text-xs" : "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 text-xs"}>
+                          <ResultTextContent>
+                            <ResultName>{metric.name}</ResultName>
+                            <ResultMeta>{metric.areaName} &bull; {metric.category}</ResultMeta>
+                          </ResultTextContent>
+                          <Badge style={{
+                            background: isSelected
+                              ? 'linear-gradient(to right, #22c55e, #10b981)'
+                              : 'linear-gradient(to right, #a855f7, #3b82f6)',
+                            color: colors.white,
+                            border: 0,
+                            fontSize: '12px',
+                          }}>
                             {isSelected ? '✓ Added' : '+ Add'}
                           </Badge>
-                        </button>
+                        </SearchResultButton>
                       );
                     })
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">No metrics found</p>
+                    <EmptyResults>No metrics found</EmptyResults>
                   )}
-                </div>
-              </div>
+                </ResultsList>
+              </ResultsSection>
             )}
 
-            {/* Current Metrics - Only show when not searching */}
             {!searchQuery.trim() && totalMetrics > 0 && (
-              <div className="mb-6">
-                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">
+              <ResultsSection>
+                <SectionLabel>
                   Current Metrics ({totalMetrics})
-                </p>
-                <div className="space-y-2 max-h-80 overflow-y-auto">
+                </SectionLabel>
+                <ResultsList style={{ maxHeight: '320px' }}>
                   {getAllSelectedMetrics().map((metric) => (
-                    <div
-                      key={`${metric.areaId}-${metric.id}`}
-                      className="flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-border-strong dark:hover:border-gray-600 transition-all"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
-                        <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.areaName}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
+                    <CurrentMetricCard key={`${metric.areaId}-${metric.id}`}>
+                      <MetricCardText>
+                        <MetricCardName>{metric.name}</MetricCardName>
+                        <MetricCardArea>{metric.areaName}</MetricCardArea>
+                      </MetricCardText>
+                      <MetricCardActions>
+                        <IconButton
                           variant="ghost"
                           size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedMetricInfo({ ...metric, areaId: metric.areaId });
                           }}
-                          className="shrink-0 h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
                         >
-                          <Info className="h-4 w-4" />
-                        </Button>
-                        <Button
+                          <Info style={{ height: '16px', width: '16px' }} />
+                        </IconButton>
+                        <IconButton
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveMetric(metric.areaId, metric.id)}
-                          className="shrink-0 h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
                         >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                          <Trash2 style={{ height: '16px', width: '16px' }} />
+                        </IconButton>
+                      </MetricCardActions>
+                    </CurrentMetricCard>
                   ))}
-                </div>
-              </div>
+                </ResultsList>
+              </ResultsSection>
             )}
 
-            {/* Tip Banner - Only show when not searching */}
             {!searchQuery.trim() && (
-              <div className="mb-6 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
-                <p className="text-xs text-blue-900 dark:text-blue-100 flex items-start gap-2">
-                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+              <TipBanner>
+                <TipText>
+                  <Info style={{ height: '16px', width: '16px', flexShrink: 0, marginTop: '2px' }} />
                   <span>Show only what you check weekly. You can always add more metrics later.</span>
-                </p>
-              </div>
+                </TipText>
+              </TipBanner>
             )}
 
-            {/* Quick Add - Popular Metrics - Only show when not searching */}
             {!searchQuery.trim() && getPopularMetricsForQuickAdd().length > 0 && (
-              <div className="mb-6">
-                <p className="text-sm font-medium text-foreground dark:text-gray-300 mb-3">Quick Add:</p>
-                <div className="space-y-2">
+              <QuickAddSection>
+                <SectionLabel>Quick Add:</SectionLabel>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {getPopularMetricsForQuickAdd().map((metric) => (
-                    <button
+                    <QuickAddButton
                       key={metric.id}
                       onClick={() => handleAddPopularMetric(metric.areaId, metric.id)}
-                      className="w-full flex items-center justify-between p-3 rounded-xl border border-border/60 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-purple-300 dark:hover:border-purple-600 hover:shadow-card-hover transition-all"
                     >
-                      <div className="flex-1 text-left">
-                        <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
-                        <p className="text-xs text-muted-foreground dark:text-gray-400">{productAreaLabels[metric.areaId]}</p>
-                      </div>
-                      <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-white border-0 text-xs">
+                      <QuickAddText>
+                        <QuickAddName>{metric.name}</QuickAddName>
+                        <QuickAddArea>{productAreaLabels[metric.areaId]}</QuickAddArea>
+                      </QuickAddText>
+                      <Badge style={{
+                        background: 'linear-gradient(to right, #a855f7, #3b82f6)',
+                        color: colors.white,
+                        border: 0,
+                        fontSize: '12px',
+                      }}>
                         + Add
                       </Badge>
-                    </button>
+                    </QuickAddButton>
                   ))}
                 </div>
-              </div>
+              </QuickAddSection>
             )}
 
-            {/* Product Areas - Only show when not searching */}
             {!searchQuery.trim() && (
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground dark:text-gray-300">Product Areas:</p>
+              <ProductAreasContainer>
+                <SectionLabel>Product Areas:</SectionLabel>
                 
                 {config.map((area) => {
                   const availableMetrics = availableMetricsByArea[area.id] || [];
                   const isExpanded = expandedArea === area.id;
                   
                   return (
-                    <div key={area.id} className="border border-border/60 dark:border-gray-700 rounded-xl overflow-hidden">
-                      {/* Area Header */}
-                      <div className="flex items-center justify-between p-3 bg-muted/50 dark:bg-gray-800/50">
-                        <div className="flex items-center gap-3 flex-1">
-                          <button
-                            onClick={() => handleToggleArea(area.id)}
-                            className="shrink-0"
-                          >
+                    <AreaCard key={area.id}>
+                      <AreaHeader>
+                        <AreaHeaderLeft>
+                          <AreaToggleButton onClick={() => handleToggleArea(area.id)}>
                             {area.enabled ? (
-                              <CheckCircle2 className="h-5 w-5 text-purple-600" />
+                              <CheckCircle2 style={{ height: '20px', width: '20px', color: colors.purple600 }} />
                             ) : (
-                              <Circle className="h-5 w-5 text-muted-foreground/60" />
+                              <Circle style={{ height: '20px', width: '20px', color: colors.mutedForeground, opacity: 0.6 }} />
                             )}
-                          </button>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-foreground dark:text-gray-100">{area.name}</p>
+                          </AreaToggleButton>
+                          <AreaInfo>
+                            <AreaName>{area.name}</AreaName>
                             {area.enabled && area.selectedMetrics.length > 0 && (
-                              <p className="text-xs text-muted-foreground dark:text-gray-400">
+                              <AreaMetricCount>
                                 {area.selectedMetrics.length} {area.selectedMetrics.length === 1 ? 'metric' : 'metrics'} selected
-                              </p>
+                              </AreaMetricCount>
                             )}
-                          </div>
-                        </div>
+                          </AreaInfo>
+                        </AreaHeaderLeft>
                         
                         {area.enabled && (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setExpandedArea(isExpanded ? null : area.id)}
-                            className="shrink-0"
+                            style={{ flexShrink: 0 }}
                           >
                             {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
+                              <ChevronDown style={{ height: '16px', width: '16px' }} />
                             ) : (
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight style={{ height: '16px', width: '16px' }} />
                             )}
                           </Button>
                         )}
-                      </div>
+                      </AreaHeader>
 
-                      {/* Metrics List */}
                       {area.enabled && isExpanded && (
-                        <div className="p-3 space-y-2 bg-white dark:bg-gray-900">
+                        <MetricsList>
                           {availableMetrics.map((metric) => {
                             const isSelected = area.selectedMetrics.includes(metric.id);
                             
                             return (
-                              <button
+                              <MetricToggleButton
                                 key={metric.id}
                                 onClick={() => handleToggleMetric(area.id, metric.id)}
-                                className="w-full flex items-start gap-3 p-2 rounded hover:bg-accent/40 dark:hover:bg-gray-800 transition-colors text-left"
                               >
-                                <div className="shrink-0 mt-0.5">
+                                <MetricToggleIcon>
                                   {isSelected ? (
-                                    <CheckCircle2 className="h-4 w-4 text-purple-600" />
+                                    <CheckCircle2 style={{ height: '16px', width: '16px', color: colors.purple600 }} />
                                   ) : (
-                                    <Circle className="h-4 w-4 text-muted-foreground/60" />
+                                    <Circle style={{ height: '16px', width: '16px', color: colors.mutedForeground, opacity: 0.6 }} />
                                   )}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-foreground dark:text-gray-100">{metric.name}</p>
-                                  <p className="text-xs text-muted-foreground dark:text-gray-400">{metric.description}</p>
-                                </div>
+                                </MetricToggleIcon>
+                                <MetricToggleText>
+                                  <MetricToggleName>{metric.name}</MetricToggleName>
+                                  <MetricToggleDesc>{metric.description}</MetricToggleDesc>
+                                </MetricToggleText>
                                 {metric.popular && (
-                                  <Badge variant="outline" className="text-[10px] shrink-0">
+                                  <Badge variant="outline" style={{ fontSize: '12px', flexShrink: 0 }}>
                                     Popular
                                   </Badge>
                                 )}
-                              </button>
+                              </MetricToggleButton>
                             );
                           })}
-                        </div>
+                        </MetricsList>
                       )}
-                    </div>
+                    </AreaCard>
                   );
                 })}
-              </div>
+              </ProductAreasContainer>
             )}
 
-            {/* Information Density Guidance */}
             {totalMetrics > 20 && (
-              <div className="mt-6 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
-                <p className="text-xs text-orange-900 dark:text-orange-100 flex items-start gap-2">
-                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+              <DensityWarning>
+                <DensityText>
+                  <Info style={{ height: '16px', width: '16px', flexShrink: 0, marginTop: '2px' }} />
                   <span>You're showing {totalMetrics} metrics. Consider creating multiple views for different review types to avoid information overload.</span>
-                </p>
-              </div>
+                </DensityText>
+              </DensityWarning>
             )}
-          </div>
+          </ContentArea>
 
-          {/* Footer Actions */}
-          <div className="px-6 py-4 border-t bg-muted/50 dark:bg-gray-800/50 flex items-center justify-between gap-3">
+          <PanelFooter>
             <Button
               variant="outline"
               size="sm"
               onClick={handleReset}
-              className="flex items-center gap-2"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw style={{ height: '16px', width: '16px' }} />
               Reset to Default
             </Button>
             
-            <div className="flex items-center gap-2">
+            <FooterRight>
               <Button
                 variant="outline"
                 size="sm"
@@ -900,127 +1392,118 @@ export function ScorecardCustomization({
               <Button
                 size="sm"
                 onClick={handleSave}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white flex items-center gap-2"
+                style={{
+                  background: 'linear-gradient(to right, #a855f7, #3b82f6)',
+                  color: colors.white,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
               >
-                <Save className="h-4 w-4" />
+                <Save style={{ height: '16px', width: '16px' }} />
                 Save Changes
               </Button>
-            </div>
-          </div>
-        </motion.div>
+            </FooterRight>
+          </PanelFooter>
+        </SidePanel>
 
-        {/* Metric Details Modal */}
         {selectedMetricInfo && (
-          <motion.div
+          <MetricInfoOverlay
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4"
             onClick={() => setSelectedMetricInfo(null)}
           >
-            <div className="absolute inset-0 bg-black/50" />
-            <div 
-              className="relative bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Modal Header */}
-              <div className="px-6 py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg text-foreground dark:text-gray-100">
+            <MetricInfoBackdrop />
+            <MetricInfoModal onClick={(e) => e.stopPropagation()}>
+              <MetricInfoHeader>
+                <MetricInfoHeaderRow>
+                  <div style={{ flex: 1 }}>
+                    <MetricInfoTitle>
                       {selectedMetricInfo.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground dark:text-gray-400 mt-1">
+                    </MetricInfoTitle>
+                    <MetricInfoSubtitle>
                       {productAreaLabels[selectedMetricInfo.areaId]}
-                    </p>
+                    </MetricInfoSubtitle>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setSelectedMetricInfo(null)}
-                    className="shrink-0"
+                    style={{ flexShrink: 0 }}
                   >
-                    <X className="h-5 w-5" />
+                    <X style={{ height: '20px', width: '20px' }} />
                   </Button>
-                </div>
-              </div>
+                </MetricInfoHeaderRow>
+              </MetricInfoHeader>
 
-              {/* Modal Content */}
-              <div className="flex-1 overflow-y-auto px-6 py-4">
-                <div className="space-y-5">
-                  {/* Metric Category Badge */}
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+              <MetricInfoContent>
+                <MetricInfoSections>
+                  <BadgeGroup>
+                    <Badge style={{ backgroundColor: '#dbeafe', color: '#1d4ed8' }}>
                       {selectedMetricInfo.category}
                     </Badge>
                     {selectedMetricInfo.popular && (
-                      <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                      <Badge style={{ backgroundColor: 'var(--app-status-success-bg)', color: '#15803d' }}>
                         Popular Metric
                       </Badge>
                     )}
-                  </div>
+                  </BadgeGroup>
 
-                  {/* Description */}
                   <div>
-                    <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Description</h4>
-                    <p className="text-sm text-muted-foreground dark:text-gray-400">
+                    <InfoSectionTitle>Description</InfoSectionTitle>
+                    <InfoSectionText>
                       {selectedMetricInfo.description}
-                    </p>
+                    </InfoSectionText>
                   </div>
 
-                  {/* Definition */}
                   {selectedMetricInfo.definition && (
                     <div>
-                      <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Definition</h4>
-                      <p className="text-sm text-muted-foreground dark:text-gray-400 leading-relaxed">
+                      <InfoSectionTitle>Definition</InfoSectionTitle>
+                      <InfoSectionText>
                         {selectedMetricInfo.definition}
-                      </p>
+                      </InfoSectionText>
                     </div>
                   )}
 
-                  {/* Metadata Grid */}
-                  <div className="grid grid-cols-2 gap-4 pt-2">
-                    {/* Owner */}
+                  <MetadataGrid>
                     {selectedMetricInfo.owner && (
-                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
-                        <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1">Owner</p>
-                        <p className="text-sm font-medium text-foreground dark:text-gray-100">
+                      <MetadataCard>
+                        <MetadataLabel>Owner</MetadataLabel>
+                        <MetadataValue>
                           {selectedMetricInfo.owner}
-                        </p>
-                      </div>
+                        </MetadataValue>
+                      </MetadataCard>
                     )}
 
-                    {/* Last Updated */}
                     {selectedMetricInfo.lastUpdated && (
-                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
-                        <p className="text-xs text-muted-foreground dark:text-gray-400 mb-1">Last Updated</p>
-                        <p className="text-sm font-medium text-foreground dark:text-gray-100">
+                      <MetadataCard>
+                        <MetadataLabel>Last Updated</MetadataLabel>
+                        <MetadataValue>
                           {new Date(selectedMetricInfo.lastUpdated).toLocaleDateString('en-US', { 
                             month: 'short', 
                             day: 'numeric', 
                             year: 'numeric' 
                           })}
-                        </p>
-                      </div>
+                        </MetadataValue>
+                      </MetadataCard>
                     )}
-                  </div>
+                  </MetadataGrid>
 
-                  {/* Data Source */}
                   {selectedMetricInfo.source && (
                     <div>
-                      <h4 className="text-sm font-medium text-foreground dark:text-gray-300 mb-2">Data Source</h4>
-                      <div className="p-3 rounded-lg bg-muted/50 dark:bg-gray-800/50 border border-border/60 dark:border-gray-700">
-                        <code className="text-xs text-foreground dark:text-gray-300 font-mono">
+                      <InfoSectionTitle>Data Source</InfoSectionTitle>
+                      <SourceCodeBox>
+                        <SourceCode>
                           {selectedMetricInfo.source}
-                        </code>
-                      </div>
+                        </SourceCode>
+                      </SourceCodeBox>
                     </div>
                   )}
-                </div>
-              </div>
+                </MetricInfoSections>
+              </MetricInfoContent>
 
-              {/* Modal Footer */}
-              <div className="px-6 py-4 border-t bg-muted/50 dark:bg-gray-800/50 flex justify-end">
+              <MetricInfoFooter>
                 <Button
                   variant="outline"
                   size="sm"
@@ -1028,11 +1511,11 @@ export function ScorecardCustomization({
                 >
                   Close
                 </Button>
-              </div>
-            </div>
-          </motion.div>
+              </MetricInfoFooter>
+            </MetricInfoModal>
+          </MetricInfoOverlay>
         )}
-      </div>
+      </Overlay>
     </AnimatePresence>
   );
 }

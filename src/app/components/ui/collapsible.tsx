@@ -1,33 +1,38 @@
+import React, { createContext, useContext, useState } from 'react';
 
-import * as React from "react";
-import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
-
-function Collapsible({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
-  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />;
+interface CollapsibleContextType {
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-function CollapsibleTrigger({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+const CollapsibleContext = createContext<CollapsibleContextType>({ open: false, setOpen: () => {} });
+
+export function Collapsible({ open, defaultOpen, onOpenChange, children, ...props }: {
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
+  const isOpen = open !== undefined ? open : internalOpen;
+  const toggle = (val: boolean) => {
+    if (open === undefined) setInternalOpen(val);
+    onOpenChange?.(val);
+  };
   return (
-    <CollapsiblePrimitive.CollapsibleTrigger
-      data-slot="collapsible-trigger"
-      {...props}
-    />
+    <CollapsibleContext.Provider value={{ open: isOpen, setOpen: toggle }}>
+      <div {...props}>{children}</div>
+    </CollapsibleContext.Provider>
   );
 }
 
-function CollapsibleContent({
-  ...props
-}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
-  return (
-    <CollapsiblePrimitive.CollapsibleContent
-      data-slot="collapsible-content"
-      {...props}
-    />
-  );
+export function CollapsibleTrigger({ children, ...props }: React.HTMLAttributes<HTMLButtonElement>) {
+  const { open, setOpen } = useContext(CollapsibleContext);
+  return <button onClick={() => setOpen(!open)} {...props}>{children}</button>;
 }
 
-export { Collapsible, CollapsibleTrigger, CollapsibleContent };
+export function CollapsibleContent({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  const { open } = useContext(CollapsibleContext);
+  if (!open) return null;
+  return <div {...props}>{children}</div>;
+}
