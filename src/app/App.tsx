@@ -1,9 +1,11 @@
+import { useMemo } from 'react'
 import { RouterProvider } from 'react-router'
 import { router } from './routes'
-import { dataPortalPrismThemingOverrides } from '@/styles/prism-theming-overrides'
+import { createDataPortalPrismThemingOverrides } from '@/styles/prism-theming-overrides'
 import { GlobalStyles } from '@/styles/global-styles'
 import {
   ColorMode,
+  DefaultThemeCollection,
   InternalToolsConfiguration,
   InternalToolsThemeCollection,
   LayerManager,
@@ -34,8 +36,19 @@ const LayerManagerWrapper = styled.div`
 `
 
 function AppInner() {
-  const { theme } = useTheme();
+  const { theme, useStockPrismDark } = useTheme();
   const colorMode = theme === 'dark' ? ColorMode.dark : ColorMode.light;
+  /** Internal Tools dark is blue-tinted; Prism's neutral/black dark is `DefaultThemeCollection`. */
+  const useNeutralPrismDark = theme === 'dark' && useStockPrismDark;
+  const prismThemeCollection = useMemo(
+    () =>
+      useNeutralPrismDark ? DefaultThemeCollection : InternalToolsThemeCollection,
+    [useNeutralPrismDark],
+  );
+  const prismOverrides = useMemo(
+    () => createDataPortalPrismThemingOverrides(useStockPrismDark),
+    [useStockPrismDark],
+  );
 
   return (
     <>
@@ -43,10 +56,7 @@ function AppInner() {
       <PrismGlobalOverrides />
       <PrismWebGlobalStyles />
       <PrismConfig configuration={InternalToolsConfiguration} colorMode={colorMode}>
-        <Theming
-          theme={InternalToolsThemeCollection}
-          overrides={dataPortalPrismThemingOverrides}
-        >
+        <Theming theme={prismThemeCollection} overrides={prismOverrides}>
           <LayerManagerWrapper>
             <LayerManager>
               <ToastProvider position={ToastPosition.topEnd}>

@@ -2,19 +2,13 @@ import { ColorMode, type ThemingOverridesType } from '@doordash/prism-react'
 
 /**
  * Prism light: stock InternalTools tokens (no overrides).
- * Prism dark: merge these partials on top of InternalTools dark, with values
- * coming from `--app-*` in `global-styles.ts` so palette stays in one place.
+ * Prism dark (custom): InternalTools dark + these partials (`--app-*` from `global-styles.ts`).
+ * Prism dark (stock): App uses `DefaultThemeCollection` (neutral/black Prism dark), not
+ * InternalTools dark (blue-tinted). This module returns `{}` overrides in that mode.
  *
  * Copy this file + the `--app-*` blocks when lifting to ops-tools data-portal.
  */
-export const dataPortalPrismThemingOverrides: ThemingOverridesType = (
-  _tokens,
-  colorMode,
-) => {
-  if (colorMode !== ColorMode.dark) {
-    return {}
-  }
-
+function getCustomPrismDarkOverrides() {
   const app = {
     bg: 'var(--app-bg)',
     bgSecondary: 'var(--app-bg-secondary)',
@@ -262,5 +256,23 @@ export const dataPortalPrismThemingOverrides: ThemingOverridesType = (
         },
       },
     },
+  }
+}
+
+/**
+ * @param useStockPrismDark When true, dark mode uses Prism InternalTools default
+ * tokens only (no `--app-*` bridge). When false, merges custom dark overrides.
+ */
+export function createDataPortalPrismThemingOverrides(
+  useStockPrismDark: boolean,
+): ThemingOverridesType {
+  return (_tokens, colorMode) => {
+    if (colorMode !== ColorMode.dark) {
+      return {}
+    }
+    if (useStockPrismDark) {
+      return {}
+    }
+    return getCustomPrismDarkOverrides()
   }
 }

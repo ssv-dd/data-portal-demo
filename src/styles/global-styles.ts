@@ -150,6 +150,10 @@ export const GlobalStyles = createGlobalStyle`
     --app-glass-hero-bg: rgba(255, 255, 255, 0.85);
     --app-glass-chat-bg: linear-gradient(165deg, rgba(245, 243, 255, 0.88) 0%, rgba(238, 240, 255, 0.82) 50%, rgba(243, 240, 255, 0.78) 100%);
     --app-nav-bg: rgba(255, 255, 255, 0.8);
+
+    --app-outline-pill-border: rgba(0, 0, 0, 0.12);
+    --app-outline-pill-border-hover: rgba(0, 0, 0, 0.22);
+    --app-outline-pill-hover-fill: rgba(0, 0, 0, 0.04);
   }
 
   html.dark {
@@ -279,6 +283,97 @@ export const GlobalStyles = createGlobalStyle`
     --app-glass-hero-bg: rgba(15, 23, 42, 0.88);
     --app-glass-chat-bg: linear-gradient(165deg, rgba(30, 27, 75, 0.88) 0%, rgba(46, 16, 101, 0.82) 50%, rgba(30, 27, 75, 0.78) 100%);
     --app-nav-bg: rgba(15, 23, 42, 0.8);
+
+    --app-outline-pill-border: rgba(255, 255, 255, 0.26);
+    --app-outline-pill-border-hover: rgba(255, 255, 255, 0.42);
+    --app-outline-pill-hover-fill: rgba(255, 255, 255, 0.08);
+  }
+
+  /* True neutral / black app shell when Prism stock dark is on (see theme-context). */
+  html.dark.prism-neutral-dark {
+    --app-bg: #09090b;
+    --app-bg-secondary: #18181b;
+    --app-fg: #fafafa;
+    --app-card: #141414;
+    --app-card-fg: #fafafa;
+    --app-primary: #fafafa;
+    --app-primary-fg: #09090b;
+    --app-secondary: #27272a;
+    --app-secondary-fg: #fafafa;
+    --app-muted: #27272a;
+    --app-muted-fg: #a1a1aa;
+    --app-accent: #3f3f46;
+    --app-accent-fg: #fafafa;
+    --app-border: rgba(255, 255, 255, 0.1);
+    --app-border-strong: rgba(255, 255, 255, 0.18);
+    --app-input-bg: #27272a;
+    --app-info: #a1a1aa;
+
+    --app-slate-50: #09090b;
+    --app-slate-100: #18181b;
+    --app-slate-200: #27272a;
+    --app-slate-300: #3f3f46;
+    --app-slate-400: #71717a;
+    --app-slate-500: #a1a1aa;
+    --app-slate-600: #d4d4d8;
+    --app-slate-700: #e4e4e7;
+    --app-slate-800: #f4f4f5;
+    --app-slate-900: #fafafa;
+    --app-slate-950: #fafafa;
+
+    --app-white: #18181b;
+    --app-black: #fafafa;
+
+    --app-violet-50: #18181b;
+    --app-violet-100: #27272a;
+    --app-violet-200: #3f3f46;
+    --app-violet-400: #a1a1aa;
+    --app-violet-500: #d4d4d8;
+    --app-violet-600: #e4e4e7;
+    --app-violet-700: #f4f4f5;
+
+    --app-purple-50: #18181b;
+    --app-purple-100: #27272a;
+    --app-purple-200: #3f3f46;
+    --app-purple-400: #a1a1aa;
+    --app-purple-500: #d4d4d8;
+    --app-purple-600: #e4e4e7;
+    --app-purple-700: #f4f4f5;
+    --app-purple-800: #fafafa;
+
+    --app-surface-rgb: 9 9 11;
+    --app-muted-rgb: 39 39 42;
+    --app-accent-rgb: 63 63 70;
+    --app-primary-rgb: 250 250 250;
+    --app-fg-rgb: 250 250 250;
+    --app-muted-fg-rgb: 161 161 170;
+    --app-slate50-rgb: 9 9 11;
+    --app-slate100-rgb: 24 24 27;
+    --app-violet-rgb: 212 212 216;
+    --app-violet-deep-rgb: 161 161 170;
+    --app-violet-light-bg: rgba(63, 63, 70, 0.35);
+    --app-violet-button: #52525b;
+    --app-violet-button-hover: #71717a;
+
+    --app-route-violet-bg: rgba(63, 63, 70, 0.45);
+    --app-route-violet-text: #d4d4d8;
+    --app-route-blue-bg: rgba(63, 63, 70, 0.35);
+    --app-route-blue-text: #d4d4d8;
+
+    --app-glass-bg: rgba(9, 9, 11, 0.92);
+    --app-glass-subtle-bg: rgba(9, 9, 11, 0.75);
+    --app-glass-hero-bg: rgba(9, 9, 11, 0.94);
+    --app-glass-chat-bg: linear-gradient(
+      165deg,
+      rgba(24, 24, 27, 0.95) 0%,
+      rgba(9, 9, 11, 0.92) 50%,
+      rgba(24, 24, 27, 0.9) 100%
+    );
+    --app-nav-bg: rgba(9, 9, 11, 0.88);
+
+    --app-outline-pill-border: rgba(255, 255, 255, 0.2);
+    --app-outline-pill-border-hover: rgba(255, 255, 255, 0.35);
+    --app-outline-pill-hover-fill: rgba(255, 255, 255, 0.07);
   }
 
   *, *::before, *::after {
