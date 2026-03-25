@@ -20,7 +20,7 @@ This project is a modern data analytics platform that integrates AI capabilities
 - **React Router 7** (hash routing)
 - **styled-components** and **@doordash/prism-react** for UI
 - **Monaco Editor** for SQL editing
-- **Motion** for animations
+- **Framer Motion** `^6.5.1` for animations (aligned with `@doordash/prism-react` peer dependency)
 - **Recharts** for data visualization
 
 ## Getting Started

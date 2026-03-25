@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Send, Sparkles, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows, glassPanelSubtle, glassPanelChat } from '@/styles/theme';

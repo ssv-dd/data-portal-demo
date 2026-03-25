@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Plus, type LucideIcon } from 'lucide-react';
 import styled from 'styled-components';
 import { colors, radius, glassPanel, Theme } from '@/styles/theme';

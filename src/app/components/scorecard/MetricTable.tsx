@@ -12,7 +12,7 @@ import {
   Info,
   Settings,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkline } from './Sparkline';
 import { colors, Theme } from '@/styles/theme';
 import type { Metric, ProductArea } from '@/types';

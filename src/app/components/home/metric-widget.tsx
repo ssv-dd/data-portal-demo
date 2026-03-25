@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import styled from 'styled-components';
 import { Theme } from '@doordash/prism-react';

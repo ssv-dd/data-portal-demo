@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { colors, radius, shadows, Theme } from '@/styles/theme';
 
 interface FeatureBadgeProps {

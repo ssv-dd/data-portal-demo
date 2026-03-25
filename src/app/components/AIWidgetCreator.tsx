@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Sparkles, ArrowRight, CheckCircle2, MessageCircle, Loader2, List } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
 
@@ -496,7 +496,7 @@ export function AIWidgetCreator({ open, onOpenChange, onManualCreate, onAIComple
               </QueryCard>
 
               <ThoughtStream>
-                <AnimatePresence mode="popLayout">
+                <AnimatePresence>
                   {thoughtSteps.map((step) => (
                     <ThoughtRow
                       key={step.id}

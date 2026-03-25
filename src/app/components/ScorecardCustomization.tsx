@@ -16,7 +16,7 @@ import {
   Settings,
   Trash2
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/app/lib/toast';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows } from '@/styles/theme';

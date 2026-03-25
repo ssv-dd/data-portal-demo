@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, ChevronRight, ChevronDown, Settings2, Sparkles,
   TrendingUp, TrendingDown,

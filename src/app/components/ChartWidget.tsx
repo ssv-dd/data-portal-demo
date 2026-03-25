@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from './ui/button';
 import { X, MoreVertical, BarChart3, Table2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import styled, { css, keyframes } from 'styled-components';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows } from '@/styles/theme';

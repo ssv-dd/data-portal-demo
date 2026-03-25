@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Share2, Settings, Eye, Plus, GripVertical, MoreVertical, TrendingUp, TrendingDown, Minus, BarChart3, LineChart as LineChartIcon } from 'lucide-react';

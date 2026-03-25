@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Sparkles, Send, MessageSquare, Layers } from 'lucide-react';
 import styled from 'styled-components';
 import { colors, radius, shadows, glassHero, Theme } from '@/styles/theme';

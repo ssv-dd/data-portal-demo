@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Sparkles, ArrowRight, TrendingUp, TrendingDown, Database, BarChart3, FileText, Brain } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';

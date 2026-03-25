@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Sparkles, MessageSquare } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Theme } from '@doordash/prism-react';
 import { colors } from '@/styles/theme';
 

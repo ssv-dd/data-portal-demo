@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Clock, ChevronRight, type LucideIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import styled from 'styled-components';

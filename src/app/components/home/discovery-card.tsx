@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Users, TrendingUp, Zap, ChevronRight, type LucideIcon } from 'lucide-react';
 import styled from 'styled-components';

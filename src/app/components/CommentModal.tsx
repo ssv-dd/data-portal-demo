@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Badge } from './ui/badge';
 import { Send, AtSign, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
 import type { TeamMember } from '@/types/ai';

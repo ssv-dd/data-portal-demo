@@ -2,7 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
 

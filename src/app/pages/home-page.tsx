@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import styled, { css, keyframes } from 'styled-components';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ChevronLeft, Send, MessageSquare, Layers, BookOpen } from 'lucide-react';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { HeroPanel } from '../components/hero/hero-panel';
