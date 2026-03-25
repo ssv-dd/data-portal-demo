@@ -329,7 +329,6 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                     <Th>Prior Week</Th>
                     <Th>vs Prior Week</Th>
                     <Th>Trend</Th>
-                    <Th>vs Plan</Th>
                     <Th>AI Insight</Th>
                   </ThRow>
                 </THead>
@@ -348,9 +347,6 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                       </Td>
                       <Td style={{ textAlign: 'left' }}>
                         <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
-                      </Td>
-                      <Td style={{ textAlign: 'left' }}>
-                        <ComingSoonBadge />
                       </Td>
                       <Td>
                         <ComingSoonBadge />
@@ -406,7 +402,6 @@ function AreaStrips({ area, defaultExpanded, maxRows, onMetricClick }: {
                   <StripSparkline>
                     <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
                   </StripSparkline>
-                  <StripBadge><ComingSoonBadge /></StripBadge>
                   <StripBadge><ComingSoonBadge /></StripBadge>
                 </StripButton>
               ))}
