@@ -11,6 +11,8 @@ import { LeftPanel } from '../components/layout/left-panel';
 import { MetricsLibraryPanel } from '../components/panels/metrics-library-panel';
 import { COLORS, widgets } from '../data/mock/dashboard-canvas-data';
 import type { WidgetConfig } from '@/types';
+import { AIWidgetCreator } from '../components/AIWidgetCreator';
+import type { AIWidgetConfig } from '../components/AIWidgetCreator';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel } from '@/styles/theme';
@@ -225,11 +227,21 @@ const ModalActions = styled.div`
 
 export function DashboardCanvasPage() {
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showWidgetCreator, setShowWidgetCreator] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('metrics');
 
   const handleMetricAdd = (metric: any) => {
     console.log('Adding metric:', metric);
+  };
+
+  const handleManualCreate = () => {
+    setLeftPanelOpen(true);
+    setLeftTab('metrics');
+  };
+
+  const handleAIWidgetComplete = (config: AIWidgetConfig) => {
+    console.log('AI widget created:', config);
   };
 
   const renderChart = (widget: WidgetConfig) => {
@@ -348,7 +360,7 @@ export function DashboardCanvasPage() {
                 <ToolbarSubtitle>Last edited 2 hours ago · 8 widgets</ToolbarSubtitle>
               </div>
               <ToolbarActions>
-                <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }}>
+                <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }} onClick={() => setShowWidgetCreator(true)}>
                   <Plus style={{ width: '16px', height: '16px' }} />
                   Add Widget
                 </Button>
@@ -420,6 +432,13 @@ export function DashboardCanvasPage() {
         suggestedActions={['Add metric', 'Create chart', 'Export to PDF']}
       />
       </ContentLayout>
+
+      <AIWidgetCreator
+        open={showWidgetCreator}
+        onOpenChange={setShowWidgetCreator}
+        onManualCreate={handleManualCreate}
+        onAIComplete={handleAIWidgetComplete}
+      />
 
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Publish Dashboard">
         <DialogContent style={{ maxWidth: '512px' }}>
