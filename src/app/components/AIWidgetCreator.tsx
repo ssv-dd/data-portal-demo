@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Dialog, DialogContent, DialogDescription } from './ui/dialog';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
+// Input is a plain styled input here to avoid Prism TextField flex sizing issues
+
 import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import { Sparkles, ArrowRight, CheckCircle2, MessageCircle, Loader2, List } from 'lucide-react';
@@ -70,6 +71,7 @@ const InputGlow = styled.div`
 const InputContainer = styled.div`
   position: relative;
   display: flex;
+  align-items: center;
   gap: ${Theme.usage.space.xSmall};
   padding: ${Theme.usage.space.xxSmall};
   background-color: ${colors.background};
@@ -79,6 +81,42 @@ const InputContainer = styled.div`
 
   &:focus-within {
     border-color: rgb(var(--app-primary-rgb) / 0.4);
+  }
+`;
+
+const NativeInput = styled.input`
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: ${Theme.usage.fontSize.small};
+  color: ${colors.foreground};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+
+  &::placeholder {
+    color: ${colors.mutedForeground};
+  }
+`;
+
+const CreateButton = styled.button`
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
+  border: none;
+  border-radius: ${radius.md};
+  background: linear-gradient(to right, #9333ea, #2563eb);
+  color: white;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 `;
 
@@ -427,7 +465,7 @@ export function AIWidgetCreator({ open, onOpenChange, onManualCreate, onAIComple
               <InputGlowWrap>
                 <InputGlow />
                 <InputContainer>
-                  <Input
+                  <NativeInput
                     placeholder="e.g., Show me revenue growth over time"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
@@ -437,17 +475,15 @@ export function AIWidgetCreator({ open, onOpenChange, onManualCreate, onAIComple
                         handleSubmit();
                       }
                     }}
-                    style={{ flex: 1, border: 0, boxShadow: 'none' }}
                     autoFocus
                   />
-                  <Button 
+                  <CreateButton
                     onClick={handleSubmit}
                     disabled={!userInput.trim()}
-                    style={{ gap: '8px', background: 'linear-gradient(to right, #9333ea, #2563eb)' }}
                   >
                     <Sparkles style={{ height: '16px', width: '16px' }} />
                     Create
-                  </Button>
+                  </CreateButton>
                 </InputContainer>
               </InputGlowWrap>
               
