@@ -40,16 +40,16 @@ Usage: `Skill tool with skill: "card-styling"` or `skill: "prism-react"`
 
 ## Tech Stack
 
-- **React 19** + **TypeScript** + **Vite 7**
+- **React 18** + **TypeScript** + **Vite 7**
 - **React Router 7** with hash routing (`createHashRouter`)
-- **styled-components** for component styling (home page features)
-- **Tailwind CSS v4** with `@tailwindcss/vite` plugin (UI primitives, layout)
-- **Radix UI** for accessible component primitives
+- **@doordash/prism-react** for UI primitives and layout (buttons, fields, overlays, typography, toasts, etc.). Use the **prism-react** skill for APIs and prop types.
+- **styled-components** for app-specific styling, global CSS variables, and thin wrappers around Prism components
 - **Monaco Editor** for SQL editing
 - **framer-motion v6.5.1** for animations (import from `'framer-motion'`, NOT `'motion/react'`)
 - **Recharts** for data visualization
-- **Sonner** for toast notifications
 - **Lucide React** for icons
+
+We no longer use **Tailwind CSS** or **Radix UI** in this repo.
 
 ## Project Architecture
 
@@ -66,7 +66,7 @@ src/
 │   │   ├── my-canvas-page.tsx
 │   │   └── ai-workflows-page.tsx
 │   ├── components/
-│   │   ├── ui/             # Radix UI primitives (button, card, etc.)
+│   │   ├── ui/             # Thin Prism-based wrappers and shared UI helpers
 │   │   ├── layout/         # Layout components (root-layout, top-nav)
 │   │   ├── home/           # Home page feature components (styled-components)
 │   │   │   ├── chat-history-panel.tsx    # Collapsible chat history sidebar
@@ -82,17 +82,19 @@ src/
 │   │       ├── recent-work-data.ts       # yourProjects, recentlyVisited
 │   │       ├── scorecard-data.ts         # metrics with aiInsight
 │   │       └── chat-conversations-data.ts # chat history
+│   ├── context/
+│   │   └── theme-context.tsx  # ThemeProvider, light/dark, useStockPrismDark
 │   ├── lib/
 │   │   └── motion.ts       # Animation variants & utilities
 │   ├── routes.tsx          # React Router configuration
-│   └── App.tsx
+│   └── App.tsx             # Prism root: PrismConfig, Theming, LayerManager, ToastProvider
 ├── config/
 │   └── app.config.ts       # App configuration (brand color, user, feature flags)
 ├── types/                  # TypeScript type definitions
 ├── styles/
-│   ├── index.css           # Entry point, custom utilities
-│   ├── theme.css           # Design tokens & CSS variables
-│   └── theme.ts            # Theme exports (colors, Theme, radius, glassPanel)
+│   ├── global-styles.ts    # createGlobalStyle: --app-* tokens (light/dark), base layout
+│   ├── prism-theming-overrides.ts  # Prism Theming overrides → bridge to --app-* in dark
+│   └── theme.ts            # Fonts, spacing/radius helpers used by styled-components
 └── main.tsx
 ```
 
@@ -132,21 +134,25 @@ Example: `import { appConfig } from '@/config/app.config'`
 
 ## Design System
 
-### Theming
+### App colors (`--app-*`)
 
-**CSS Variables** are defined in `src/styles/theme.css`:
-- DoorDash brand color: `--dd-primary: #FF3A00`
-- Semantic tokens: `--foreground`, `--background`, `--muted`, `--accent`, etc.
-- Shadow system: `--shadow-card`, `--shadow-card-hover`, `--shadow-popover`
+**`src/styles/global-styles.ts`** (`GlobalStyles`) defines **CSS custom properties** on `:root` / `html.light` and `html.dark` (and related selectors). These drive the non-Prism shell (layouts, home cards, etc.) and are the source of truth for “Data Portal” light and dark palettes—e.g. `--app-bg`, `--app-fg`, `--app-card`, `--app-muted`, `--app-dd-primary`, semantic colors, and RGB companions such as `--app-overlay-rgb` for alpha mixes.
 
-Reference via Tailwind classes: `text-dd-primary`, `bg-muted`, etc.
+**`src/app/context/theme-context.tsx`** (`ThemeProvider` / `useTheme`) persists **light | dark**, toggles **`useStockPrismDark`**, and sets classes on `document.documentElement` (`light`, `dark`, and optionally `prism-neutral-dark`) so `GlobalStyles` and Prism stay aligned.
 
-### Custom Utilities
+### Prism theming
 
-Defined in `src/styles/index.css`:
-- `shadow-card`, `shadow-card-hover`, `shadow-popover`, `shadow-xs`
-- `glass-panel`, `glass-panel-subtle`, `glass-panel-chat` - glassmorphism effects
-- `glow-primary`, `glow-primary-hover` - brand glow effects
+**`src/app/App.tsx`** wires the DoorDash Prism stack:
+
+1. **`PrismWebGlobalStyles`** — Prism base styles.
+2. **`PrismConfig`** — `configuration={InternalToolsConfiguration}`, **`colorMode`** from app theme (`ColorMode.light` / `ColorMode.dark`).
+3. **`Theming`** — **`theme`**: `InternalToolsThemeCollection` by default; when dark + **`useStockPrismDark`**, **`DefaultThemeCollection`** (neutral Prism dark instead of Internal Tools blue-tinted dark). **`overrides`**: from **`createDataPortalPrismThemingOverrides`** in **`src/styles/prism-theming-overrides.ts`**.
+4. **`LayerManager`** — required for modals, popovers, toasts, etc.
+5. **`ToastProvider`** — Prism toasts (`ToastPosition`).
+
+**`prism-theming-overrides.ts`** exports a **`ThemingOverridesType`** function `(tokens, colorMode) => …` that returns **`{}`** in light, **`{}`** in dark when stock Prism dark is requested, and otherwise a **partial `usage.color` tree** whose values are **`var(--app-*)`** so Prism components match the same palette as the app shell.
+
+Use **`Theme`** / token objects from **`@doordash/prism-react`** in Prism-based UI when you need design-system colors in TS (see **prism-react** skill).
 
 ### Motion Animations
 
@@ -157,10 +163,7 @@ Reusable animation variants in `src/app/lib/motion.ts`:
 
 ### UI Components
 
-**Radix UI Primitives** (`src/app/components/ui/`):
-- Built on **Radix UI**: Button, Card, Badge, Input, Select, Dialog, Tabs, etc.
-- Use `className` with Tailwind utilities
-- Leverage `cn()` utility from `ui/utils.ts` for conditional classes
+**`src/app/components/ui/`** — Prefer **@doordash/prism-react** primitives (often re-exported or wrapped with **styled-components** for app-specific variants). Check existing files for the mapping pattern (e.g. Prism `Button`, `ButtonType`, `ButtonSize`). Use **`ui/utils.ts`** only where helpers are still needed for class names or composition.
 
 **Home Page Components** (`src/app/components/home/`):
 - Built with **styled-components**
@@ -190,7 +193,7 @@ Reusable animation variants in `src/app/lib/motion.ts`:
 Pages are full-screen components that:
 - Live in `src/app/pages/`
 - Use motion animations from `@/app/lib/motion`
-- Import UI components from `@/app/components/ui`
+- Import UI from `@/app/components/ui` and/or **`@doordash/prism-react`** as appropriate
 - Use mock data from `@/app/data/mock-data` or `@/app/data/mock/`
 
 ### Home Page Features
@@ -288,21 +291,15 @@ const Card = styled.div`
 ```
 
 **Theme imports from `@/styles/theme`:**
-- `colors` - Color tokens (`colors.foreground`, `colors.mutedForeground`, `colors.violet600`, etc.)
-- `Theme` - Spacing, font sizes (`Theme.usage.space.small`, `Theme.usage.fontSize.medium`)
+- `colors` - Color tokens aligned with app variables where applicable
+- `Theme` - Spacing, font sizes (`Theme.usage.space.small`, `Theme.usage.fontSize.medium`) — note: Prism pages use Prism `Theme` from `@doordash/prism-react` for component tokens
 - `radius` - Border radius values (`radius.md`, `radius.lg`, `radius['2xl']`)
 - `glassPanel` - Glassmorphism mixin for card effects
 
 **CSS variable pattern:**
+- Prefer **`var(--app-*)`** for surfaces and text that should track app light/dark
 - Use `rgb(var(--app-*-rgb) / opacity)` for transparent colors
 - Examples: `rgb(var(--app-muted-rgb) / 0.4)`, `rgb(var(--app-overlay-rgb) / 0.06)`
-
-### Tailwind CSS (UI Primitives)
-
-UI components in `src/app/components/ui/` use **Tailwind utility classes**:
-- Reference CSS variables from `theme.css` for colors (`text-dd-primary`, `bg-muted`, etc.)
-- Use custom utilities (`shadow-card`, `glass-panel`) for common patterns
-- Leverage `cn()` utility from `ui/utils.ts` for conditional classes
 
 ### Animations
 
