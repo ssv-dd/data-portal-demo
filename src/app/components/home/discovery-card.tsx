@@ -193,7 +193,7 @@ export function DiscoveryCard({
       transition={{ duration: 0.4, delay: 0.15 }}
     >
       <HeaderRow>
-        <Title>Trending in your org</Title>
+        <Title>Discover</Title>
         <TabGroup>
           {tabs.map((tab) => {
             const Icon = tab.icon;

@@ -13,11 +13,13 @@ import { AnalysisResponse } from '../components/analysis-response';
 import { Input } from '../components/ui/input';
 import { appConfig } from '@/config/app.config';
 import { discoveryFeed, quickActions } from '../data/mock/home-data';
-import { recentWork } from '../data/mock/recent-work-data';
+import { yourProjects, recentlyVisited } from '../data/mock/recent-work-data';
 import { quickPrompts } from '../data/mock/quick-prompts-data';
 import { chartData, summaryData } from '../data/mock/analysis-data';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel, shadows } from '@/styles/theme';
+import { ChatHistoryPanel } from '../components/home/chat-history-panel';
+import { CustomizeWatchlistPanel } from '../components/home/customize-watchlist-panel';
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; }
@@ -29,6 +31,7 @@ const PageContainer = styled.div`
   background-color: ${colors.background};
   overflow: hidden;
   position: relative;
+  display: flex;
 `;
 
 const GradientOverlay = styled.div`
@@ -41,6 +44,8 @@ const GradientOverlay = styled.div`
 const ContentLayer = styled.div`
   position: relative;
   z-index: 10;
+  flex: 1;
+  min-width: 0;
 `;
 
 const ScrollContainer = styled.div`
@@ -328,6 +333,13 @@ export function HomePage() {
   const [isChatCentered, setIsChatCentered] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
+  const [customizeWatchlistOpen, setCustomizeWatchlistOpen] = useState(false);
+
+  // Get initial selected metrics from the Company area
+  const companyArea = productAreas.find(area => area.id === 'company');
+  const initialMetricIds = companyArea?.metrics.slice(0, 5).map(m => m.id) || [];
+  const [selectedMetricIds, setSelectedMetricIds] = useState<string[]>(initialMetricIds);
 
   const hasMessages = messages.length > 0;
 
@@ -380,6 +392,20 @@ export function HomePage() {
     if (item.route) {
       navigate(item.route);
     }
+  };
+
+  const handleNewChat = () => {
+    // Reset chat state to start a new conversation
+    setIsChatCentered(false);
+    setMessages([]);
+    setSearchTerm(EXAMPLE_PROMPT);
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    // In a real app, this would load the conversation from the backend
+    console.log('Loading conversation:', conversationId);
+    // For now, just start a new chat
+    handleNewChat();
   };
 
   const chatBox = (
@@ -435,6 +461,15 @@ export function HomePage() {
       <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
       <GradientOrb variant="primary" style={{ left: '60%', top: '600px' }} />
 
+      <ChatHistoryPanel
+        open={chatHistoryOpen}
+        onClose={() => setChatHistoryOpen(false)}
+        onOpen={() => setChatHistoryOpen(true)}
+        onNewChat={handleNewChat}
+        onConversationClick={handleConversationClick}
+        inline
+      />
+
       <ContentLayer
         style={{ display: hasMessages && isChatCentered ? 'none' : undefined }}
       >
@@ -489,14 +524,16 @@ export function HomePage() {
                 <WatchlistTable
                   areas={productAreas}
                   selectedAreaIds={['company']}
+                  selectedMetricIds={selectedMetricIds}
                   maxRows={5}
-                  onViewFull={() => navigate('/dashboards')}
+                  onCustomize={() => setCustomizeWatchlistOpen(true)}
                 />
               </SectionMarginBottom2>
 
               <BottomGrid>
                 <YourWorkCard
-                  recentItems={recentWork}
+                  projects={yourProjects}
+                  recentlyVisited={recentlyVisited}
                   quickActions={quickActions}
                   onItemClick={handleRecentWorkClick}
                   onActionClick={handleQuickAction}
@@ -598,6 +635,17 @@ export function HomePage() {
           </ChatMessagesOverlay>
         )}
       </AnimatePresence>
+
+      <CustomizeWatchlistPanel
+        open={customizeWatchlistOpen}
+        onClose={() => setCustomizeWatchlistOpen(false)}
+        areas={productAreas}
+        selectedMetricIds={selectedMetricIds}
+        onSave={(newMetricIds) => {
+          setSelectedMetricIds(newMetricIds);
+          setCustomizeWatchlistOpen(false);
+        }}
+      />
     </PageContainer>
   );
 }

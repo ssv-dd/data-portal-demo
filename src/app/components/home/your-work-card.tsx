@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, ChevronRight, Plus, type LucideIcon } from 'lucide-react';
+import { Clock, ChevronRight, Plus, FolderOpen, History, type LucideIcon } from 'lucide-react';
 import { Badge } from '../ui/badge';
 import styled from 'styled-components';
 import { colors, radius, glassPanel, Theme } from '@/styles/theme';
@@ -24,12 +24,21 @@ export interface QuickAction {
 export type YourWorkVariant = 'A' | 'B' | 'C';
 
 interface YourWorkCardProps {
-  recentItems: RecentWorkItem[];
+  recentItems?: RecentWorkItem[]; // Legacy support
+  projects?: RecentWorkItem[];
+  recentlyVisited?: RecentWorkItem[];
   quickActions: QuickAction[];
   onItemClick?: (item: RecentWorkItem) => void;
   onActionClick?: (action: QuickAction) => void;
   variant?: YourWorkVariant;
 }
+
+type JumpBackTab = 'projects' | 'visited';
+
+const jumpBackTabs = [
+  { key: 'projects' as JumpBackTab, label: 'Your projects', icon: FolderOpen },
+  { key: 'visited' as JumpBackTab, label: 'Recently visited', icon: History },
+];
 
 const iconStyleMap: Record<string, { bg: string; text: string }> = {
   '/dashboard/draft': { bg: 'var(--app-route-blue-bg)', text: 'var(--app-route-blue-text)' },
@@ -135,6 +144,40 @@ const SeeMoreBtn = styled.button`
   }
 `;
 
+const TabGroup = styled.div`
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: rgb(var(--app-muted-rgb) / 0.4);
+  border-radius: ${radius.lg};
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${radius.md};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+
+  ${({ $active }) => $active ? `
+    background-color: ${colors.background};
+    color: ${colors.foreground};
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  ` : `
+    background: none;
+    color: ${colors.mutedForeground};
+
+    &:hover {
+      color: ${colors.foreground};
+    }
+  `}
+`;
+
 const Divider = styled.div`
   width: 1px;
   background: rgb(var(--app-overlay-rgb) / 0.04);
@@ -229,18 +272,50 @@ function RecentItemRow({ item, index, onItemClick }: { item: RecentWorkItem; ind
   );
 }
 
-function VariantA({ recentItems, onItemClick }: YourWorkCardProps) {
+function VariantA({ recentItems, projects, recentlyVisited: visited, onItemClick }: YourWorkCardProps) {
   const defaultCount = 4;
+  const [activeTab, setActiveTab] = useState<JumpBackTab>('projects');
   const [showAll, setShowAll] = useState(false);
-  const visibleItems = showAll ? recentItems : recentItems.slice(0, defaultCount);
-  const hasMore = recentItems.length > defaultCount;
+
+  // Support both new props (projects/recentlyVisited) and legacy prop (recentItems)
+  const projectsList = projects || recentItems || [];
+  const visitedList = visited || [];
+  const hasTabs = projectsList.length > 0 && visitedList.length > 0;
+
+  const allItems = hasTabs ? (activeTab === 'projects' ? projectsList : visitedList) : projectsList;
+  const visibleItems = showAll ? allItems : allItems.slice(0, defaultCount);
+  const hasMore = allItems.length > defaultCount;
+
+  const handleTabChange = (tab: JumpBackTab) => {
+    setActiveTab(tab);
+    setShowAll(false);
+  };
 
   return (
     <>
-      <Header>
-        <Clock style={{ width: 20, height: 20, color: colors.mutedForeground }} />
-        <Title>Jump back in</Title>
-      </Header>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <Header style={{ marginBottom: 0 }}>
+          <Clock style={{ width: 20, height: 20, color: colors.mutedForeground }} />
+          <Title>Jump back in</Title>
+        </Header>
+        {hasTabs && (
+          <TabGroup>
+            {jumpBackTabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabButton
+                  key={tab.key}
+                  $active={activeTab === tab.key}
+                  onClick={() => handleTabChange(tab.key)}
+                >
+                  <Icon style={{ width: 14, height: 14 }} />
+                  {tab.label}
+                </TabButton>
+              );
+            })}
+          </TabGroup>
+        )}
+      </div>
       <ItemList>
         {visibleItems.map((item, index) => (
           <RecentItemRow key={item.id} item={item} index={index} onItemClick={onItemClick} />
@@ -328,14 +403,14 @@ function VariantC({ recentItems, quickActions, onItemClick, onActionClick }: You
   );
 }
 
-export function YourWorkCard({ recentItems, quickActions, onItemClick, onActionClick, variant = 'A' }: YourWorkCardProps) {
+export function YourWorkCard({ recentItems, projects, recentlyVisited, quickActions, onItemClick, onActionClick, variant = 'A' }: YourWorkCardProps) {
   return (
     <CardWrapper
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
     >
-      {variant === 'A' && <VariantA recentItems={recentItems} quickActions={quickActions} onItemClick={onItemClick} onActionClick={onActionClick} />}
+      {variant === 'A' && <VariantA recentItems={recentItems} projects={projects} recentlyVisited={recentlyVisited} quickActions={quickActions} onItemClick={onItemClick} onActionClick={onActionClick} />}
       {variant === 'B' && <VariantB recentItems={recentItems} quickActions={quickActions} onItemClick={onItemClick} onActionClick={onActionClick} />}
       {variant === 'C' && <VariantC recentItems={recentItems} quickActions={quickActions} onItemClick={onItemClick} onActionClick={onActionClick} />}
     </CardWrapper>

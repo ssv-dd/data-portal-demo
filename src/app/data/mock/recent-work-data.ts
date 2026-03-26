@@ -1,7 +1,7 @@
 import { LayoutDashboard, FileCode2, GitBranch, Database, BarChart3 } from 'lucide-react';
 import type { RecentWorkItem } from '@/app/components/home/your-work-card';
 
-export const recentWork: RecentWorkItem[] = [
+export const yourProjects: RecentWorkItem[] = [
   {
     id: '1',
     title: 'Q1 Operations Dashboard',
@@ -83,3 +83,89 @@ export const recentWork: RecentWorkItem[] = [
     route: '/dashboards',
   },
 ];
+
+export const recentlyVisited: RecentWorkItem[] = [
+  {
+    id: 'v1',
+    title: 'Company Dashboard',
+    meta: 'Viewed 20 minutes ago',
+    status: 'Dashboard',
+    icon: LayoutDashboard,
+    route: '/dashboards',
+  },
+  {
+    id: 'v2',
+    title: 'fact_order_delivery',
+    meta: 'Viewed 1 hour ago',
+    status: 'Table',
+    icon: Database,
+    route: '/sql-studio',
+  },
+  {
+    id: 'v3',
+    title: 'DashPass Retention Deep Dive',
+    meta: 'Viewed 2 hours ago',
+    status: 'Analysis',
+    icon: BarChart3,
+    route: '/dashboards',
+  },
+  {
+    id: 'v4',
+    title: 'Progress vs Plan Q1\'26',
+    meta: 'Viewed yesterday',
+    status: 'Dashboard',
+    icon: LayoutDashboard,
+    route: '/dashboards',
+  },
+  {
+    id: 'v5',
+    title: 'Cx Lifetime Value Model v4',
+    meta: 'Viewed yesterday',
+    status: 'Notebook',
+    icon: FileCode2,
+    route: '/notebooks',
+  },
+  {
+    id: 'v6',
+    title: 'Merchant Onboarding Funnel',
+    meta: 'Viewed 2 days ago',
+    status: 'Dashboard',
+    icon: LayoutDashboard,
+    route: '/dashboards',
+  },
+  {
+    id: 'v7',
+    title: 'Revenue Trends Query',
+    meta: 'Viewed 2 days ago',
+    status: 'Query',
+    icon: Database,
+    route: '/sql-studio',
+  },
+  {
+    id: 'v8',
+    title: 'Ads Revenue Attribution Model',
+    meta: 'Viewed 3 days ago',
+    status: 'Notebook',
+    icon: FileCode2,
+    route: '/notebooks',
+  },
+  {
+    id: 'v9',
+    title: 'Weekly Anomaly Alert Workflow',
+    meta: 'Viewed last week',
+    status: 'Workflow',
+    icon: GitBranch,
+    route: '/ai-workflows',
+  },
+  {
+    id: 'v10',
+    title: 'Dasher Supply-Demand Model',
+    meta: 'Viewed last week',
+    status: 'Analysis',
+    icon: BarChart3,
+    route: '/dashboards',
+  },
+];
+
+// Legacy export for backward compatibility
+export const recentWork = yourProjects;
