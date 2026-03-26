@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Eye, ChevronRight, ChevronDown, Settings2, Sparkles,
+  Eye, ChevronRight, ChevronDown, Settings2,
   TrendingUp, TrendingDown,
 } from 'lucide-react';
 import { Sparkline } from '../scorecard/Sparkline';
@@ -185,20 +185,16 @@ const ChangeLabel = styled.span<{ $up: boolean; $down: boolean }>`
     $up ? '#059669' : $down ? '#ef4444' : colors.mutedForeground};
 `;
 
-const ComingSoonBadgeWrapper = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xxSmall};
-  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
-  border-radius: ${Theme.usage.borderRadius.full};
-  background: rgb(var(--app-violet-rgb) / 0.1);
-  border: 1px solid rgb(var(--app-violet-rgb) / 0.2);
-`;
-
-const ComingSoonText = styled.span`
-  font-size: 10px;
-  font-weight: 500;
-  color: ${colors.violet600};
+const AIInsightCell = styled.div`
+  font-size: 11px;
+  color: ${colors.mutedForeground};
+  line-height: 1.4;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 `;
 
 // Strip variant styles
@@ -222,7 +218,7 @@ const StripButton = styled.button`
 const StripName = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   color: ${colors.mutedForeground};
-  width: 22%;
+  width: 20%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -232,32 +228,33 @@ const StripValue = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   font-weight: 700;
   color: ${colors.foreground};
-  width: 12%;
+  width: 11%;
   text-align: right;
 `;
 
 const StripPrior = styled.span`
   font-size: ${Theme.usage.fontSize.xxSmall};
   color: ${colors.mutedForeground};
-  width: 12%;
+  width: 11%;
   text-align: right;
 `;
 
 const StripChange = styled.span`
-  width: 12%;
+  width: 11%;
   text-align: right;
 `;
 
 const StripSparkline = styled.span`
-  width: 10%;
+  width: 9%;
   display: flex;
   justify-content: center;
 `;
 
-const StripBadge = styled.span`
-  width: 16%;
+const StripInsight = styled.span`
+  width: 38%;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  padding-left: ${Theme.usage.space.xSmall};
 `;
 
 function ChangeLabelComp({ value, label }: { value: number; label: string }) {
@@ -271,14 +268,6 @@ function ChangeLabelComp({ value, label }: { value: number; label: string }) {
   );
 }
 
-function ComingSoonBadge() {
-  return (
-    <ComingSoonBadgeWrapper>
-      <Sparkles style={{ width: 10, height: 10, color: colors.violet600 }} />
-      <ComingSoonText>Coming Soon</ComingSoonText>
-    </ComingSoonBadgeWrapper>
-  );
-}
 
 function sparkColor(change: number) {
   return change >= 0 ? '#10b981' : '#ef4444';
@@ -314,13 +303,12 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
             >
               <StyledTable>
                 <colgroup>
-                  <col style={{ width: '22%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '16%' }} />
-                  <col style={{ width: '16%' }} />
+                  <col style={{ width: '20%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '11%' }} />
+                  <col style={{ width: '9%' }} />
+                  <col style={{ width: '38%' }} />
                 </colgroup>
                 <THead>
                   <ThRow>
@@ -348,8 +336,8 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                       <Td style={{ textAlign: 'left' }}>
                         <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
                       </Td>
-                      <Td>
-                        <ComingSoonBadge />
+                      <Td style={{ textAlign: 'left', paddingRight: '16px' }}>
+                        <AIInsightCell>{metric.aiInsight?.summary || 'No insight available'}</AIInsightCell>
                       </Td>
                     </Tr>
                   ))}
@@ -402,7 +390,9 @@ function AreaStrips({ area, defaultExpanded, maxRows, onMetricClick }: {
                   <StripSparkline>
                     <Sparkline data={metric.trend} color={sparkColor(metric.change)} />
                   </StripSparkline>
-                  <StripBadge><ComingSoonBadge /></StripBadge>
+                  <StripInsight>
+                    <AIInsightCell>{metric.aiInsight?.summary || 'No insight available'}</AIInsightCell>
+                  </StripInsight>
                 </StripButton>
               ))}
             </div>
