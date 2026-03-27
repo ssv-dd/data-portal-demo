@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Users, TrendingUp, Zap, ChevronRight, type LucideIcon } from 'lucide-react';
+import { Users, TrendingUp, Zap, ChevronRight, Compass, type LucideIcon } from 'lucide-react';
 import styled from 'styled-components';
 import { colors, radius, shadows, glassPanel, Theme } from '@/styles/theme';
 
@@ -193,7 +193,7 @@ export function DiscoveryCard({
       transition={{ duration: 0.4, delay: 0.15 }}
     >
       <HeaderRow>
-        <Title>Discover</Title>
+        <Title><Compass style={{ width: 20, height: 20, display: 'inline', verticalAlign: 'middle', marginRight: 8 }} />Discover</Title>
         <TabGroup>
           {tabs.map((tab) => {
             const Icon = tab.icon;

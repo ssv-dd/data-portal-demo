@@ -205,7 +205,7 @@ const EmptyText = styled.p`
 
 export function MyCanvasPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'mine' | 'shared'>('all');
+  const [filter, setFilter] = useState<'all' | 'mine' | 'golden' | 'shared'>('all');
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('recent');
   const navigate = useNavigate();
@@ -215,6 +215,7 @@ export function MyCanvasPage() {
       canvas.description.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (filter === 'mine') return matchesSearch && !canvas.shared;
+    if (filter === 'golden') return matchesSearch && canvas.golden;
     if (filter === 'shared') return matchesSearch && canvas.shared;
     return matchesSearch;
   });
@@ -299,6 +300,14 @@ export function MyCanvasPage() {
               onClick={() => { setFilter('mine'); setLeftTab('templates'); }}
             >
               My Canvases
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              style={filter === 'golden' ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
+              onClick={() => { setFilter('golden'); }}
+            >
+              Golden Dashboards
             </Button>
             <Button
               variant="outline"

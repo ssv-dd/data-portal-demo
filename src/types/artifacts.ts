@@ -97,6 +97,8 @@ export interface Canvas {
   metrics: number;
   owner: string;
   shared: boolean;
+  golden?: boolean;
+  externalUrl?: string;
 }
 
 // Notebook types
