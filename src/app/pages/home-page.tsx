@@ -405,11 +405,16 @@ export function HomePage() {
     setSearchTerm(EXAMPLE_PROMPT);
   };
 
-  const handleConversationClick = (conversationId: string) => {
-    // In a real app, this would load the conversation from the backend
-    console.log('Loading conversation:', conversationId);
-    // For now, just start a new chat
-    handleNewChat();
+  const handleConversationClick = (conversation: { id: string; title: string; group: string }) => {
+    // Load the conversation (mock implementation)
+    console.log('Loading conversation:', conversation.id);
+    setIsChatCentered(true);
+    // Set up mock conversation with the title
+    setMessages([
+      { role: 'user', content: `Show me ${conversation.title}` },
+      { role: 'assistant', content: 'analysis' },
+    ]);
+    // Keep chat history open for easy navigation
   };
 
   const chatBox = (
