@@ -69,7 +69,7 @@ const TabLink = styled(Link)<{ $active: boolean }>`
   padding: ${Theme.usage.space.xSmall} 14px;
   border-radius: ${radius.lg};
   transition: all 200ms;
-  font-size: ${Theme.usage.fontSize.xSmall};
+  font-size: ${Theme.usage.fontSize.small};
   font-weight: 500;
   text-decoration: none;
 
@@ -248,7 +248,7 @@ export function TopNav() {
             <span
               key={tab.path}
               title="Coming soon"
-              style={{ padding: '6px 14px', fontSize: 14, fontWeight: 500, color: 'rgba(0,0,0,0.25)', cursor: 'not-allowed' }}
+              style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 500, color: 'rgba(0,0,0,0.25)', cursor: 'not-allowed' }}
             >
               {tab.name}
             </span>

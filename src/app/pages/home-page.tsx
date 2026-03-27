@@ -217,7 +217,9 @@ const PurposeButton = styled.button<{ $active: boolean }>`
 
 const ChatMessagesOverlay = styled(motion.div)`
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 20;
   background-color: ${colors.background};
   display: flex;
@@ -360,6 +362,8 @@ export function HomePage() {
     const userMessage = customPrompt || searchTerm;
     if (!userMessage.trim()) return;
     if (!isChatCentered) setIsChatCentered(true);
+    // Auto-open chat history when starting a chat
+    if (!chatHistoryOpen) setChatHistoryOpen(true);
     setMessages([{ role: 'user', content: userMessage }]);
     setIsLoading(true);
     setSearchTerm('');
@@ -579,6 +583,7 @@ export function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
+            style={{ left: chatHistoryOpen ? '260px' : '48px' }}
           >
             <ChatHeader>
               <ChatHeaderInner>
