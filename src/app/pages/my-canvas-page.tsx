@@ -128,6 +128,22 @@ const FilterRow = styled.div`
   flex-wrap: wrap;
 `;
 
+const TierSelect = styled.select`
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border: 1px solid ${colors.border};
+  border-radius: 9999px;
+  background: ${colors.background};
+  color: ${colors.foreground};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: ${colors.violet500};
+  }
+`;
+
 const FilterDivider = styled.div`
   width: 1px;
   height: 20px;
@@ -425,14 +441,15 @@ export function MyCanvasPage() {
               {domainFilter && (
                 <>
                   <FilterDivider />
-                  {(['T0', 'T1', 'T2'] as const).map((t) => (
-                    <Button key={t} variant="outline" size="sm"
-                      style={tierFilter === t ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                      onClick={() => setTierFilter(tierFilter === t ? null : t)}
-                    >
-                      {t}
-                    </Button>
-                  ))}
+                  <TierSelect
+                    value={tierFilter || ''}
+                    onChange={(e) => setTierFilter(e.target.value ? e.target.value as 'T0' | 'T1' | 'T2' : null)}
+                  >
+                    <option value="">All tiers</option>
+                    <option value="T0">T0 — Company Critical</option>
+                    <option value="T1">T1 — Business Critical</option>
+                    <option value="T2">T2 — Team Level</option>
+                  </TierSelect>
                 </>
               )}
             </FilterRow>
