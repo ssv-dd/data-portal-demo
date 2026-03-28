@@ -223,12 +223,12 @@ export function DashboardCanvasPage() {
           <CenterPanel>
             <NotFoundContainer>
               <EmptyIcon />
-              <EmptyTitle>Canvas not found</EmptyTitle>
+              <EmptyTitle>Dashboard not found</EmptyTitle>
               <EmptyDescription>
-                This canvas may have been deleted or the link is invalid.
+                This dashboard may have been deleted or the link is invalid.
               </EmptyDescription>
               <Button style={{ backgroundColor: colors.violet600, color: colors.white }} onClick={() => navigate('/dashboards')}>
-                Back to Canvases
+                Back to Dashboards
               </Button>
             </NotFoundContainer>
           </CenterPanel>
@@ -298,7 +298,7 @@ export function DashboardCanvasPage() {
         </CenterPanel>
 
         <AIAssistantSidebar
-          title="Canvas Assistant"
+          title="Dashboard Assistant"
           contextLabel="Dashboard aware"
           knowledgeBaseId="dashboards"
           welcomeMessage="I can help you add widgets, rearrange your dashboard, or generate summaries from your metrics."

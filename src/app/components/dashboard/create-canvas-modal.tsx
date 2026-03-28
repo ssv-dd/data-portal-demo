@@ -86,10 +86,10 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title="Create Canvas">
+    <Dialog open={open} onOpenChange={onOpenChange} title="Create Dashboard">
       <DialogContent style={{ maxWidth: '480px' }}>
         <DialogDescription>
-          Create a new dashboard canvas to visualize and track your metrics.
+          Create a new dashboard to visualize and track your metrics.
         </DialogDescription>
         <Form>
           <div>
@@ -125,7 +125,7 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
               onClick={handleCreate}
               disabled={!name.trim()}
             >
-              Create Canvas
+              Create Dashboard
             </Button>
           </Actions>
         </Form>

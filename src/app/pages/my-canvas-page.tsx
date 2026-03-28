@@ -376,7 +376,7 @@ export function MyCanvasPage() {
         <LeftPanel
           tabs={[
             { key: 'recent', label: 'Recent', icon: Clock },
-            { key: 'templates', label: 'Canvases', icon: LayoutDashboard },
+            { key: 'templates', label: 'Dashboards', icon: LayoutDashboard },
             { key: 'shared', label: 'Shared', icon: Users },
           ]}
           activeTab={leftTab}
@@ -384,7 +384,7 @@ export function MyCanvasPage() {
           collapsed={!leftPanelOpen}
           onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
           showSearch={true}
-          searchPlaceholder="Search canvases..."
+          searchPlaceholder="Search dashboards..."
         >
           <DashboardLibraryPanel
             activeTab={leftTab}
@@ -404,7 +404,7 @@ export function MyCanvasPage() {
                   <PageTitle>Dashboards</PageTitle>
                 </TitleRow>
                 <PageDescription>
-                  Create and manage metric dashboards. Open a canvas to edit or start a new one
+                  Create and manage metric dashboards. Open a dashboard to edit or start a new one
                 </PageDescription>
               </PageHeader>
             </motion.div>
@@ -413,7 +413,7 @@ export function MyCanvasPage() {
               <SearchWrapper>
                 <SearchIcon />
                 <Input
-                  placeholder="Search canvases..."
+                  placeholder="Search dashboards..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
@@ -421,7 +421,7 @@ export function MyCanvasPage() {
               </SearchWrapper>
               <NewButton onClick={() => setShowCreateModal(true)}>
                 <Plus style={{ height: 16, width: 16 }} />
-                Create Canvas
+                Create Dashboard
               </NewButton>
             </ActionsBar>
 
@@ -508,10 +508,10 @@ export function MyCanvasPage() {
             ) : (
               <EmptyState>
                 <EmptyIcon />
-                <EmptyText>No canvases found</EmptyText>
+                <EmptyText>No dashboards found</EmptyText>
                 <NewButton onClick={() => setShowCreateModal(true)}>
                   <Plus style={{ height: 16, width: 16 }} />
-                  Create your first canvas
+                  Create your first dashboard
                 </NewButton>
               </EmptyState>
             )}
@@ -531,7 +531,7 @@ export function MyCanvasPage() {
       />
 
       {/* Delete confirmation dialog */}
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }} title="Delete Canvas">
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }} title="Delete Dashboard">
         <DialogContent style={{ maxWidth: '400px' }}>
           <DialogDescription>
             Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
