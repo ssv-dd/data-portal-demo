@@ -171,11 +171,26 @@ export interface WorkflowStatusConfig {
 
 // Dashboard Canvas types
 
+export interface ChartBuilderField {
+  id: string;
+  name: string;
+  role: 'measure' | 'dimension' | 'date';
+  dataType: 'number' | 'string' | 'date';
+  description?: string;
+  aggregation?: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX';
+}
+
+// New chart types for chart builder. Includes legacy 'pie' for backward compat until Task 8.
+export type ChartType = 'column' | 'bar' | 'line' | 'area' | 'scatter' | 'donut' | 'pie' | 'kpi' | 'table';
+
+// Alias for spec compliance
+export type Field = ChartBuilderField;
+
 export interface WidgetConfig {
   id: string;
   title: string;
   subtitle: string;
-  type: 'bar' | 'line' | 'area' | 'pie' | 'kpi';
+  type: ChartType;
   data?: any[];
   kpiValue?: string;
   kpiChange?: string;
@@ -183,6 +198,13 @@ export interface WidgetConfig {
   description?: string;
   category?: string;
   metricId?: string;
+  query?: {
+    sourceId: string;
+    sourceType: 'sql' | 'semantic' | 'metrics';
+    measures: ChartBuilderField[];
+    dimensions: ChartBuilderField[];
+    dateField?: ChartBuilderField;
+  };
 }
 
 // Telemetry KPIs
