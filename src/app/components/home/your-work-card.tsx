@@ -41,7 +41,6 @@ const jumpBackTabs = [
 ];
 
 const iconStyleMap: Record<string, { bg: string; text: string }> = {
-  '/dashboard/draft': { bg: 'var(--app-route-blue-bg)', text: 'var(--app-route-blue-text)' },
   '/dashboards': { bg: 'var(--app-route-blue-bg)', text: 'var(--app-route-blue-text)' },
   '/notebooks': { bg: 'var(--app-route-violet-bg)', text: 'var(--app-route-violet-text)' },
   '/ai-workflows': { bg: 'var(--app-route-amber-bg)', text: 'var(--app-route-amber-text)' },

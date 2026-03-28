@@ -257,7 +257,7 @@ export const quickActions: QuickAction[] = [
     id: 'create-dashboard',
     label: 'Dashboard',
     icon: LayoutDashboard,
-    route: '/dashboard/draft',
+    route: '/dashboards',
   },
   {
     id: 'create-query',
