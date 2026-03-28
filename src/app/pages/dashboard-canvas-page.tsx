@@ -3,8 +3,9 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/app/lib/motion';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, Database, LayoutDashboard } from 'lucide-react';
+import { Plus, Database, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
 import { SourceBrowserPanel, SOURCE_TABS } from '../components/panels/source-browser-panel';
@@ -16,7 +17,7 @@ import { canvasStorage } from '../data/canvas-storage';
 import { ordersData, revenueData, latencyData, marketShareData } from '../data/mock/dashboard-canvas-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
-import { colors, glassPanel } from '@/styles/theme';
+import { colors, glassPanel, radius } from '@/styles/theme';
 import type { Canvas, CanvasLayoutItem, WidgetConfig } from '@/types';
 
 const PageContainer = styled.div`
@@ -99,6 +100,88 @@ const NotFoundContainer = styled.div`
   padding: ${Theme.usage.space.xLarge};
 `;
 
+const PublishModalBody = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.medium};
+`;
+
+const PublishInfoBox = styled.div`
+  background: rgb(var(--app-muted-rgb) / 0.5);
+  border-radius: ${radius.lg};
+  padding: ${Theme.usage.space.medium};
+`;
+
+const PublishInfoTitle = styled.div`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+const PublishInfoSub = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+`;
+
+const ShareUrlContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  background: ${colors.background};
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.lg};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+`;
+
+const ShareUrlText = styled.input`
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.foreground};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  outline: none;
+  min-width: 0;
+`;
+
+const CopyButton = styled.button<{ $copied: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  border: none;
+  cursor: pointer;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 150ms;
+  background: ${({ $copied }) => $copied ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.1)' : 'rgb(var(--app-violet-rgb) / 0.1)'};
+  color: ${({ $copied }) => $copied ? colors.emerald500 : colors.violet600};
+
+  &:hover {
+    background: ${({ $copied }) => $copied ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.15)' : 'rgb(var(--app-violet-rgb) / 0.15)'};
+  }
+`;
+
+const PublishActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: ${Theme.usage.space.xSmall};
+`;
+
+const StatusPill = styled.span<{ $published: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  background: ${({ $published }) => $published ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.12)' : 'rgb(var(--app-overlay-rgb) / 0.06)'};
+  color: ${({ $published }) => $published ? colors.emerald500 : colors.mutedForeground};
+`;
+
 // Mock data generator for new widgets
 function generateMockData(chartType: string): { data?: any[]; kpiValue?: string; kpiChange?: string; kpiTrend?: 'up' | 'down' | 'flat' } {
   const datasets = [ordersData, revenueData, latencyData, marketShareData];
@@ -121,6 +204,9 @@ export function DashboardCanvasPage() {
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [notFound, setNotFound] = useState(false);
   const [showWidgetCreator, setShowWidgetCreator] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [copied, setCopied] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('metrics');
 
@@ -208,12 +294,21 @@ export function DashboardCanvasPage() {
   }, [canvas, updateCanvas]);
 
   const handlePublish = useCallback(() => {
-    updateCanvas({ status: canvas?.status === 'published' ? 'draft' : 'published' });
-    // Toast notification — uses Prism ToastProvider already wired in App.tsx
-    // Import: import { useToast } from '@doordash/prism-react';
-    // For simplicity in this prototype, we'll use a basic alert-style approach
-    // The Prism toast integration can be added as a follow-up
+    if (!canvas) return;
+    const publishId = crypto.randomUUID().slice(0, 8);
+    const url = `${window.location.origin}${window.location.pathname}#/dashboard/${canvas.id}?shared=${publishId}`;
+    updateCanvas({ status: 'published' });
+    setShareUrl(url);
+    setCopied(false);
+    setShowPublishModal(true);
   }, [canvas, updateCanvas]);
+
+  const handleCopyUrl = useCallback(() => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [shareUrl]);
 
   if (notFound) {
     return (
@@ -318,6 +413,59 @@ export function DashboardCanvasPage() {
         onManualCreate={() => { setLeftPanelOpen(true); setLeftTab('metrics'); }}
         onAIComplete={handleAddWidget}
       />
+
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Dashboard Published">
+        <DialogContent style={{ maxWidth: '520px' }}>
+          <DialogDescription>
+            Your dashboard is now published and accessible via a shareable link.
+          </DialogDescription>
+          <PublishModalBody>
+            <PublishInfoBox>
+              <PublishInfoTitle>{canvas?.title}</PublishInfoTitle>
+              <PublishInfoSub>
+                {canvas?.layout.length} widget{canvas?.layout.length !== 1 ? 's' : ''} · {canvas?.domain} · {canvas?.tier}
+                <span style={{ marginLeft: '8px' }}>
+                  <StatusPill $published>Published</StatusPill>
+                </span>
+              </PublishInfoSub>
+            </PublishInfoBox>
+
+            <div>
+              <div style={{ fontSize: Theme.usage.fontSize.xxSmall, fontWeight: 500, color: colors.foreground, marginBottom: Theme.usage.space.xxSmall }}>
+                Shareable URL
+              </div>
+              <ShareUrlContainer>
+                <ExternalLink style={{ width: 14, height: 14, color: colors.mutedForeground, flexShrink: 0 }} />
+                <ShareUrlText
+                  readOnly
+                  value={shareUrl}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <CopyButton $copied={copied} onClick={handleCopyUrl}>
+                  {copied ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
+                  {copied ? 'Copied' : 'Copy'}
+                </CopyButton>
+              </ShareUrlContainer>
+            </div>
+
+            <PublishActions>
+              <Button variant="outline" onClick={() => setShowPublishModal(false)}>
+                Close
+              </Button>
+              <Button
+                style={{ backgroundColor: colors.violet600, color: colors.white }}
+                onClick={() => {
+                  window.open(shareUrl, '_blank');
+                  setShowPublishModal(false);
+                }}
+              >
+                <ExternalLink style={{ width: 14, height: 14 }} />
+                Open Link
+              </Button>
+            </PublishActions>
+          </PublishModalBody>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }
