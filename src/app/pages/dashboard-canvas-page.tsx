@@ -189,7 +189,7 @@ function generateMockData(chartType: string): { data?: any[]; kpiValue?: string;
   switch (chartType) {
     case 'kpi':
       return { kpiValue: `${Math.floor(Math.random() * 100)}K`, kpiChange: `+${(Math.random() * 10).toFixed(1)}%`, kpiTrend: 'up' };
-    case 'pie':
+    case 'donut':
       return { data: marketShareData };
     default:
       return { data: randomData };
@@ -280,7 +280,7 @@ export function DashboardCanvasPage() {
     if (!canvas) return;
     const mockData = generateMockData(chartType);
     const chartLabels: Record<string, string> = {
-      bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', pie: 'Pie Chart', kpi: 'KPI Card',
+      column: 'Column Chart', bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', donut: 'Donut Chart', kpi: 'KPI Card',
     };
     const widget: WidgetConfig = {
       id: canvasStorage.generateId(),
@@ -369,7 +369,6 @@ export function DashboardCanvasPage() {
           <SourceBrowserPanel
             activeTab={leftTab as any}
             onTabChange={(tab) => setLeftTab(tab)}
-            onChartTypeSelect={handleAddChartFromType}
             onAIComplete={handleAddWidget}
           />
         </LeftPanel>
