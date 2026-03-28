@@ -228,7 +228,7 @@ export function DashboardCanvasPage() {
               <EmptyDescription>
                 This canvas may have been deleted or the link is invalid.
               </EmptyDescription>
-              <Button variant="outline" onClick={() => navigate('/dashboards')}>
+              <Button style={{ backgroundColor: colors.violet600, color: colors.white }} onClick={() => navigate('/dashboards')}>
                 Back to Canvases
               </Button>
             </NotFoundContainer>
@@ -284,7 +284,7 @@ export function DashboardCanvasPage() {
                 <EmptyDescription>
                   Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
                 </EmptyDescription>
-                <Button variant="outline" style={{ gap: '8px' }} onClick={() => setShowWidgetCreator(true)}>
+                <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => setShowWidgetCreator(true)}>
                   <Plus style={{ width: 16, height: 16 }} />
                   Add your first widget
                 </Button>

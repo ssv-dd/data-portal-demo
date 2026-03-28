@@ -49,7 +49,7 @@ const TitleInput = styled.input`
   }
 
   &:focus {
-    border-color: var(--app-dd-primary);
+    border-color: ${colors.violet500};
     background: rgb(var(--app-surface-rgb) / 0.5);
   }
 `;
@@ -157,7 +157,10 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish }: Canva
             <Eye style={{ width: 16, height: 16 }} />
             Preview
           </Button>
-          <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }} onClick={onPublish}>
+          <Button
+            style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px', fontSize: '14px' }}
+            onClick={onPublish}
+          >
             <Share2 style={{ width: 16, height: 16 }} />
             Publish
           </Button>

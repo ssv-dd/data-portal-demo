@@ -189,7 +189,7 @@ function renderChart(widget: WidgetConfig) {
             <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Bar dataKey="value" fill="var(--app-dd-primary)" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="value" fill="var(--app-violet-500)" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       );
@@ -201,7 +201,7 @@ function renderChart(widget: WidgetConfig) {
             <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Line type="monotone" dataKey="value" stroke="var(--app-dd-primary)" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       );
@@ -211,15 +211,15 @@ function renderChart(widget: WidgetConfig) {
           <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
             <defs>
               <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--app-dd-primary)" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="var(--app-dd-primary)" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--app-violet-500)" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="var(--app-violet-500)" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
             <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
             <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Area type="monotone" dataKey="value" stroke="var(--app-dd-primary)" strokeWidth={2} fill="url(#areaGradient)" />
+            <Area type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} fill="url(#areaGradient)" />
           </AreaChart>
         </ResponsiveContainer>
       );

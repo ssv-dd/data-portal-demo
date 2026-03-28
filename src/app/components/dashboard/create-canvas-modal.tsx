@@ -41,7 +41,7 @@ const Select = styled.select`
   cursor: pointer;
 
   &:focus {
-    border-color: var(--app-dd-primary);
+    border-color: ${colors.violet500};
   }
 `;
 
@@ -121,7 +121,7 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
           <Actions>
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button
-              style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
+              style={{ backgroundColor: colors.violet600, color: colors.white }}
               onClick={handleCreate}
               disabled={!name.trim()}
             >

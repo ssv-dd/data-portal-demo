@@ -105,18 +105,18 @@ const NewButton = styled.button`
   align-items: center;
   gap: ${Theme.usage.space.xSmall};
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  background-color: ${colors.white};
-  border: 1px solid ${colors.slate200};
+  background-color: ${colors.violet600};
+  border: none;
   padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
   font-size: ${Theme.usage.fontSize.xSmall};
   font-weight: 600;
-  color: ${colors.slate900};
+  color: ${colors.white};
   cursor: pointer;
-  box-shadow: ${shadows.sm};
+  box-shadow: 0 4px 6px -1px rgb(var(--app-violet-rgb) / 0.25);
   transition: background-color 200ms;
 
   &:hover {
-    background-color: ${colors.slate50};
+    background-color: ${colors.violet700};
   }
 `;
 
