@@ -94,7 +94,7 @@ export interface Canvas {
   title: string;
   description: string;
   domain: string;
-  tier: 'T1' | 'T2' | 'T3';
+  tier: 'T0' | 'T1' | 'T2';
   status: 'draft' | 'published';
   createdAt: string;
   lastEdited: string;

@@ -55,7 +55,7 @@ const Actions = styled.div`
 export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanvasModalProps) {
   const [name, setName] = useState('');
   const [domain, setDomain] = useState(canvasDomains[0]);
-  const [tier, setTier] = useState<'T1' | 'T2' | 'T3'>('T2');
+  const [tier, setTier] = useState<'T0' | 'T1' | 'T2'>('T1');
 
   const handleCreate = () => {
     if (!name.trim()) return;
@@ -82,7 +82,7 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
     // Reset form
     setName('');
     setDomain(canvasDomains[0]);
-    setTier('T2');
+    setTier('T1');
   };
 
   return (
@@ -112,10 +112,10 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
           </div>
           <div>
             <FieldLabel>Tier</FieldLabel>
-            <Select value={tier} onChange={(e) => setTier(e.target.value as 'T1' | 'T2' | 'T3')}>
+            <Select value={tier} onChange={(e) => setTier(e.target.value as 'T0' | 'T1' | 'T2')}>
+              <option value="T0">T0 — Company Critical</option>
               <option value="T1">T1 — Business Critical</option>
               <option value="T2">T2 — Team Level</option>
-              <option value="T3">T3 — Exploratory</option>
             </Select>
           </div>
           <Actions>

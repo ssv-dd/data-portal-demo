@@ -417,20 +417,24 @@ export function MyCanvasPage() {
                     color: domainColors[d],
                     borderColor: `${domainColors[d]}40`,
                   } : {}}
-                  onClick={() => setDomainFilter(domainFilter === d ? null : d)}
+                  onClick={() => { setDomainFilter(domainFilter === d ? null : d); setTierFilter(null); }}
                 >
                   {d}
                 </Button>
               ))}
-              <FilterDivider />
-              {(['T1', 'T2', 'T3'] as const).map((t) => (
-                <Button key={t} variant="outline" size="sm"
-                  style={tierFilter === t ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                  onClick={() => setTierFilter(tierFilter === t ? null : t)}
-                >
-                  {t}
-                </Button>
-              ))}
+              {domainFilter && (
+                <>
+                  <FilterDivider />
+                  {(['T0', 'T1', 'T2'] as const).map((t) => (
+                    <Button key={t} variant="outline" size="sm"
+                      style={tierFilter === t ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
+                      onClick={() => setTierFilter(tierFilter === t ? null : t)}
+                    >
+                      {t}
+                    </Button>
+                  ))}
+                </>
+              )}
             </FilterRow>
 
             {filteredCanvases.length > 0 ? (

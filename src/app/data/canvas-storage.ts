@@ -94,7 +94,7 @@ const SEED_CANVASES: Canvas[] = [
     title: 'Weekly Business Review',
     description: 'WBR deck metrics: revenue, orders, new users, CSAT',
     domain: 'Finance',
-    tier: 'T1',
+    tier: 'T0',
     status: 'published',
     createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
     lastEdited: new Date(Date.now() - 6 * 3600000).toISOString(),
