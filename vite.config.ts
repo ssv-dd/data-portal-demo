@@ -13,4 +13,7 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.VITE_PORT || '5180'),
   },
+  optimizeDeps: {
+    include: ['react-grid-layout', 'react-resizable', 'react-draggable'],
+  },
 })

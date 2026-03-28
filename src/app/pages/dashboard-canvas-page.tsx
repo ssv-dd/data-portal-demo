@@ -1,21 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
+import { fadeInUp } from '@/app/lib/motion';
+import { useParams, useNavigate } from 'react-router';
+import { Plus, Database, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Share2, Settings, Eye, Plus, GripVertical, MoreVertical, TrendingUp, TrendingDown, Minus, BarChart3, LineChart as LineChartIcon } from 'lucide-react';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
-import { MetricsLibraryPanel } from '../components/panels/metrics-library-panel';
-import { COLORS, widgets } from '../data/mock/dashboard-canvas-data';
-import type { WidgetConfig } from '@/types';
+import { SourceBrowserPanel, SOURCE_TABS } from '../components/panels/source-browser-panel';
+import { CanvasTopBar } from '../components/dashboard/canvas-top-bar';
+import { CanvasGrid } from '../components/dashboard/canvas-grid';
 import { AIWidgetCreator } from '../components/AIWidgetCreator';
 import type { AIWidgetConfig } from '../components/AIWidgetCreator';
+import { canvasStorage } from '../data/canvas-storage';
+import { ordersData, revenueData, latencyData, marketShareData } from '../data/mock/dashboard-canvas-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
-import { colors, glassPanel } from '@/styles/theme';
+import { colors, glassPanel, radius } from '@/styles/theme';
+import type { Canvas, CanvasLayoutItem, WidgetConfig } from '@/types';
 
 const PageContainer = styled.div`
   height: 100%;
@@ -50,33 +53,6 @@ const CenterPanel = styled.div`
   border: 1px solid ${colors.border};
 `;
 
-const CanvasToolbar = styled.div`
-  border-bottom: 1px solid ${colors.border};
-  padding: ${Theme.usage.space.medium} ${Theme.usage.space.xLarge};
-`;
-
-const ToolbarRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const ToolbarTitle = styled.h1`
-  font-size: ${Theme.usage.fontSize.xLarge};
-  color: ${colors.slate900};
-`;
-
-const ToolbarSubtitle = styled.p`
-  font-size: ${Theme.usage.fontSize.xSmall};
-  color: ${colors.slate600};
-`;
-
-const ToolbarActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
-`;
-
 const CanvasArea = styled.div`
   flex: 1;
   overflow: auto;
@@ -84,384 +60,410 @@ const CanvasArea = styled.div`
   padding: ${Theme.usage.space.xLarge};
 `;
 
-const CanvasGrid = styled(motion.div)`
-  max-width: 1280px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: ${Theme.usage.space.medium};
-`;
-
-const GripIcon = styled(GripVertical)`
-  width: 16px;
-  height: 16px;
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
-  opacity: 0;
-  transition: opacity 200ms;
-  cursor: grab;
-  flex-shrink: 0;
-`;
-
-const MoreButton = styled.button`
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
-  opacity: 0;
-  transition: opacity 200ms;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-
-  &:hover {
-    color: ${colors.mutedForeground};
-  }
-`;
-
-const WidgetContainer = styled.div`
-  background-color: ${colors.background};
-  border: 1px solid ${colors.border};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  overflow: hidden;
-  height: 100%;
-
-  &:hover ${GripIcon},
-  &:hover ${MoreButton} {
-    opacity: 1;
-  }
-`;
-
-const WidgetHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: ${Theme.usage.space.medium} ${Theme.usage.space.medium} ${Theme.usage.space.xSmall};
-`;
-
-const WidgetTitleArea = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
-  min-width: 0;
-`;
-
-const WidgetTitleText = styled.div`
-  min-width: 0;
-`;
-
-const WidgetTitle = styled.h4`
-  font-size: ${Theme.usage.fontSize.xSmall};
-  font-weight: 500;
-  color: ${colors.slate900};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const WidgetSubtitle = styled.p`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.slate600};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
-const KpiContainer = styled.div`
+const EmptyState = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  height: 100%;
+  padding: 80px 0;
+  text-align: center;
 `;
 
-const KpiValue = styled.div`
-  font-size: ${Theme.usage.fontSize.xxxLarge};
-  font-weight: 700;
+const EmptyIcon = styled(LayoutDashboard)`
+  width: 48px;
+  height: 48px;
+  color: rgb(var(--app-muted-fg-rgb) / 0.4);
+  margin-bottom: ${Theme.usage.space.medium};
+`;
+
+const EmptyTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.large};
+  font-weight: 500;
   color: ${colors.foreground};
   margin-bottom: ${Theme.usage.space.xSmall};
 `;
 
-const KpiTrendRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xxSmall};
-`;
-
-const KpiChange = styled.span<{ $isFlat: boolean }>`
+const EmptyDescription = styled.p`
   font-size: ${Theme.usage.fontSize.xSmall};
-  font-weight: 500;
-  color: ${({ $isFlat }) => $isFlat ? colors.mutedForeground : colors.green600};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.large};
+  max-width: 400px;
 `;
 
-const KpiPeriod = styled.span`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
+const NotFoundContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: ${Theme.usage.space.xLarge};
 `;
 
-const ModalBody = styled.div`
+const PublishModalBody = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${Theme.usage.space.medium};
 `;
 
-const ModalInfoBox = styled.div`
-  background-color: rgb(var(--app-muted-rgb) / 0.5);
-  border-radius: ${Theme.usage.borderRadius.xLarge};
+const PublishInfoBox = styled.div`
+  background: rgb(var(--app-muted-rgb) / 0.5);
+  border-radius: ${radius.lg};
   padding: ${Theme.usage.space.medium};
 `;
 
-const ModalInfoTitle = styled.div`
+const PublishInfoTitle = styled.div`
   font-size: ${Theme.usage.fontSize.xSmall};
-  color: ${colors.foreground};
   font-weight: 500;
+  color: ${colors.foreground};
   margin-bottom: ${Theme.usage.space.xxSmall};
 `;
 
-const ModalInfoSub = styled.div`
+const PublishInfoSub = styled.div`
   font-size: ${Theme.usage.fontSize.xxSmall};
   color: ${colors.mutedForeground};
 `;
 
-const ModalActions = styled.div`
+const ShareUrlContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  background: ${colors.background};
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.lg};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+`;
+
+const ShareUrlText = styled.input`
+  flex: 1;
+  border: none;
+  background: none;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.foreground};
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  outline: none;
+  min-width: 0;
+`;
+
+const CopyButton = styled.button<{ $copied: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.xSmall};
+  border-radius: ${radius.md};
+  border: none;
+  cursor: pointer;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  transition: all 150ms;
+  background: ${({ $copied }) => $copied ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.1)' : 'rgb(var(--app-violet-rgb) / 0.1)'};
+  color: ${({ $copied }) => $copied ? colors.emerald500 : colors.violet600};
+
+  &:hover {
+    background: ${({ $copied }) => $copied ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.15)' : 'rgb(var(--app-violet-rgb) / 0.15)'};
+  }
+`;
+
+const PublishActions = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: ${Theme.usage.space.xSmall};
 `;
 
+const StatusPill = styled.span<{ $published: boolean }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  background: ${({ $published }) => $published ? 'rgb(var(--app-emerald-rgb, 16 185 129) / 0.12)' : 'rgb(var(--app-overlay-rgb) / 0.06)'};
+  color: ${({ $published }) => $published ? colors.emerald500 : colors.mutedForeground};
+`;
+
+// Mock data generator for new widgets
+function generateMockData(chartType: string): { data?: any[]; kpiValue?: string; kpiChange?: string; kpiTrend?: 'up' | 'down' | 'flat' } {
+  const datasets = [ordersData, revenueData, latencyData, marketShareData];
+  const randomData = datasets[Math.floor(Math.random() * datasets.length)];
+
+  switch (chartType) {
+    case 'kpi':
+      return { kpiValue: `${Math.floor(Math.random() * 100)}K`, kpiChange: `+${(Math.random() * 10).toFixed(1)}%`, kpiTrend: 'up' };
+    case 'pie':
+      return { data: marketShareData };
+    default:
+      return { data: randomData };
+  }
+}
+
 export function DashboardCanvasPage() {
-  const [showPublishModal, setShowPublishModal] = useState(false);
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
+  const [notFound, setNotFound] = useState(false);
   const [showWidgetCreator, setShowWidgetCreator] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [copied, setCopied] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('metrics');
 
-  const handleMetricAdd = (metric: any) => {
-    console.log('Adding metric:', metric);
-  };
+  // Load canvas from storage
+  useEffect(() => {
+    if (!id) { setNotFound(true); return; }
+    const loaded = canvasStorage.getCanvas(id);
+    if (!loaded) { setNotFound(true); return; }
+    setCanvas(loaded);
+    setWidgets(canvasStorage.getCanvasWidgets(id));
+  }, [id]);
 
-  const handleManualCreate = () => {
-    setLeftPanelOpen(true);
-    setLeftTab('metrics');
-  };
+  const updateCanvas = useCallback((updates: Partial<Canvas>) => {
+    if (!canvas) return;
+    const updated = { ...canvas, ...updates, lastEdited: new Date().toISOString() };
+    canvasStorage.saveCanvas(updated);
+    setCanvas(updated);
+  }, [canvas]);
 
-  const handleAIWidgetComplete = (config: AIWidgetConfig) => {
-    console.log('AI widget created:', config);
-  };
+  const handleLayoutChange = useCallback((newLayout: CanvasLayoutItem[]) => {
+    if (!canvas) return;
+    updateCanvas({ layout: newLayout });
+  }, [canvas, updateCanvas]);
 
-  const renderChart = (widget: WidgetConfig) => {
-    switch (widget.type) {
-      case 'kpi':
-        return (
-          <KpiContainer>
-            <KpiValue>{widget.kpiValue}</KpiValue>
-            <KpiTrendRow>
-              {widget.kpiTrend === 'up' && <TrendingUp style={{ width: '16px', height: '16px', color: colors.green600 }} />}
-              {widget.kpiTrend === 'down' && <TrendingDown style={{ width: '16px', height: '16px', color: colors.green600 }} />}
-              {widget.kpiTrend === 'flat' && <Minus style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
-              <KpiChange $isFlat={widget.kpiTrend === 'flat'}>
-                {widget.kpiChange}
-              </KpiChange>
-              <KpiPeriod>vs prev period</KpiPeriod>
-            </KpiTrendRow>
-          </KpiContainer>
-        );
-      case 'bar':
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Bar dataKey="value" fill="var(--dd-primary)" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      case 'line':
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Line type="monotone" dataKey="value" stroke="var(--dd-primary)" strokeWidth={2} dot={{ r: 3 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        );
-      case 'area':
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-              <defs>
-                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="var(--dd-primary)" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="var(--dd-primary)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <YAxis tick={{ fontSize: 11 }} stroke="#9ca3af" />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-              <Area type="monotone" dataKey="value" stroke="var(--dd-primary)" strokeWidth={2} fill="url(#areaGradient)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-      case 'pie':
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={widget.data}
-                cx="50%"
-                cy="50%"
-                innerRadius={45}
-                outerRadius={75}
-                paddingAngle={2}
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-              >
-                {widget.data!.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: '12px' }} />
-            </PieChart>
-          </ResponsiveContainer>
-        );
-    }
-  };
+  const handleAddWidget = useCallback((config: AIWidgetConfig) => {
+    if (!canvas) return;
+    const mockData = generateMockData(config.chartType);
+    const widget: WidgetConfig = {
+      id: canvasStorage.generateId(),
+      title: config.title,
+      subtitle: config.category || '',
+      type: config.chartType as WidgetConfig['type'],
+      description: config.description,
+      category: config.category,
+      metricId: config.metricId,
+      ...mockData,
+    };
+
+    // Save widget
+    canvasStorage.saveCanvasWidget(canvas.id, widget);
+    setWidgets((prev) => [...prev, widget]);
+
+    // Add to layout at auto-position
+    const layoutItem: CanvasLayoutItem = {
+      widgetId: widget.id,
+      x: 0,
+      y: Infinity, // auto-place at bottom
+      w: 6,
+      h: widget.type === 'kpi' ? 2 : 4,
+    };
+    updateCanvas({ layout: [...canvas.layout, layoutItem] });
+    setShowWidgetCreator(false);
+  }, [canvas, updateCanvas]);
+
+  const handleAddChartFromType = useCallback((chartType: WidgetConfig['type']) => {
+    if (!canvas) return;
+    const mockData = generateMockData(chartType);
+    const chartLabels: Record<string, string> = {
+      bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', pie: 'Pie Chart', kpi: 'KPI Card',
+    };
+    const widget: WidgetConfig = {
+      id: canvasStorage.generateId(),
+      title: chartLabels[chartType] || 'New Widget',
+      subtitle: '',
+      type: chartType,
+      ...mockData,
+    };
+    canvasStorage.saveCanvasWidget(canvas.id, widget);
+    setWidgets((prev) => [...prev, widget]);
+    const layoutItem: CanvasLayoutItem = {
+      widgetId: widget.id,
+      x: 0,
+      y: Infinity,
+      w: 6,
+      h: chartType === 'kpi' ? 2 : 4,
+    };
+    updateCanvas({ layout: [...canvas.layout, layoutItem] });
+  }, [canvas, updateCanvas]);
+
+  const handleRemoveWidget = useCallback((widgetId: string) => {
+    if (!canvas) return;
+    canvasStorage.removeCanvasWidget(canvas.id, widgetId);
+    setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
+    updateCanvas({ layout: canvas.layout.filter((l) => l.widgetId !== widgetId) });
+  }, [canvas, updateCanvas]);
+
+  const handlePublish = useCallback(() => {
+    if (!canvas) return;
+    const publishId = crypto.randomUUID().slice(0, 8);
+    const url = `${window.location.origin}${window.location.pathname}#/dashboard/${canvas.id}?shared=${publishId}`;
+    updateCanvas({ status: 'published' });
+    setShareUrl(url);
+    setCopied(false);
+    setShowPublishModal(true);
+  }, [canvas, updateCanvas]);
+
+  const handleCopyUrl = useCallback(() => {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [shareUrl]);
+
+  if (notFound) {
+    return (
+      <PageContainer>
+        <GradientOverlay />
+        <ContentLayout>
+          <CenterPanel>
+            <NotFoundContainer>
+              <EmptyIcon />
+              <EmptyTitle>Dashboard not found</EmptyTitle>
+              <EmptyDescription>
+                This dashboard may have been deleted or the link is invalid.
+              </EmptyDescription>
+              <Button style={{ backgroundColor: colors.violet600, color: colors.white }} onClick={() => navigate('/dashboards')}>
+                Back to Dashboards
+              </Button>
+            </NotFoundContainer>
+          </CenterPanel>
+        </ContentLayout>
+      </PageContainer>
+    );
+  }
+
+  if (!canvas) return null;
 
   return (
     <PageContainer>
       <GradientOverlay />
-
       <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
       <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
       <ContentLayout>
-      <LeftPanel
-        tabs={[
-          { key: 'metrics', label: 'Metrics', icon: BarChart3 },
-          { key: 'charts', label: 'Charts', icon: LineChartIcon },
-        ]}
-        activeTab={leftTab}
-        onTabChange={setLeftTab}
-        collapsed={!leftPanelOpen}
-        onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
-        showSearch={true}
-        searchPlaceholder="Search metrics..."
-      >
-        <MetricsLibraryPanel onMetricAdd={handleMetricAdd} />
-      </LeftPanel>
+        <LeftPanel
+          tabs={SOURCE_TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
+          activeTab={leftTab}
+          onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); }}
+          collapsed={!leftPanelOpen}
+          onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
+          showSearch={false}
+          title="Source"
+          tabsOnlyWhenCollapsed
+        >
+          <SourceBrowserPanel
+            activeTab={leftTab as any}
+            onTabChange={(tab) => setLeftTab(tab)}
+            onChartTypeSelect={handleAddChartFromType}
+          />
+        </LeftPanel>
 
-      <CenterPanel>
-        <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-          <CanvasToolbar>
-            <ToolbarRow>
-              <div>
-                <ToolbarTitle>Q1 Operations Dashboard</ToolbarTitle>
-                <ToolbarSubtitle>Last edited 2 hours ago · 8 widgets</ToolbarSubtitle>
-              </div>
-              <ToolbarActions>
-                <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }} onClick={() => setShowWidgetCreator(true)}>
-                  <Plus style={{ width: '16px', height: '16px' }} />
-                  Add Widget
-                </Button>
-                <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }}>
-                  <Eye style={{ width: '16px', height: '16px' }} />
-                  Preview
-                </Button>
-                <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }}>
-                  <Settings style={{ width: '16px', height: '16px' }} />
-                  Settings
-                </Button>
-                <Button
-                  style={{ backgroundColor: colors.ddPrimary, color: colors.white, gap: '8px', fontSize: '14px' }}
-                  onClick={() => setShowPublishModal(true)}
-                >
-                  <Share2 style={{ width: '16px', height: '16px' }} />
-                  Publish
-                </Button>
-              </ToolbarActions>
-            </ToolbarRow>
-          </CanvasToolbar>
-        </motion.div>
+        <CenterPanel>
+          <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+            <CanvasTopBar
+              canvas={canvas}
+              onUpdate={updateCanvas}
+              onAddWidget={() => setShowWidgetCreator(true)}
+              onPublish={handlePublish}
+            />
+          </motion.div>
 
-        <CanvasArea>
-          <CanvasGrid variants={staggerContainer} initial="hidden" animate="visible">
-            {widgets.map((widget) => (
-              <motion.div
-                key={widget.id}
-                variants={staggerItem}
-                style={{ gridColumn: widget.span === 2 ? 'span 2' : 'span 1' }}
-              >
-                <WidgetContainer>
-                  <WidgetHeader>
-                    <WidgetTitleArea>
-                      <GripIcon />
-                      <WidgetTitleText>
-                        <WidgetTitle>{widget.title}</WidgetTitle>
-                        <WidgetSubtitle>{widget.subtitle}</WidgetSubtitle>
-                      </WidgetTitleText>
-                    </WidgetTitleArea>
-                    <MoreButton>
-                      <MoreVertical style={{ width: '16px', height: '16px' }} />
-                    </MoreButton>
-                  </WidgetHeader>
-                  <div style={{
-                    padding: widget.type === 'kpi' ? '0 16px 16px' : '0 8px 12px',
-                    height: widget.type === 'kpi' ? '96px' : '192px',
-                  }}>
-                    {renderChart(widget)}
-                  </div>
-                </WidgetContainer>
-              </motion.div>
-            ))}
-          </CanvasGrid>
-        </CanvasArea>
-      </CenterPanel>
+          <CanvasArea>
+            {canvas.layout.length === 0 ? (
+              <EmptyState>
+                <EmptyIcon />
+                <EmptyTitle>Start building your dashboard</EmptyTitle>
+                <EmptyDescription>
+                  Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
+                </EmptyDescription>
+                <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => setShowWidgetCreator(true)}>
+                  <Plus style={{ width: 16, height: 16 }} />
+                  Add your first widget
+                </Button>
+              </EmptyState>
+            ) : (
+              <CanvasGrid
+                layout={canvas.layout}
+                widgets={widgets}
+                onLayoutChange={handleLayoutChange}
+                onRemoveWidget={handleRemoveWidget}
+              />
+            )}
+          </CanvasArea>
+        </CenterPanel>
 
-      <AIAssistantSidebar
-        title="Canvas Assistant"
-        contextLabel="Dashboard aware"
-        knowledgeBaseId="dashboards"
-        welcomeMessage="I can help you add widgets, rearrange your dashboard, or generate summaries from your metrics."
-        suggestions={[
-          { text: 'Add a KPI card' },
-          { text: 'Generate summary' },
-          { text: 'Compare periods' },
-          { text: 'Add trend chart' },
-        ]}
-        suggestedActions={['Add metric', 'Create chart', 'Export to PDF']}
-      />
+        <AIAssistantSidebar
+          title="Dashboard Assistant"
+          contextLabel="Dashboard aware"
+          knowledgeBaseId="dashboards"
+          welcomeMessage="I can help you add widgets, rearrange your dashboard, or generate summaries from your metrics."
+          suggestions={[
+            { text: 'Add a KPI card' },
+            { text: 'Generate summary' },
+            { text: 'Compare periods' },
+            { text: 'Add trend chart' },
+          ]}
+          suggestedActions={['Add metric', 'Create chart', 'Export to PDF']}
+        />
       </ContentLayout>
 
       <AIWidgetCreator
         open={showWidgetCreator}
         onOpenChange={setShowWidgetCreator}
-        onManualCreate={handleManualCreate}
-        onAIComplete={handleAIWidgetComplete}
+        onManualCreate={() => { setLeftPanelOpen(true); setLeftTab('metrics'); }}
+        onAIComplete={handleAddWidget}
       />
 
-      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Publish Dashboard">
-        <DialogContent style={{ maxWidth: '512px' }}>
-            <DialogDescription>
-              Share this dashboard with your organization. Verified metrics will power automated narrative summaries.
-            </DialogDescription>
-          <ModalBody>
-            <ModalInfoBox>
-              <ModalInfoTitle>Q1 Operations Dashboard</ModalInfoTitle>
-              <ModalInfoSub>8 widgets · 4 verified metrics</ModalInfoSub>
-            </ModalInfoBox>
-            <ModalActions>
+      <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Dashboard Published">
+        <DialogContent style={{ maxWidth: '520px' }}>
+          <DialogDescription>
+            Your dashboard is now published and accessible via a shareable link.
+          </DialogDescription>
+          <PublishModalBody>
+            <PublishInfoBox>
+              <PublishInfoTitle>{canvas?.title}</PublishInfoTitle>
+              <PublishInfoSub>
+                {canvas?.layout.length} widget{canvas?.layout.length !== 1 ? 's' : ''} · {canvas?.domain} · {canvas?.tier}
+                <span style={{ marginLeft: '8px' }}>
+                  <StatusPill $published>Published</StatusPill>
+                </span>
+              </PublishInfoSub>
+            </PublishInfoBox>
+
+            <div>
+              <div style={{ fontSize: Theme.usage.fontSize.xxSmall, fontWeight: 500, color: colors.foreground, marginBottom: Theme.usage.space.xxSmall }}>
+                Shareable URL
+              </div>
+              <ShareUrlContainer>
+                <ExternalLink style={{ width: 14, height: 14, color: colors.mutedForeground, flexShrink: 0 }} />
+                <ShareUrlText
+                  readOnly
+                  value={shareUrl}
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                />
+                <CopyButton $copied={copied} onClick={handleCopyUrl}>
+                  {copied ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
+                  {copied ? 'Copied' : 'Copy'}
+                </CopyButton>
+              </ShareUrlContainer>
+            </div>
+
+            <PublishActions>
               <Button variant="outline" onClick={() => setShowPublishModal(false)}>
-                Save as Draft
+                Close
               </Button>
               <Button
-                style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
-                onClick={() => setShowPublishModal(false)}
+                style={{ backgroundColor: colors.violet600, color: colors.white }}
+                onClick={() => {
+                  window.open(shareUrl, '_blank');
+                  setShowPublishModal(false);
+                }}
               >
-                Publish Now
+                <ExternalLink style={{ width: 14, height: 14 }} />
+                Open Link
               </Button>
-            </ModalActions>
-          </ModalBody>
+            </PublishActions>
+          </PublishModalBody>
         </DialogContent>
       </Dialog>
     </PageContainer>

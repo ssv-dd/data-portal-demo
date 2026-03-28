@@ -93,12 +93,24 @@ export interface Canvas {
   id: string;
   title: string;
   description: string;
+  domain: string;
+  tier: 'T0' | 'T1' | 'T2';
+  status: 'draft' | 'published';
+  createdAt: string;
   lastEdited: string;
-  metrics: number;
   owner: string;
   shared: boolean;
+  layout: CanvasLayoutItem[];
   golden?: boolean;
   externalUrl?: string;
+}
+
+export interface CanvasLayoutItem {
+  widgetId: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 // Notebook types
@@ -168,7 +180,9 @@ export interface WidgetConfig {
   kpiValue?: string;
   kpiChange?: string;
   kpiTrend?: 'up' | 'down' | 'flat';
-  span?: 1 | 2;
+  description?: string;
+  category?: string;
+  metricId?: string;
 }
 
 // Telemetry KPIs

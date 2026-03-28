@@ -25,3 +25,16 @@ export const appConfig = {
     scorecardCustomization: true,
   },
 } as const;
+
+/** Available domains for canvases */
+export const canvasDomains = ['Logistics', 'Marketplace', 'Ads', 'DashPass', 'Finance', 'CX'] as const;
+
+/** Domain badge color mapping */
+export const domainColors: Record<string, string> = {
+  Logistics: '#FF3A00',
+  Marketplace: '#8B5CF6',
+  Ads: '#06B6D4',
+  DashPass: '#10B981',
+  Finance: '#F59E0B',
+  CX: '#EC4899',
+};

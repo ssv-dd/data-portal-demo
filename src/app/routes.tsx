@@ -14,7 +14,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'dashboards', element: <MyCanvasPage /> },
-      { path: 'dashboard/draft', element: <DashboardCanvasPage /> },
+      { path: 'dashboard/:id', element: <DashboardCanvasPage /> },
       { path: 'sql-studio', element: <SQLStudioPage /> },
       { path: 'notebooks', element: <NotebooksPage /> },
       { path: 'ai-workflows', element: <AIWorkflowsPage /> },

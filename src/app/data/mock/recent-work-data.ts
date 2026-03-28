@@ -8,7 +8,7 @@ export const yourProjects: RecentWorkItem[] = [
     meta: 'Last edited 2 hours ago',
     status: 'Draft',
     icon: LayoutDashboard,
-    route: '/dashboard/draft',
+    route: '/dashboards',
   },
   {
     id: '2',
