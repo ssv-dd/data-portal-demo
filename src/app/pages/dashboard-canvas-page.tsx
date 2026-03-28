@@ -7,7 +7,7 @@ import { Plus, Database, LayoutDashboard } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
-import { SourceBrowserPanel } from '../components/panels/source-browser-panel';
+import { SourceBrowserPanel, SOURCE_TABS } from '../components/panels/source-browser-panel';
 import { CanvasTopBar } from '../components/dashboard/canvas-top-bar';
 import { CanvasGrid } from '../components/dashboard/canvas-grid';
 import { AIWidgetCreator } from '../components/AIWidgetCreator';
@@ -122,7 +122,7 @@ export function DashboardCanvasPage() {
   const [notFound, setNotFound] = useState(false);
   const [showWidgetCreator, setShowWidgetCreator] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [leftTab, setLeftTab] = useState('sources');
+  const [leftTab, setLeftTab] = useState('metrics');
 
   // Load canvas from storage
   useEffect(() => {
@@ -247,15 +247,20 @@ export function DashboardCanvasPage() {
 
       <ContentLayout>
         <LeftPanel
-          tabs={[]}
+          tabs={SOURCE_TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
           activeTab={leftTab}
-          onTabChange={setLeftTab}
+          onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); }}
           collapsed={!leftPanelOpen}
           onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
           showSearch={false}
           title="Source"
+          tabsOnlyWhenCollapsed
         >
-          <SourceBrowserPanel onChartTypeSelect={handleAddChartFromType} />
+          <SourceBrowserPanel
+            activeTab={leftTab as any}
+            onTabChange={(tab) => setLeftTab(tab)}
+            onChartTypeSelect={handleAddChartFromType}
+          />
         </LeftPanel>
 
         <CenterPanel>

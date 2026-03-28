@@ -22,6 +22,7 @@ interface LeftPanelProps {
   showSearch?: boolean;
   className?: string;
   title?: string;
+  tabsOnlyWhenCollapsed?: boolean;
 }
 
 const PanelContainer = styled(motion.div)<{ $collapsed: boolean }>`
@@ -190,6 +191,7 @@ export function LeftPanel({
   searchPlaceholder = 'Search...',
   showSearch = false,
   title = 'Navigation',
+  tabsOnlyWhenCollapsed = false,
 }: LeftPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -234,7 +236,7 @@ export function LeftPanel({
         </SearchContainer>
       )}
 
-      <TabsContainer $collapsed={collapsed}>
+      {(!tabsOnlyWhenCollapsed || collapsed) && tabs.length > 0 && <TabsContainer $collapsed={collapsed}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -262,7 +264,7 @@ export function LeftPanel({
             </TabButtonWrapper>
           );
         })}
-      </TabsContainer>
+      </TabsContainer>}
 
       {!collapsed && (
         <ContentArea

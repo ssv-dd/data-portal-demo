@@ -25,7 +25,18 @@ interface SourceItem {
 interface SourceBrowserPanelProps {
   onSourceSelect?: (source: SourceItem) => void;
   onChartTypeSelect?: (type: WidgetConfig['type']) => void;
+  activeTab?: SourceType;
+  onTabChange?: (tab: SourceType) => void;
 }
+
+// Export tabs so the parent page can use them for collapsed icons
+export const SOURCE_TABS = [
+  { key: 'sql', label: 'SQL', icon: Zap },
+  { key: 'semantic', label: 'Semantic', icon: Layers },
+  { key: 'metrics', label: 'Metrics', icon: BarChart3 },
+  { key: 'cache', label: 'Cache', icon: Database },
+  { key: 'chat', label: 'AI-BI', icon: Sparkles },
+] as const;
 
 const TABS: SourceTab[] = [
   { id: 'sql', label: 'SQL', icon: Zap },
@@ -248,8 +259,10 @@ const PlaceholderBox = styled.div`
   font-size: ${Theme.usage.fontSize.xSmall};
 `;
 
-export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect }: SourceBrowserPanelProps) {
-  const [activeTab, setActiveTab] = useState<SourceType>('metrics');
+export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect, activeTab: controlledTab, onTabChange }: SourceBrowserPanelProps) {
+  const [internalTab, setInternalTab] = useState<SourceType>('metrics');
+  const activeTab = controlledTab ?? internalTab;
+  const setActiveTab = (tab: SourceType) => { onTabChange?.(tab); setInternalTab(tab); };
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
