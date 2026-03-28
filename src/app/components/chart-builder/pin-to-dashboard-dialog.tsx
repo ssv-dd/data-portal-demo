@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { Search } from 'lucide-react';
 import { Dialog, DialogContent, DialogFooter } from '@/app/components/ui/dialog';
@@ -232,7 +232,6 @@ export function PinToDashboardDialog({
   const [activeTab, setActiveTab] = useState<DialogTab>('existing');
   const [search, setSearch] = useState('');
   const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(preSelectedDashboardId ?? null);
-  const [canvases, setCanvases] = useState<Canvas[]>([]);
 
   // New dashboard form
   const [newName, setNewName] = useState('');
@@ -240,15 +239,11 @@ export function PinToDashboardDialog({
   const [newTier, setNewTier] = useState<Canvas['tier']>('T1');
   const [formError, setFormError] = useState('');
 
-  useEffect(() => {
-    if (open) {
-      setCanvases(canvasStorage.getCanvases());
-      setSelectedCanvasId(preSelectedDashboardId ?? null);
-      setSearch('');
-      setNewName('');
-      setFormError('');
-    }
-  }, [open, preSelectedDashboardId]);
+  // Load canvases fresh each time dialog opens (derived from `open` prop)
+  const canvases = React.useMemo(
+    () => (open ? canvasStorage.getCanvases() : []),
+    [open],
+  );
 
   const filtered = canvases.filter((c) =>
     c.title.toLowerCase().includes(search.toLowerCase())

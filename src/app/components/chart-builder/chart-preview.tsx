@@ -23,7 +23,7 @@ import type { ChartBuilderField, ChartType } from '@/types';
 
 interface ChartPreviewProps {
   chartType: ChartType;
-  data: any[];
+  data: Record<string, unknown>[];
   measures: ChartBuilderField[];
   dimensions: ChartBuilderField[];
   dateField: ChartBuilderField | null;
@@ -148,7 +148,7 @@ const tooltipStyle = {
   fontSize: '12px',
 };
 
-function getXAxisKey(data: any[], dimensions: ChartBuilderField[], dateField: ChartBuilderField | null): string {
+function getXAxisKey(data: Record<string, unknown>[], dimensions: ChartBuilderField[], dateField: ChartBuilderField | null): string {
   if (dimensions[0]?.name && data[0]?.[dimensions[0].name] !== undefined) {
     return dimensions[0].name;
   }
