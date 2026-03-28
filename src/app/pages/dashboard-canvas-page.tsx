@@ -8,6 +8,7 @@ import { Button } from '../components/ui/button';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
 import { MetricsLibraryPanel } from '../components/panels/metrics-library-panel';
+import { ChartTypesPanel } from '../components/panels/chart-types-panel';
 import { CanvasTopBar } from '../components/dashboard/canvas-top-bar';
 import { CanvasGrid } from '../components/dashboard/canvas-grid';
 import { AIWidgetCreator } from '../components/AIWidgetCreator';
@@ -175,6 +176,31 @@ export function DashboardCanvasPage() {
     setShowWidgetCreator(false);
   }, [canvas, updateCanvas]);
 
+  const handleAddChartFromType = useCallback((chartType: WidgetConfig['type']) => {
+    if (!canvas) return;
+    const mockData = generateMockData(chartType);
+    const chartLabels: Record<string, string> = {
+      bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', pie: 'Pie Chart', kpi: 'KPI Card',
+    };
+    const widget: WidgetConfig = {
+      id: canvasStorage.generateId(),
+      title: chartLabels[chartType] || 'New Widget',
+      subtitle: '',
+      type: chartType,
+      ...mockData,
+    };
+    canvasStorage.saveCanvasWidget(canvas.id, widget);
+    setWidgets((prev) => [...prev, widget]);
+    const layoutItem: CanvasLayoutItem = {
+      widgetId: widget.id,
+      x: 0,
+      y: Infinity,
+      w: 6,
+      h: chartType === 'kpi' ? 2 : 4,
+    };
+    updateCanvas({ layout: [...canvas.layout, layoutItem] });
+  }, [canvas, updateCanvas]);
+
   const handleRemoveWidget = useCallback((widgetId: string) => {
     if (!canvas) return;
     canvasStorage.removeCanvasWidget(canvas.id, widgetId);
@@ -202,10 +228,7 @@ export function DashboardCanvasPage() {
               <EmptyDescription>
                 This canvas may have been deleted or the link is invalid.
               </EmptyDescription>
-              <Button
-                style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
-                onClick={() => navigate('/dashboards')}
-              >
+              <Button variant="outline" onClick={() => navigate('/dashboards')}>
                 Back to Canvases
               </Button>
             </NotFoundContainer>
@@ -234,9 +257,13 @@ export function DashboardCanvasPage() {
           collapsed={!leftPanelOpen}
           onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
           showSearch={true}
-          searchPlaceholder="Search metrics..."
+          searchPlaceholder={leftTab === 'metrics' ? 'Search metrics...' : 'Search chart types...'}
         >
-          <MetricsLibraryPanel onMetricAdd={(metric: any) => console.log('Metric add:', metric)} />
+          {leftTab === 'metrics' ? (
+            <MetricsLibraryPanel onMetricAdd={(metric: any) => console.log('Metric add:', metric)} />
+          ) : (
+            <ChartTypesPanel onChartTypeSelect={handleAddChartFromType} />
+          )}
         </LeftPanel>
 
         <CenterPanel>
@@ -257,10 +284,7 @@ export function DashboardCanvasPage() {
                 <EmptyDescription>
                   Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
                 </EmptyDescription>
-                <Button
-                  style={{ backgroundColor: colors.ddPrimary, color: colors.white, gap: '8px' }}
-                  onClick={() => setShowWidgetCreator(true)}
-                >
+                <Button variant="outline" style={{ gap: '8px' }} onClick={() => setShowWidgetCreator(true)}>
                   <Plus style={{ width: 16, height: 16 }} />
                   Add your first widget
                 </Button>

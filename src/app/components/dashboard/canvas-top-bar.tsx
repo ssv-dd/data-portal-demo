@@ -157,10 +157,7 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish }: Canva
             <Eye style={{ width: 16, height: 16 }} />
             Preview
           </Button>
-          <Button
-            style={{ backgroundColor: colors.ddPrimary, color: colors.white, gap: '8px', fontSize: '14px' }}
-            onClick={onPublish}
-          >
+          <Button variant="outline" style={{ gap: '8px', fontSize: '14px' }} onClick={onPublish}>
             <Share2 style={{ width: 16, height: 16 }} />
             Publish
           </Button>

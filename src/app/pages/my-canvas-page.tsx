@@ -105,17 +105,18 @@ const NewButton = styled.button`
   align-items: center;
   gap: ${Theme.usage.space.xSmall};
   border-radius: ${Theme.usage.borderRadius.xLarge};
-  background-color: var(--app-dd-primary);
-  border: none;
+  background-color: ${colors.white};
+  border: 1px solid ${colors.slate200};
   padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
   font-size: ${Theme.usage.fontSize.xSmall};
   font-weight: 600;
-  color: ${colors.white};
+  color: ${colors.slate900};
   cursor: pointer;
-  transition: opacity 200ms;
+  box-shadow: ${shadows.sm};
+  transition: background-color 200ms;
 
   &:hover {
-    opacity: 0.9;
+    background-color: ${colors.slate50};
   }
 `;
 
