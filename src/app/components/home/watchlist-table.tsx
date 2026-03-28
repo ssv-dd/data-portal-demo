@@ -316,7 +316,7 @@ function AreaTableSlim({ area, defaultExpanded, maxRows, onMetricClick }: {
                     <Th>Current Week</Th>
                     <Th>Prior Week</Th>
                     <Th>vs Prior Week</Th>
-                    <Th>Trend</Th>
+                    <Th>Trend (T28D)</Th>
                     <Th>AI Insight</Th>
                   </ThRow>
                 </THead>

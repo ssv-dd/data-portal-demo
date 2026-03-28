@@ -69,7 +69,7 @@ const TabLink = styled(Link)<{ $active: boolean }>`
   padding: ${Theme.usage.space.xSmall} 14px;
   border-radius: ${radius.lg};
   transition: all 200ms;
-  font-size: ${Theme.usage.fontSize.xSmall};
+  font-size: ${Theme.usage.fontSize.small};
   font-weight: 500;
   text-decoration: none;
 
@@ -182,6 +182,7 @@ const tabs = [
   { name: "SQL Studio", path: "/sql-studio" },
   { name: "Notebooks", path: "/notebooks" },
   { name: "AI Workflows", path: "/ai-workflows" },
+  { name: "ETL Studio", path: "/etl-studio", comingSoon: true },
 ];
 
 export function TopNav() {
@@ -242,11 +243,21 @@ export function TopNav() {
       </LogoContainer>
 
       <TabsContainer>
-        {tabs.map((tab) => (
-          <TabLink key={tab.path} to={tab.path} $active={isActive(tab.path)}>
-            {tab.name}
-          </TabLink>
-        ))}
+        {tabs.map((tab) =>
+          tab.comingSoon ? (
+            <span
+              key={tab.path}
+              title="Coming soon"
+              style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 500, color: 'rgba(0,0,0,0.25)', cursor: 'not-allowed' }}
+            >
+              {tab.name}
+            </span>
+          ) : (
+            <TabLink key={tab.path} to={tab.path} $active={isActive(tab.path)}>
+              {tab.name}
+            </TabLink>
+          )
+        )}
       </TabsContainer>
 
       <ActionsContainer>

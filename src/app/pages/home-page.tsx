@@ -217,7 +217,9 @@ const PurposeButton = styled.button<{ $active: boolean }>`
 
 const ChatMessagesOverlay = styled(motion.div)`
   position: absolute;
-  inset: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 20;
   background-color: ${colors.background};
   display: flex;
@@ -360,6 +362,8 @@ export function HomePage() {
     const userMessage = customPrompt || searchTerm;
     if (!userMessage.trim()) return;
     if (!isChatCentered) setIsChatCentered(true);
+    // Auto-open chat history when starting a chat
+    if (!chatHistoryOpen) setChatHistoryOpen(true);
     setMessages([{ role: 'user', content: userMessage }]);
     setIsLoading(true);
     setSearchTerm('');
@@ -401,11 +405,16 @@ export function HomePage() {
     setSearchTerm(EXAMPLE_PROMPT);
   };
 
-  const handleConversationClick = (conversationId: string) => {
-    // In a real app, this would load the conversation from the backend
-    console.log('Loading conversation:', conversationId);
-    // For now, just start a new chat
-    handleNewChat();
+  const handleConversationClick = (conversation: { id: string; title: string; group: string }) => {
+    // Load the conversation (mock implementation)
+    console.log('Loading conversation:', conversation.id);
+    setIsChatCentered(true);
+    // Set up mock conversation with the title
+    setMessages([
+      { role: 'user', content: `Show me ${conversation.title}` },
+      { role: 'assistant', content: 'analysis' },
+    ]);
+    // Keep chat history open for easy navigation
   };
 
   const chatBox = (
@@ -579,6 +588,7 @@ export function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
+            style={{ left: chatHistoryOpen ? '260px' : '48px' }}
           >
             <ChatHeader>
               <ChatHeaderInner>

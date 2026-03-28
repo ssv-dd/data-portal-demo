@@ -101,6 +101,8 @@ export interface Canvas {
   owner: string;
   shared: boolean;
   layout: CanvasLayoutItem[];
+  golden?: boolean;
+  externalUrl?: string;
 }
 
 export interface CanvasLayoutItem {

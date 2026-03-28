@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, MessageSquare, PenSquare, Sparkles, PanelLeftClose } from 'lucide-react';
 import styled from 'styled-components';
-import { colors } from '@/styles/theme';
+import { colors, glassPanel } from '@/styles/theme';
 
 interface ChatConversation {
   id: string;
@@ -50,6 +50,9 @@ const SidebarContainer = styled.div`
   flex-direction: column;
   flex-shrink: 0;
   border-right: 1px solid rgb(var(--app-border-rgb) / 0.6);
+  height: 100vh;
+  position: relative;
+  z-index: 30;
 `;
 
 const Header = styled.div`
@@ -227,21 +230,37 @@ const CollapsedContainer = styled.div`
   padding: 16px 0;
   gap: 12px;
   height: 100%;
-  background-color: ${colors.background};
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--app-surface-rgb) / 0.6),
+    rgb(var(--app-surface-rgb) / 0.8)
+  );
+  backdrop-filter: blur(12px);
+  border-right: 1px solid rgb(var(--app-border-rgb) / 0.4);
+  box-shadow: inset -1px 0 0 0 rgb(var(--app-overlay-rgb) / 0.1);
 `;
 
 const CollapsedButton = styled.button`
-  padding: 8px;
-  border-radius: 8px;
-  background: none;
-  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgb(var(--app-bg-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-border-rgb) / 0.4);
   cursor: pointer;
-  color: ${colors.mutedForeground};
-  transition: background-color 150ms;
+  color: ${colors.slate700};
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  box-shadow: 0 1px 2px rgb(var(--app-overlay-rgb) / 0.05);
 
   &:hover {
-    background-color: rgb(var(--app-muted-rgb) / 0.6);
+    background: rgb(var(--app-violet-rgb) / 0.1);
+    border-color: rgb(var(--app-violet-rgb) / 0.3);
+    color: ${colors.violet600};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgb(var(--app-overlay-rgb) / 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -375,7 +394,16 @@ export function ChatHistoryPanel({ open, onClose, onOpen, onNewChat, onConversat
               animate={{ width: 260, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.2, ease: 'easeInOut' }}
-              style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', backgroundColor: colors.background }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                overflow: 'hidden',
+                background: 'linear-gradient(to bottom, rgb(var(--app-surface-rgb) / 0.6), rgb(var(--app-surface-rgb) / 0.8))',
+                backdropFilter: 'blur(12px)',
+                borderRight: '1px solid rgb(var(--app-border-rgb) / 0.4)',
+                boxShadow: 'inset -1px 0 0 0 rgb(var(--app-overlay-rgb) / 0.1)'
+              }}
             >
               {panelContent}
             </motion.div>
@@ -386,6 +414,11 @@ export function ChatHistoryPanel({ open, onClose, onOpen, onNewChat, onConversat
               animate={{ width: 48, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
               transition={{ duration: 0.15, ease: 'easeInOut' }}
+              style={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}
             >
               <CollapsedContainer>
                 <CollapsedButton onClick={onOpen}>
