@@ -3,3 +3,5 @@ dist
 .vite
 *.local
 .pm-notes/
+docs/
+.playwright-mcp/
