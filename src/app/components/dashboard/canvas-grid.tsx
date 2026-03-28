@@ -13,6 +13,7 @@ interface CanvasGridProps {
   widgets: WidgetConfig[];
   onLayoutChange: (layout: CanvasLayoutItem[]) => void;
   onRemoveWidget: (widgetId: string) => void;
+  highlightWidgetId?: string;
 }
 
 const GridWrapper = styled.div`
@@ -68,7 +69,7 @@ function fromGridLayout(layout: GridLayout.Layout[]): CanvasLayoutItem[] {
   }));
 }
 
-export function CanvasGrid({ layout, widgets, onLayoutChange, onRemoveWidget }: CanvasGridProps) {
+export function CanvasGrid({ layout, widgets, onLayoutChange, onRemoveWidget, highlightWidgetId }: CanvasGridProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(1200);
 
@@ -112,7 +113,7 @@ export function CanvasGrid({ layout, widgets, onLayoutChange, onRemoveWidget }: 
           if (!widget) return <div key={item.widgetId} />;
           return (
             <div key={item.widgetId}>
-              <ChartCard widget={widget} onRemove={onRemoveWidget} />
+              <ChartCard widget={widget} onRemove={onRemoveWidget} highlight={widget.id === highlightWidgetId} />
             </div>
           );
         })}

@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -24,9 +24,15 @@ interface ChartCardProps {
   widget: WidgetConfig;
   onRemove?: (widgetId: string) => void;
   onAddFilter?: (widgetId: string) => void;
+  highlight?: boolean;
 }
 
-const CardContainer = styled.div`
+const highlightGlow = keyframes`
+  0% { box-shadow: 0 0 0 2px #FF3A00, 0 0 20px rgba(255, 58, 0, 0.3); }
+  100% { box-shadow: 0 0 0 2px transparent, 0 0 0 transparent; }
+`;
+
+const CardContainer = styled.div<{ $highlight?: boolean }>`
   ${glassPanel}
   border: 1px solid ${colors.border};
   border-radius: ${radius['2xl']};
@@ -34,6 +40,7 @@ const CardContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  animation: ${({ $highlight }) => ($highlight ? `${highlightGlow} 2.5s ease-out forwards` : 'none')};
 `;
 
 const CardHeader = styled.div`
@@ -588,12 +595,20 @@ function renderChart(widget: WidgetConfig) {
   return null;
 }
 
-export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: ChartCardProps) {
+export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, highlight }: ChartCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [overlay, setOverlay] = useState<'filter' | 'source' | 'sql' | null>(null);
   const [localFilters, setLocalFilters] = useState<WidgetFilter[]>([]);
   const [draftFilter, setDraftFilter] = useState<WidgetFilter>({ column: FILTER_COLUMNS[0], operator: FILTER_OPERATORS[0], value: '' });
   const menuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Scroll into view when highlighted
+  useEffect(() => {
+    if (highlight && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlight]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -620,7 +635,7 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: Chart
 
   return (
     <>
-      <CardContainer>
+      <CardContainer ref={cardRef} $highlight={highlight}>
         <CardHeader>
           <TitleArea>
             <GripHandle className="drag-handle">

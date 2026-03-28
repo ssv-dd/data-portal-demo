@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/app/lib/motion';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { Plus, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
@@ -210,6 +210,24 @@ export function DashboardCanvasPage() {
   const [leftTab, setLeftTab] = useState('chat');
   const [maximized, setMaximized] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilter[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [highlightWidgetId, setHighlightWidgetId] = useState<string | null>(
+    () => searchParams.get('highlight'),
+  );
+
+  // Clear highlight param after 2.5s
+  useEffect(() => {
+    if (!highlightWidgetId) return;
+    const timer = setTimeout(() => {
+      setHighlightWidgetId(null);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('highlight');
+        return next;
+      }, { replace: true });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [highlightWidgetId, setSearchParams]);
 
   const handleToggleMaximize = useCallback(() => {
     setMaximized((prev) => {
@@ -406,6 +424,7 @@ export function DashboardCanvasPage() {
                 widgets={widgets}
                 onLayoutChange={handleLayoutChange}
                 onRemoveWidget={handleRemoveWidget}
+                highlightWidgetId={highlightWidgetId ?? undefined}
               />
             )}
           </CanvasArea>
