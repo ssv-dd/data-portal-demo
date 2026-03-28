@@ -3,15 +3,14 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/app/lib/motion';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, Database, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
+import { Plus, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
 import { SourceBrowserPanel, SOURCE_TABS } from '../components/panels/source-browser-panel';
-import { CanvasTopBar } from '../components/dashboard/canvas-top-bar';
+import { CanvasTopBar, type DashboardFilter } from '../components/dashboard/canvas-top-bar';
 import { CanvasGrid } from '../components/dashboard/canvas-grid';
-import { AIWidgetCreator } from '../components/AIWidgetCreator';
 import type { AIWidgetConfig } from '../components/AIWidgetCreator';
 import { canvasStorage } from '../data/canvas-storage';
 import { ordersData, revenueData, latencyData, marketShareData } from '../data/mock/dashboard-canvas-data';
@@ -57,7 +56,7 @@ const CanvasArea = styled.div`
   flex: 1;
   overflow: auto;
   background-color: rgb(var(--app-muted-rgb) / 0.5);
-  padding: ${Theme.usage.space.xLarge};
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
 `;
 
 const EmptyState = styled.div`
@@ -203,12 +202,29 @@ export function DashboardCanvasPage() {
   const [canvas, setCanvas] = useState<Canvas | null>(null);
   const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
   const [notFound, setNotFound] = useState(false);
-  const [showWidgetCreator, setShowWidgetCreator] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [leftTab, setLeftTab] = useState('metrics');
+  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const [leftTab, setLeftTab] = useState('chat');
+  const [maximized, setMaximized] = useState(false);
+  const [dashboardFilters, setDashboardFilters] = useState<DashboardFilter[]>([]);
+
+  const handleToggleMaximize = useCallback(() => {
+    setMaximized((prev) => {
+      if (!prev) {
+        // Maximize: collapse both panels
+        setLeftPanelOpen(false);
+        setRightPanelOpen(false);
+      } else {
+        // Restore: expand both panels
+        setLeftPanelOpen(true);
+        setRightPanelOpen(true);
+      }
+      return !prev;
+    });
+  }, []);
 
   // Load canvas from storage
   useEffect(() => {
@@ -258,7 +274,6 @@ export function DashboardCanvasPage() {
       h: widget.type === 'kpi' ? 2 : 4,
     };
     updateCanvas({ layout: [...canvas.layout, layoutItem] });
-    setShowWidgetCreator(false);
   }, [canvas, updateCanvas]);
 
   const handleAddChartFromType = useCallback((chartType: WidgetConfig['type']) => {
@@ -344,9 +359,9 @@ export function DashboardCanvasPage() {
         <LeftPanel
           tabs={SOURCE_TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
           activeTab={leftTab}
-          onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); }}
+          onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); if (maximized) setMaximized(false); }}
           collapsed={!leftPanelOpen}
-          onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
+          onToggleCollapse={() => { setLeftPanelOpen((prev) => !prev); if (maximized) setMaximized(false); }}
           showSearch={false}
           title="Source"
           tabsOnlyWhenCollapsed
@@ -355,6 +370,7 @@ export function DashboardCanvasPage() {
             activeTab={leftTab as any}
             onTabChange={(tab) => setLeftTab(tab)}
             onChartTypeSelect={handleAddChartFromType}
+            onAIComplete={handleAddWidget}
           />
         </LeftPanel>
 
@@ -363,8 +379,12 @@ export function DashboardCanvasPage() {
             <CanvasTopBar
               canvas={canvas}
               onUpdate={updateCanvas}
-              onAddWidget={() => setShowWidgetCreator(true)}
+              onAddWidget={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}
               onPublish={handlePublish}
+              maximized={maximized}
+              onToggleMaximize={handleToggleMaximize}
+              dashboardFilters={dashboardFilters}
+              onDashboardFiltersChange={setDashboardFilters}
             />
           </motion.div>
 
@@ -376,7 +396,7 @@ export function DashboardCanvasPage() {
                 <EmptyDescription>
                   Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
                 </EmptyDescription>
-                <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => setShowWidgetCreator(true)}>
+                <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}>
                   <Plus style={{ width: 16, height: 16 }} />
                   Add your first widget
                 </Button>
@@ -404,15 +424,11 @@ export function DashboardCanvasPage() {
             { text: 'Add trend chart' },
           ]}
           suggestedActions={['Add metric', 'Create chart', 'Export to PDF']}
+          collapsible
+          collapsed={!rightPanelOpen}
+          onToggleCollapse={() => { setRightPanelOpen((prev) => !prev); if (maximized) setMaximized(false); }}
         />
       </ContentLayout>
-
-      <AIWidgetCreator
-        open={showWidgetCreator}
-        onOpenChange={setShowWidgetCreator}
-        onManualCreate={() => { setLeftPanelOpen(true); setLeftTab('metrics'); }}
-        onAIComplete={handleAddWidget}
-      />
 
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Dashboard Published">
         <DialogContent style={{ maxWidth: '520px' }}>
