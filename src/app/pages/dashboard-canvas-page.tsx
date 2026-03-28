@@ -247,15 +247,13 @@ export function DashboardCanvasPage() {
 
       <ContentLayout>
         <LeftPanel
-          tabs={[
-            { key: 'sources', label: 'Sources', icon: Database },
-          ]}
+          tabs={[]}
           activeTab={leftTab}
           onTabChange={setLeftTab}
           collapsed={!leftPanelOpen}
           onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
-          showSearch={true}
-          searchPlaceholder="Search sources..."
+          showSearch={false}
+          title="Source"
         >
           <SourceBrowserPanel onChartTypeSelect={handleAddChartFromType} />
         </LeftPanel>

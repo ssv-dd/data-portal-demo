@@ -21,6 +21,7 @@ interface LeftPanelProps {
   searchPlaceholder?: string;
   showSearch?: boolean;
   className?: string;
+  title?: string;
 }
 
 const PanelContainer = styled(motion.div)<{ $collapsed: boolean }>`
@@ -188,6 +189,7 @@ export function LeftPanel({
   children,
   searchPlaceholder = 'Search...',
   showSearch = false,
+  title = 'Navigation',
 }: LeftPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -206,7 +208,7 @@ export function LeftPanel({
             transition={{ duration: 0.15 }}
             style={{ flex: 1 }}
           >
-            <HeaderTitle>Navigation</HeaderTitle>
+            <HeaderTitle>{title}</HeaderTitle>
           </motion.div>
         )}
         <CollapseButton

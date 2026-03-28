@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { Zap, Layers, BarChart3, Database, Sparkles, ChevronRight, type LucideIcon } from 'lucide-react';
+import { Zap, Layers, BarChart3, Database, Sparkles, ChevronRight, Search, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
@@ -111,6 +111,43 @@ const TabLabel = styled.span`
   letter-spacing: 0.02em;
 `;
 
+const SearchWrapper = styled.div`
+  position: relative;
+  margin-bottom: ${Theme.usage.space.xSmall};
+`;
+
+const SearchIcon = styled(Search)`
+  position: absolute;
+  left: ${Theme.usage.space.small};
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: ${colors.mutedForeground};
+  pointer-events: none;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small} ${Theme.usage.space.xSmall} ${Theme.usage.space.xxLarge};
+  border-radius: ${radius.lg};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  background: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.04);
+  color: ${colors.foreground};
+  transition: all 200ms;
+
+  &::placeholder {
+    color: ${colors.mutedForeground};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgb(var(--app-violet-rgb) / 0.1);
+    border-color: rgb(var(--app-violet-rgb) / 0.4);
+  }
+`;
+
 const BrowseHeader = styled.div`
   display: flex;
   align-items: center;
@@ -214,8 +251,12 @@ const PlaceholderBox = styled.div`
 export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect }: SourceBrowserPanelProps) {
   const [activeTab, setActiveTab] = useState<SourceType>('metrics');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
-  const sources = MOCK_SOURCES[activeTab];
+  const allSources = MOCK_SOURCES[activeTab];
+  const sources = search.trim()
+    ? allSources.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()) || s.description?.toLowerCase().includes(search.toLowerCase()))
+    : allSources;
 
   const handleSelect = (source: SourceItem) => {
     setSelectedId(source.id);
@@ -236,7 +277,7 @@ export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect }: Source
             <Tab
               key={tab.id}
               $active={activeTab === tab.id}
-              onClick={() => { setActiveTab(tab.id); setSelectedId(null); }}
+              onClick={() => { setActiveTab(tab.id); setSelectedId(null); setSearch(''); }}
             >
               <Icon />
               <TabLabel>{tab.label}</TabLabel>
@@ -244,6 +285,16 @@ export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect }: Source
           );
         })}
       </TabBar>
+
+      <SearchWrapper>
+        <SearchIcon />
+        <SearchInput
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder={`Search ${TABS.find((t) => t.id === activeTab)?.label.toLowerCase() || 'sources'}...`}
+        />
+      </SearchWrapper>
 
       <BrowseHeader>
         <BrowseCount>{sources.length} source{sources.length !== 1 ? 's' : ''}</BrowseCount>
