@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import styled from 'styled-components';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -129,13 +129,14 @@ const FilterRow = styled.div`
 `;
 
 const TierSelect = styled.select`
-  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
-  border: 1px solid ${colors.border};
+  padding: 6px 14px;
+  border: 1px solid var(--app-outline-pill-border);
   border-radius: 9999px;
-  background: ${colors.background};
+  background: transparent;
   color: ${colors.foreground};
-  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-size: 13px;
   font-weight: 500;
+  min-height: 32px;
   cursor: pointer;
   outline: none;
 
@@ -209,13 +210,6 @@ const TierBadge = styled.span`
   font-weight: 500;
   background: rgb(var(--app-overlay-rgb) / 0.06);
   color: ${colors.mutedForeground};
-`;
-
-const StatusDot = styled.span<{ $published: boolean }>`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: ${({ $published }) => $published ? colors.emerald500 : colors.mutedForeground};
 `;
 
 const CardMenuButton = styled.button`
@@ -320,6 +314,56 @@ const EmptyText = styled.p`
   margin-bottom: ${Theme.usage.space.medium};
 `;
 
+const SourceSelect = styled.select`
+  padding: 6px 14px;
+  border: 1px solid var(--app-outline-pill-border);
+  border-radius: 9999px;
+  background: transparent;
+  color: ${colors.foreground};
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 32px;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: ${colors.violet500};
+  }
+`;
+
+const BiToolBadge = styled.span<{ $bg: string; $fg: string }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  background: ${({ $bg }) => $bg};
+  color: ${({ $fg }) => $fg};
+  flex-shrink: 0;
+`;
+
+// BI tool definitions with brand colors
+const BI_TOOLS = [
+  { name: 'Sigma', label: 'Σ Sigma', bg: '#F0EBFF', fg: '#6B47DC' },
+  { name: 'Tableau', label: 'T Tableau', bg: '#E8F4FD', fg: '#1D6FA5' },
+  { name: 'Looker', label: '◈ Looker', bg: '#E8F5E9', fg: '#34A853' },
+  { name: 'ThoughtSpot', label: '◉ ThoughtSpot', bg: '#FFF3E0', fg: '#F57C00' },
+  { name: 'Mode', label: '▲ Mode', bg: '#EDE7F6', fg: '#5C2D91' },
+  { name: 'In-house', label: '● In-house', bg: '#FFF1F0', fg: '#FF3A00' },
+] as const;
+
+// Deterministic BI tool assignment based on canvas ID
+function getBiTool(canvasId: string) {
+  let hash = 0;
+  for (let i = 0; i < canvasId.length; i++) {
+    hash = ((hash << 5) - hash + canvasId.charCodeAt(i)) | 0;
+  }
+  return BI_TOOLS[Math.abs(hash) % BI_TOOLS.length];
+}
+
 // Simple sparkline data
 const sparklineData = [4, 6, 3, 8, 5, 7, 9, 6, 8, 10, 7, 9].map((v, i) => ({ i, v }));
 
@@ -328,6 +372,7 @@ export function MyCanvasPage() {
   const [filter, setFilter] = useState<'all' | 'mine' | 'shared'>('all');
   const [domainFilter, setDomainFilter] = useState<string | null>(null);
   const [tierFilter, setTierFilter] = useState<string | null>(null);
+  const [sourceFilter, setSourceFilter] = useState<string | null>(null);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('recent');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -345,10 +390,11 @@ export function MyCanvasPage() {
       canvas.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDomain = !domainFilter || canvas.domain === domainFilter;
     const matchesTier = !tierFilter || canvas.tier === tierFilter;
+    const matchesSource = !sourceFilter || getBiTool(canvas.id).name === sourceFilter;
 
-    if (filter === 'mine') return matchesSearch && matchesDomain && matchesTier && !canvas.shared;
-    if (filter === 'shared') return matchesSearch && matchesDomain && matchesTier && canvas.shared;
-    return matchesSearch && matchesDomain && matchesTier;
+    if (filter === 'mine') return matchesSearch && matchesDomain && matchesTier && matchesSource && !canvas.shared;
+    if (filter === 'shared') return matchesSearch && matchesDomain && matchesTier && matchesSource && canvas.shared;
+    return matchesSearch && matchesDomain && matchesTier && matchesSource;
   });
 
   const handleDelete = () => {
@@ -426,6 +472,16 @@ export function MyCanvasPage() {
             </ActionsBar>
 
             <FilterRow>
+              <Button variant="outline" size="sm"
+                style={!domainFilter ? {
+                  backgroundColor: `${colors.violet600}18`,
+                  color: colors.violet600,
+                  borderColor: `${colors.violet600}40`,
+                } : {}}
+                onClick={() => { setDomainFilter(null); setTierFilter(null); }}
+              >
+                All
+              </Button>
               {canvasDomains.map((d) => (
                 <Button key={d} variant="outline" size="sm"
                   style={domainFilter === d ? {
@@ -438,6 +494,16 @@ export function MyCanvasPage() {
                   {d}
                 </Button>
               ))}
+              <FilterDivider />
+              <SourceSelect
+                value={sourceFilter || ''}
+                onChange={(e) => setSourceFilter(e.target.value || null)}
+              >
+                <option value="">All Sources</option>
+                {BI_TOOLS.map((t) => (
+                  <option key={t.name} value={t.name}>{t.name}</option>
+                ))}
+              </SourceSelect>
               {domainFilter && (
                 <>
                   <FilterDivider />
@@ -465,7 +531,6 @@ export function MyCanvasPage() {
                             {canvas.domain}
                           </DomainBadge>
                           <TierBadge>{canvas.tier}</TierBadge>
-                          <StatusDot $published={canvas.status === 'published'} />
                         </CardBadges>
                         <CardMenuButton onClick={(e) => { e.stopPropagation(); setMenuOpenId(menuOpenId === canvas.id ? null : canvas.id); }}>
                           <MoreVertical style={{ width: 16, height: 16 }} />
@@ -491,7 +556,12 @@ export function MyCanvasPage() {
                           <Clock style={{ width: 12, height: 12 }} />
                           <span>{canvasStorage.formatRelativeTime(canvas.lastEdited)}</span>
                         </CardMeta>
-                        <span>{canvas.layout.length} widgets</span>
+                        <CardMeta>
+                          <span>{canvas.layout.length} widgets</span>
+                          <BiToolBadge $bg={getBiTool(canvas.id).bg} $fg={getBiTool(canvas.id).fg}>
+                            {getBiTool(canvas.id).label}
+                          </BiToolBadge>
+                        </CardMeta>
                       </CardFooter>
                       {menuOpenId === canvas.id && (
                         <CardDropdown>
@@ -518,7 +588,10 @@ export function MyCanvasPage() {
           </CenterContent>
         </CenterPanel>
 
-        <AIAssistantSidebar title="Dashboard Assistant" />
+        <AIAssistantSidebar
+          title="Dashboard Assistant"
+          welcomeMessage="I can help you discover your dashboards across Sigma, Mode, Tableau, Looker, ThoughtSpot and in-house reporting."
+        />
       </ContentLayout>
 
       <CreateCanvasModal
