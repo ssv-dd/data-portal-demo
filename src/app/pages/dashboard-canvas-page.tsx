@@ -3,12 +3,11 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/app/lib/motion';
 import { useParams, useNavigate } from 'react-router';
-import { Plus, BarChart3, LineChart as LineChartIcon, LayoutDashboard } from 'lucide-react';
+import { Plus, Database, LayoutDashboard } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
-import { MetricsLibraryPanel } from '../components/panels/metrics-library-panel';
-import { ChartTypesPanel } from '../components/panels/chart-types-panel';
+import { SourceBrowserPanel } from '../components/panels/source-browser-panel';
 import { CanvasTopBar } from '../components/dashboard/canvas-top-bar';
 import { CanvasGrid } from '../components/dashboard/canvas-grid';
 import { AIWidgetCreator } from '../components/AIWidgetCreator';
@@ -123,7 +122,7 @@ export function DashboardCanvasPage() {
   const [notFound, setNotFound] = useState(false);
   const [showWidgetCreator, setShowWidgetCreator] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [leftTab, setLeftTab] = useState('metrics');
+  const [leftTab, setLeftTab] = useState('sources');
 
   // Load canvas from storage
   useEffect(() => {
@@ -249,21 +248,16 @@ export function DashboardCanvasPage() {
       <ContentLayout>
         <LeftPanel
           tabs={[
-            { key: 'metrics', label: 'Metrics', icon: BarChart3 },
-            { key: 'charts', label: 'Charts', icon: LineChartIcon },
+            { key: 'sources', label: 'Sources', icon: Database },
           ]}
           activeTab={leftTab}
           onTabChange={setLeftTab}
           collapsed={!leftPanelOpen}
           onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
           showSearch={true}
-          searchPlaceholder={leftTab === 'metrics' ? 'Search metrics...' : 'Search chart types...'}
+          searchPlaceholder="Search sources..."
         >
-          {leftTab === 'metrics' ? (
-            <MetricsLibraryPanel onMetricAdd={(metric: any) => console.log('Metric add:', metric)} />
-          ) : (
-            <ChartTypesPanel onChartTypeSelect={handleAddChartFromType} />
-          )}
+          <SourceBrowserPanel onChartTypeSelect={handleAddChartFromType} />
         </LeftPanel>
 
         <CenterPanel>
