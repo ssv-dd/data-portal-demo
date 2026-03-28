@@ -27,12 +27,12 @@ export const marketShareData = [
 ];
 
 export const widgets: WidgetConfig[] = [
-  { id: 'w1', title: 'Total Orders', subtitle: 'This week', type: 'kpi', kpiValue: '104,400', kpiChange: '+8.2%', kpiTrend: 'up', span: 1 },
-  { id: 'w2', title: 'Revenue (GMV)', subtitle: 'Last 6 months ($M)', type: 'kpi', kpiValue: '$290M', kpiChange: '+12.4%', kpiTrend: 'up', span: 1 },
-  { id: 'w3', title: 'Avg Delivery Time', subtitle: 'P50, minutes', type: 'kpi', kpiValue: '30.4 min', kpiChange: '-2.1%', kpiTrend: 'down', span: 1 },
-  { id: 'w4', title: 'Active Dashers', subtitle: 'Currently online', type: 'kpi', kpiValue: '48,291', kpiChange: '+0.3%', kpiTrend: 'flat', span: 1 },
-  { id: 'w5', title: 'Orders by Day', subtitle: 'This week', type: 'bar', data: ordersData, span: 1 },
-  { id: 'w6', title: 'Revenue Trend', subtitle: 'Monthly GMV ($M)', type: 'area', data: revenueData, span: 1 },
-  { id: 'w7', title: 'Delivery Latency by City', subtitle: 'P50 minutes, last 14 days', type: 'bar', data: latencyData, span: 1 },
-  { id: 'w8', title: 'Market Share', subtitle: 'US delivery platforms', type: 'pie', data: marketShareData, span: 1 },
+  { id: 'w1', title: 'Total Orders', subtitle: 'This week', type: 'kpi', kpiValue: '104,400', kpiChange: '+8.2%', kpiTrend: 'up' },
+  { id: 'w2', title: 'Revenue (GMV)', subtitle: 'Last 6 months ($M)', type: 'kpi', kpiValue: '$290M', kpiChange: '+12.4%', kpiTrend: 'up' },
+  { id: 'w3', title: 'Avg Delivery Time', subtitle: 'P50, minutes', type: 'kpi', kpiValue: '30.4 min', kpiChange: '-2.1%', kpiTrend: 'down' },
+  { id: 'w4', title: 'Active Dashers', subtitle: 'Currently online', type: 'kpi', kpiValue: '48,291', kpiChange: '+0.3%', kpiTrend: 'flat' },
+  { id: 'w5', title: 'Orders by Day', subtitle: 'This week', type: 'bar', data: ordersData },
+  { id: 'w6', title: 'Revenue Trend', subtitle: 'Monthly GMV ($M)', type: 'area', data: revenueData },
+  { id: 'w7', title: 'Delivery Latency by City', subtitle: 'P50 minutes, last 14 days', type: 'bar', data: latencyData },
+  { id: 'w8', title: 'Market Share', subtitle: 'US delivery platforms', type: 'pie', data: marketShareData },
 ];
