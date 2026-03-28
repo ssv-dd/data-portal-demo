@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { Theme } from '@doordash/prism-react';
@@ -11,6 +11,14 @@ import type { WidgetConfig } from '@/types';
 import { COLORS } from '@/app/data/mock/dashboard-canvas-data';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+
+// Map legacy type names to canonical types
+const CHART_TYPE_ALIAS: Record<string, string> = {
+  pie: 'donut',
+};
+function resolveChartType(type: string): string {
+  return CHART_TYPE_ALIAS[type] ?? type;
+}
 
 interface ChartCardProps {
   widget: WidgetConfig;
@@ -405,88 +413,179 @@ interface WidgetFilter {
   value: string;
 }
 
+const tooltipContentStyle = { borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background };
+
 function renderChart(widget: WidgetConfig) {
-  switch (widget.type) {
-    case 'kpi':
-      return (
-        <KpiContainer>
-          <KpiValue>{widget.kpiValue}</KpiValue>
-          <KpiTrendRow>
-            {widget.kpiTrend === 'up' && <TrendingUp style={{ width: 16, height: 16, color: colors.green600 }} />}
-            {widget.kpiTrend === 'down' && <TrendingDown style={{ width: 16, height: 16, color: colors.green600 }} />}
-            {widget.kpiTrend === 'flat' && <Minus style={{ width: 16, height: 16, color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
-            <KpiChange $isFlat={widget.kpiTrend === 'flat'}>{widget.kpiChange}</KpiChange>
-            <KpiPeriod>vs prev period</KpiPeriod>
-          </KpiTrendRow>
-        </KpiContainer>
-      );
-    case 'bar':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Bar dataKey="value" fill="var(--app-violet-500)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    case 'line':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Line type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} dot={{ r: 3 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    case 'area':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--app-violet-500)" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="var(--app-violet-500)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Area type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} fill="url(#areaGradient)" />
-          </AreaChart>
-        </ResponsiveContainer>
-      );
-    case 'pie':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={widget.data}
-              cx="50%"
-              cy="50%"
-              innerRadius={45}
-              outerRadius={75}
-              paddingAngle={2}
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-            >
-              {widget.data!.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-          </PieChart>
-        </ResponsiveContainer>
-      );
-    default:
-      return null;
+  const resolved = resolveChartType(widget.type);
+
+  if (resolved === 'kpi') {
+    return (
+      <KpiContainer>
+        <KpiValue>{widget.kpiValue}</KpiValue>
+        <KpiTrendRow>
+          {widget.kpiTrend === 'up' && <TrendingUp style={{ width: 16, height: 16, color: colors.green600 }} />}
+          {widget.kpiTrend === 'down' && <TrendingDown style={{ width: 16, height: 16, color: colors.green600 }} />}
+          {widget.kpiTrend === 'flat' && <Minus style={{ width: 16, height: 16, color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
+          <KpiChange $isFlat={widget.kpiTrend === 'flat'}>{widget.kpiChange}</KpiChange>
+          <KpiPeriod>vs prev period</KpiPeriod>
+        </KpiTrendRow>
+      </KpiContainer>
+    );
   }
+
+  if (resolved === 'column') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Bar dataKey="value" fill="var(--app-violet-500)" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'bar') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart layout="vertical" data={widget.data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis type="number" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" width={80} />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Bar dataKey="value" fill="var(--app-violet-500)" radius={[0, 4, 4, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'line') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Line type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} dot={{ r: 3 }} />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'area') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--app-violet-500)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="var(--app-violet-500)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Area type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} fill="url(#areaGradient)" />
+        </AreaChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'scatter') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis dataKey="value" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Scatter data={widget.data} fill="var(--app-violet-500)" />
+        </ScatterChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'donut') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={widget.data}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={75}
+            paddingAngle={2}
+            dataKey="value"
+            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+          >
+            {widget.data!.map((_entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={tooltipContentStyle} />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'table') {
+    if (!widget.data || widget.data.length === 0) return null;
+    const columns = Object.keys(widget.data[0]);
+    return (
+      <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  style={{
+                    padding: '6px 10px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    color: colors.mutedForeground,
+                    borderBottom: `1px solid ${colors.border}`,
+                    background: 'rgb(var(--app-muted-rgb) / 0.4)',
+                    whiteSpace: 'nowrap',
+                    position: 'sticky',
+                    top: 0,
+                  }}
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {widget.data.map((row, i) => (
+              <tr key={i}>
+                {columns.map((col) => (
+                  <td
+                    key={col}
+                    style={{
+                      padding: '5px 10px',
+                      color: colors.foreground,
+                      borderBottom: `1px solid ${colors.border}`,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {typeof row[col] === 'number' ? Number(row[col]).toLocaleString() : String(row[col] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: ChartCardProps) {

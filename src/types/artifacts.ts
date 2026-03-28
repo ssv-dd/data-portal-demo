@@ -180,8 +180,7 @@ export interface ChartBuilderField {
   aggregation?: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX';
 }
 
-// New chart types for chart builder. Includes legacy 'pie' for backward compat until Task 8.
-export type ChartType = 'column' | 'bar' | 'line' | 'area' | 'scatter' | 'donut' | 'pie' | 'kpi' | 'table';
+export type ChartType = 'column' | 'bar' | 'line' | 'area' | 'scatter' | 'donut' | 'kpi' | 'table';
 
 // Alias for spec compliance
 export type Field = ChartBuilderField;
