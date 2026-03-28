@@ -410,25 +410,6 @@ export function MyCanvasPage() {
             </ActionsBar>
 
             <FilterRow>
-              <Button variant="outline" size="sm"
-                style={filter === 'all' && !domainFilter && !tierFilter ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                onClick={() => { setFilter('all'); setDomainFilter(null); setTierFilter(null); setLeftTab('recent'); }}
-              >
-                All
-              </Button>
-              <Button variant="outline" size="sm"
-                style={filter === 'mine' ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                onClick={() => { setFilter('mine'); setLeftTab('templates'); }}
-              >
-                My Canvases
-              </Button>
-              <Button variant="outline" size="sm"
-                style={filter === 'shared' ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                onClick={() => { setFilter('shared'); setLeftTab('shared'); }}
-              >
-                Shared with me
-              </Button>
-              <FilterDivider />
               {canvasDomains.map((d) => (
                 <Button key={d} variant="outline" size="sm"
                   style={domainFilter === d ? {
