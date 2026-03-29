@@ -7,6 +7,33 @@ export interface SourceItem {
   type: 'sql' | 'semantic' | 'metrics';
 }
 
+// Source metadata for the info panel (query preview, repo link)
+export interface SourceMeta {
+  queryPreview: string;
+  repoUrl: string;
+  repoPath: string;
+  owner: string;
+  lastUpdated: string;
+}
+
+export const SOURCE_META: Record<string, SourceMeta> = {
+  'sql-1': { queryPreview: 'SELECT * FROM warehouse.fact_deliveries\nWHERE ds >= CURRENT_DATE - INTERVAL 30 DAY\nLIMIT 1000', repoUrl: 'https://github.com/doordash/data-warehouse/blob/main/models/fact_deliveries.sql', repoPath: 'data-warehouse/models/fact_deliveries.sql', owner: 'Data Platform', lastUpdated: '2 days ago' },
+  'sql-2': { queryPreview: 'SELECT * FROM warehouse.fact_orders\nWHERE ds >= CURRENT_DATE - INTERVAL 30 DAY\nLIMIT 1000', repoUrl: 'https://github.com/doordash/data-warehouse/blob/main/models/fact_orders.sql', repoPath: 'data-warehouse/models/fact_orders.sql', owner: 'Data Platform', lastUpdated: '1 day ago' },
+  'sql-3': { queryPreview: 'SELECT * FROM warehouse.dim_merchants\nWHERE is_active = TRUE', repoUrl: 'https://github.com/doordash/data-warehouse/blob/main/models/dim_merchants.sql', repoPath: 'data-warehouse/models/dim_merchants.sql', owner: 'Merchant Team', lastUpdated: '5 days ago' },
+  'sql-4': { queryPreview: 'SELECT * FROM warehouse.dim_consumers\nWHERE is_active = TRUE', repoUrl: 'https://github.com/doordash/data-warehouse/blob/main/models/dim_consumers.sql', repoPath: 'data-warehouse/models/dim_consumers.sql', owner: 'CX Team', lastUpdated: '3 days ago' },
+  'sql-5': { queryPreview: 'SELECT * FROM warehouse.fact_dasher_pay\nWHERE pay_date >= CURRENT_DATE - INTERVAL 30 DAY', repoUrl: 'https://github.com/doordash/data-warehouse/blob/main/models/fact_dasher_pay.sql', repoPath: 'data-warehouse/models/fact_dasher_pay.sql', owner: 'Dasher Team', lastUpdated: '1 day ago' },
+  'sem-1': { queryPreview: '-- dbt semantic model: order_metrics\n-- ref: {{ ref("stg_orders") }}\nmetrics:\n  - total_orders\n  - gross_order_value\n  - avg_order_value', repoUrl: 'https://github.com/doordash/dbt-models/blob/main/models/semantic/order_metrics.yml', repoPath: 'dbt-models/models/semantic/order_metrics.yml', owner: 'Analytics Engineering', lastUpdated: '4 days ago' },
+  'sem-2': { queryPreview: '-- dbt semantic model: delivery_performance\n-- ref: {{ ref("stg_deliveries") }}\nmetrics:\n  - p50_delivery_time\n  - on_time_rate\n  - sla_compliance', repoUrl: 'https://github.com/doordash/dbt-models/blob/main/models/semantic/delivery_performance.yml', repoPath: 'dbt-models/models/semantic/delivery_performance.yml', owner: 'Logistics Team', lastUpdated: '1 week ago' },
+  'sem-3': { queryPreview: '-- dbt semantic model: revenue_model\n-- ref: {{ ref("stg_revenue") }}\nmetrics:\n  - net_revenue\n  - commission_revenue\n  - subscription_revenue', repoUrl: 'https://github.com/doordash/dbt-models/blob/main/models/semantic/revenue_model.yml', repoPath: 'dbt-models/models/semantic/revenue_model.yml', owner: 'Finance Analytics', lastUpdated: '3 days ago' },
+  'sem-4': { queryPreview: '-- dbt semantic model: cx_satisfaction\n-- ref: {{ ref("stg_surveys") }}\nmetrics:\n  - nps_score\n  - csat_score\n  - resolution_rate', repoUrl: 'https://github.com/doordash/dbt-models/blob/main/models/semantic/cx_satisfaction.yml', repoPath: 'dbt-models/models/semantic/cx_satisfaction.yml', owner: 'CX Analytics', lastUpdated: '2 days ago' },
+  'met-1': { queryPreview: 'metric: GOV\naggregation: SUM(order_total + tips)\nfilter: status = "completed"', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/gov.yml', repoPath: 'metrics-catalog/gov.yml', owner: 'Finance', lastUpdated: '1 week ago' },
+  'met-2': { queryPreview: 'metric: Net Revenue\naggregation: SUM(revenue - refunds - credits)\nfilter: is_finalized = TRUE', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/net_revenue.yml', repoPath: 'metrics-catalog/net_revenue.yml', owner: 'Finance', lastUpdated: '1 week ago' },
+  'met-3': { queryPreview: 'metric: Active Dashers\naggregation: COUNT(DISTINCT dasher_id)\nfilter: deliveries_l28 >= 1', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/active_dashers.yml', repoPath: 'metrics-catalog/active_dashers.yml', owner: 'Dasher Team', lastUpdated: '5 days ago' },
+  'met-4': { queryPreview: 'metric: P50 Delivery Time\naggregation: PERCENTILE(delivery_minutes, 0.5)\nfilter: status = "delivered"', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/p50_delivery_time.yml', repoPath: 'metrics-catalog/p50_delivery_time.yml', owner: 'Logistics', lastUpdated: '3 days ago' },
+  'met-5': { queryPreview: 'metric: DashPass Subscribers\naggregation: COUNT(DISTINCT user_id)\nfilter: subscription_status = "active"', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/dashpass_subs.yml', repoPath: 'metrics-catalog/dashpass_subs.yml', owner: 'DashPass Team', lastUpdated: '2 days ago' },
+  'met-6': { queryPreview: 'metric: Consumer MAUs\naggregation: COUNT(DISTINCT user_id)\nfilter: last_active_l28 IS NOT NULL', repoUrl: 'https://github.com/doordash/metrics-catalog/blob/main/consumer_maus.yml', repoPath: 'metrics-catalog/consumer_maus.yml', owner: 'Growth Team', lastUpdated: '4 days ago' },
+};
+
 export interface SourceFields {
   measures: ChartBuilderField[];
   dimensions: ChartBuilderField[];
