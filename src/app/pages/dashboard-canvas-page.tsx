@@ -332,6 +332,7 @@ export function DashboardCanvasPage() {
     params.set('source', widget.query.sourceId);
     params.set('tab', widget.query.sourceType);
     params.set('dashboard', canvas.id);
+    params.set('widget', widget.id);
     navigate(`/chart-builder?${params.toString()}`);
   }, [canvas, navigate]);
 

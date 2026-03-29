@@ -266,6 +266,14 @@ function findSourceById(sourceId: string | null): SourceItem | null {
   return null;
 }
 
+// --- Helpers: load existing widget for editing ---
+
+function loadEditingWidget(dashboardId: string | null, widgetId: string | null): WidgetConfig | null {
+  if (!dashboardId || !widgetId) return null;
+  const widgets = canvasStorage.getCanvasWidgets(dashboardId);
+  return widgets.find((w) => w.id === widgetId) ?? null;
+}
+
 // --- Component ---
 
 export function ChartBuilderPage() {
@@ -275,15 +283,30 @@ export function ChartBuilderPage() {
   const initialTab = (searchParams.get('tab') as SourceTab) ?? 'sql';
   const initialSourceId = searchParams.get('source');
   const dashboardId = searchParams.get('dashboard');
+  const editingWidgetId = searchParams.get('widget');
+
+  // Load widget being edited (if any)
+  const editingWidget = useMemo(
+    () => loadEditingWidget(dashboardId, editingWidgetId),
+    [dashboardId, editingWidgetId],
+  );
 
   const [activeTab, setActiveTab] = useState<SourceTab>(initialTab);
   const [selectedSource, setSelectedSource] = useState<SourceItem | null>(
     () => findSourceById(initialSourceId),
   );
-  const [selectedMeasures, setSelectedMeasures] = useState<ChartBuilderField[]>([]);
-  const [selectedDimensions, setSelectedDimensions] = useState<ChartBuilderField[]>([]);
-  const [selectedDateField, setSelectedDateField] = useState<ChartBuilderField | null>(null);
-  const [chartType, setChartType] = useState<ChartType>('column');
+  const [selectedMeasures, setSelectedMeasures] = useState<ChartBuilderField[]>(
+    () => editingWidget?.query?.measures ?? [],
+  );
+  const [selectedDimensions, setSelectedDimensions] = useState<ChartBuilderField[]>(
+    () => editingWidget?.query?.dimensions ?? [],
+  );
+  const [selectedDateField, setSelectedDateField] = useState<ChartBuilderField | null>(
+    () => editingWidget?.query?.dateField ?? null,
+  );
+  const [chartType, setChartType] = useState<ChartType>(
+    () => editingWidget?.type ?? 'column',
+  );
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [sourceInfoOpen, setSourceInfoOpen] = useState(false);
 
@@ -357,15 +380,17 @@ export function ChartBuilderPage() {
     [],
   );
 
-  const handlePin = useCallback(
+  // When editing, save updates the existing widget. When new, creates + adds layout.
+  const handleSaveOrPin = useCallback(
     (canvasId: string) => {
-      const widgetId = canvasStorage.generateId();
+      const isEditing = !!editingWidget;
+      const widgetId = isEditing ? editingWidget.id : canvasStorage.generateId();
       const sourceName = selectedSource?.name ?? 'Chart';
       const typeName = chartType.charAt(0).toUpperCase() + chartType.slice(1);
 
       const widget: WidgetConfig = {
         id: widgetId,
-        title: `${sourceName} — ${typeName}`,
+        title: isEditing ? editingWidget.title : `${sourceName} — ${typeName}`,
         subtitle: selectedMeasures.map((m) => `${m.aggregation ?? 'SUM'}(${m.name})`).join(', '),
         type: chartType,
         data: chartType === 'kpi' ? undefined : mockData,
@@ -380,17 +405,20 @@ export function ChartBuilderPage() {
       };
 
       canvasStorage.saveCanvasWidget(canvasId, widget);
-      const canvas = canvasStorage.getCanvas(canvasId);
-      if (canvas) {
-        canvasStorage.saveCanvas({
-          ...canvas,
-          layout: [...canvas.layout, { widgetId, x: 0, y: Infinity, w: 6, h: 4 }],
-        });
+
+      if (!isEditing) {
+        const canvas = canvasStorage.getCanvas(canvasId);
+        if (canvas) {
+          canvasStorage.saveCanvas({
+            ...canvas,
+            layout: [...canvas.layout, { widgetId, x: 0, y: Infinity, w: 6, h: 4 }],
+          });
+        }
       }
       setPinDialogOpen(false);
       navigate(`/dashboard/${canvasId}?highlight=${widgetId}`);
     },
-    [selectedSource, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
+    [editingWidget, selectedSource, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
   );
 
   const handleBack = useCallback(() => {
@@ -518,9 +546,16 @@ export function ChartBuilderPage() {
             <PinButton
               $disabled={!hasMeasures}
               disabled={!hasMeasures}
-              onClick={() => setPinDialogOpen(true)}
+              onClick={() => {
+                if (editingWidget && dashboardId) {
+                  // Editing: save directly back to the originating dashboard
+                  handleSaveOrPin(dashboardId);
+                } else {
+                  setPinDialogOpen(true);
+                }
+              }}
             >
-              Pin to Dashboard
+              {editingWidget ? 'Save Changes' : 'Pin to Dashboard'}
             </PinButton>
           </ActionsBar>
         </RightPanel>
@@ -529,7 +564,7 @@ export function ChartBuilderPage() {
       <PinToDashboardDialog
         open={pinDialogOpen}
         onClose={() => setPinDialogOpen(false)}
-        onPin={handlePin}
+        onPin={handleSaveOrPin}
         preSelectedDashboardId={dashboardId}
       />
     </PageContainer>
