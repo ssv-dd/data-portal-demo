@@ -438,9 +438,30 @@ function getMeasureKeys(widget: WidgetConfig): string[] {
   return ['value'];
 }
 
+/** Get the X-axis (category/label) key from widget.query or fall back to 'name' */
+function getLabelKey(widget: WidgetConfig): string {
+  // Chart builder widgets: use dimension or date field name as the label key
+  if (widget.query) {
+    if (widget.query.dimensions && widget.query.dimensions.length > 0) {
+      return widget.query.dimensions[0].name;
+    }
+    if (widget.query.dateField) {
+      return widget.query.dateField.name;
+    }
+  }
+  // Fallback: detect the first non-numeric key from the data
+  if (widget.data && widget.data.length > 0) {
+    const first = widget.data[0] as Record<string, unknown>;
+    const labelKey = Object.keys(first).find((k) => typeof first[k] === 'string');
+    if (labelKey) return labelKey;
+  }
+  return 'name';
+}
+
 function renderChart(widget: WidgetConfig) {
   const resolved = resolveChartType(widget.type);
   const measureKeys = getMeasureKeys(widget);
+  const labelKey = getLabelKey(widget);
 
   if (resolved === 'kpi') {
     return (
@@ -462,7 +483,7 @@ function renderChart(widget: WidgetConfig) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
           {measureKeys.map((key, i) => (
@@ -494,7 +515,7 @@ function renderChart(widget: WidgetConfig) {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
           {measureKeys.map((key, i) => (
@@ -516,7 +537,7 @@ function renderChart(widget: WidgetConfig) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
           {measureKeys.map((key, i) => (
@@ -556,6 +577,7 @@ function renderChart(widget: WidgetConfig) {
             outerRadius={75}
             paddingAngle={2}
             dataKey={pieKey}
+            nameKey={labelKey}
             label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
           >
             {widget.data!.map((_entry, index) => (
