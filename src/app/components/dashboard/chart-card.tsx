@@ -1,4 +1,4 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -40,7 +40,7 @@ const CardContainer = styled.div<{ $highlight?: boolean }>`
   height: 100%;
   display: flex;
   flex-direction: column;
-  animation: ${({ $highlight }) => ($highlight ? `${highlightGlow} 2.5s ease-out forwards` : 'none')};
+  ${({ $highlight }) => $highlight && css`animation: ${highlightGlow} 2.5s ease-out forwards;`}
 `;
 
 const CardHeader = styled.div`
