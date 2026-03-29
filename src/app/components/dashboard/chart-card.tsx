@@ -422,8 +422,25 @@ interface WidgetFilter {
 
 const tooltipContentStyle = { borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background };
 
+const CHART_COLORS = ['var(--app-violet-500)', '#FF3A00', '#4ade80', '#60a5fa', '#facc15'];
+
+/** Get the measure data keys from widget.query, or fall back to 'value' */
+function getMeasureKeys(widget: WidgetConfig): string[] {
+  if (widget.query?.measures && widget.query.measures.length > 0) {
+    return widget.query.measures.map((m) => m.name);
+  }
+  // Fallback: detect non-'name' numeric keys from first data row
+  if (widget.data && widget.data.length > 0) {
+    const first = widget.data[0] as Record<string, unknown>;
+    const keys = Object.keys(first).filter((k) => k !== 'name' && typeof first[k] === 'number');
+    if (keys.length > 0) return keys;
+  }
+  return ['value'];
+}
+
 function renderChart(widget: WidgetConfig) {
   const resolved = resolveChartType(widget.type);
+  const measureKeys = getMeasureKeys(widget);
 
   if (resolved === 'kpi') {
     return (
@@ -448,7 +465,9 @@ function renderChart(widget: WidgetConfig) {
           <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
-          <Bar dataKey="value" fill="var(--app-violet-500)" radius={[4, 4, 0, 0]} />
+          {measureKeys.map((key, i) => (
+            <Bar key={key} dataKey={key} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[4, 4, 0, 0]} />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     );
@@ -462,7 +481,9 @@ function renderChart(widget: WidgetConfig) {
           <XAxis type="number" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" width={80} />
           <Tooltip contentStyle={tooltipContentStyle} />
-          <Bar dataKey="value" fill="var(--app-violet-500)" radius={[0, 4, 4, 0]} />
+          {measureKeys.map((key, i) => (
+            <Bar key={key} dataKey={key} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[0, 4, 4, 0]} />
+          ))}
         </BarChart>
       </ResponsiveContainer>
     );
@@ -476,7 +497,9 @@ function renderChart(widget: WidgetConfig) {
           <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
-          <Line type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} dot={{ r: 3 }} />
+          {measureKeys.map((key, i) => (
+            <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     );
@@ -496,19 +519,23 @@ function renderChart(widget: WidgetConfig) {
           <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
           <Tooltip contentStyle={tooltipContentStyle} />
-          <Area type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} fill="url(#areaGradient)" />
+          {measureKeys.map((key, i) => (
+            <Area key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} fill="url(#areaGradient)" />
+          ))}
         </AreaChart>
       </ResponsiveContainer>
     );
   }
 
   if (resolved === 'scatter') {
+    const xKey = measureKeys[0] ?? 'name';
+    const yKey = measureKeys[1] ?? measureKeys[0] ?? 'value';
     return (
       <ResponsiveContainer width="100%" height="100%">
         <ScatterChart margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-          <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-          <YAxis dataKey="value" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <XAxis dataKey={xKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" name={xKey} />
+          <YAxis dataKey={yKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" name={yKey} />
           <Tooltip contentStyle={tooltipContentStyle} />
           <Scatter data={widget.data} fill="var(--app-violet-500)" />
         </ScatterChart>
@@ -517,6 +544,7 @@ function renderChart(widget: WidgetConfig) {
   }
 
   if (resolved === 'donut') {
+    const pieKey = measureKeys[0] ?? 'value';
     return (
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
@@ -527,7 +555,7 @@ function renderChart(widget: WidgetConfig) {
             innerRadius={60}
             outerRadius={75}
             paddingAngle={2}
-            dataKey="value"
+            dataKey={pieKey}
             label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
           >
             {widget.data!.map((_entry, index) => (
