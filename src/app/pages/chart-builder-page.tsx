@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useSearchParams, useNavigate } from 'react-router';
-import { ArrowLeft, ChevronLeft, Code2, ExternalLink, User, Clock } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronDown, Code2, ExternalLink, User, Clock } from 'lucide-react';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel, radius } from '@/styles/theme';
 import { SourceTabBar, type SourceTab } from '@/app/components/chart-builder/source-tab-bar';
