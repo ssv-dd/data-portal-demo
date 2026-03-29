@@ -415,7 +415,7 @@ export function DashboardCanvasPage() {
             <CanvasTopBar
               canvas={canvas}
               onUpdate={updateCanvas}
-              onAddWidget={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}
+              onAddWidget={() => navigate(`/chart-builder?dashboard=${canvas.id}`)}
               onPublish={handlePublish}
               maximized={maximized}
               onToggleMaximize={handleToggleMaximize}
