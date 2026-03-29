@@ -1,5 +1,5 @@
 import styled, { keyframes, css } from 'styled-components';
-import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X } from 'lucide-react';
+import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X, Pencil } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -24,6 +24,8 @@ interface ChartCardProps {
   widget: WidgetConfig;
   onRemove?: (widgetId: string) => void;
   onAddFilter?: (widgetId: string) => void;
+  onEditChart?: (widget: WidgetConfig) => void;
+  onTitleChange?: (widgetId: string, newTitle: string) => void;
   highlight?: boolean;
 }
 
@@ -81,6 +83,19 @@ const Title = styled.h4`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: default;
+`;
+
+const TitleInput = styled.input`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  background: rgb(var(--app-overlay-rgb) / 0.06);
+  border: 1px solid ${colors.ddPrimary};
+  border-radius: ${radius.sm};
+  padding: 1px 4px;
+  outline: none;
+  width: 100%;
 `;
 
 const Subtitle = styled.p`
@@ -645,13 +660,31 @@ function renderChart(widget: WidgetConfig) {
   return null;
 }
 
-export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, highlight }: ChartCardProps) {
+export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, onEditChart, onTitleChange, highlight }: ChartCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [overlay, setOverlay] = useState<'filter' | 'source' | 'sql' | null>(null);
   const [localFilters, setLocalFilters] = useState<WidgetFilter[]>([]);
   const [draftFilter, setDraftFilter] = useState<WidgetFilter>({ column: FILTER_COLUMNS[0], operator: FILTER_OPERATORS[0], value: '' });
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(widget.title);
   const menuRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleCommit = useCallback(() => {
+    const trimmed = titleDraft.trim();
+    if (trimmed && trimmed !== widget.title) {
+      onTitleChange?.(widget.id, trimmed);
+    } else {
+      setTitleDraft(widget.title);
+    }
+    setEditingTitle(false);
+  }, [titleDraft, widget.id, widget.title, onTitleChange]);
+
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleTitleCommit();
+    if (e.key === 'Escape') { setTitleDraft(widget.title); setEditingTitle(false); }
+  }, [handleTitleCommit, widget.title]);
 
   // Scroll into view when highlighted
   useEffect(() => {
@@ -692,7 +725,20 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, highlig
               <GripVertical style={{ width: 16, height: 16 }} />
             </GripHandle>
             <TitleText>
-              <Title>{widget.title}</Title>
+              {editingTitle ? (
+                <TitleInput
+                  ref={titleInputRef}
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onBlur={handleTitleCommit}
+                  onKeyDown={handleTitleKeyDown}
+                  autoFocus
+                />
+              ) : (
+                <Title onDoubleClick={() => { if (onTitleChange) { setEditingTitle(true); setTitleDraft(widget.title); } }}>
+                  {widget.title}
+                </Title>
+              )}
               <Subtitle>{widget.subtitle}</Subtitle>
             </TitleText>
           </TitleArea>
@@ -702,6 +748,15 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, highlig
             </MenuButton>
             {menuOpen && (
               <Dropdown>
+                {widget.query && onEditChart && (
+                  <>
+                    <DropdownItem onClick={() => { onEditChart(widget); setMenuOpen(false); }}>
+                      <Pencil style={{ width: 14, height: 14 }} />
+                      Edit Chart
+                    </DropdownItem>
+                    <MenuSeparator />
+                  </>
+                )}
                 <DropdownItem onClick={() => { setOverlay('filter'); setMenuOpen(false); }}>
                   <Filter style={{ width: 14, height: 14 }} />
                   Add Filter

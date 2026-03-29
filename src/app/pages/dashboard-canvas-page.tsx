@@ -326,6 +326,24 @@ export function DashboardCanvasPage() {
     updateCanvas({ layout: canvas.layout.filter((l) => l.widgetId !== widgetId) });
   }, [canvas, updateCanvas]);
 
+  const handleEditChart = useCallback((widget: WidgetConfig) => {
+    if (!canvas || !widget.query) return;
+    const params = new URLSearchParams();
+    params.set('source', widget.query.sourceId);
+    params.set('tab', widget.query.sourceType);
+    params.set('dashboard', canvas.id);
+    navigate(`/chart-builder?${params.toString()}`);
+  }, [canvas, navigate]);
+
+  const handleTitleChange = useCallback((widgetId: string, newTitle: string) => {
+    if (!canvas) return;
+    setWidgets((prev) => prev.map((w) => w.id === widgetId ? { ...w, title: newTitle } : w));
+    const widget = widgets.find((w) => w.id === widgetId);
+    if (widget) {
+      canvasStorage.saveCanvasWidget(canvas.id, { ...widget, title: newTitle });
+    }
+  }, [canvas, widgets]);
+
   const handlePublish = useCallback(() => {
     if (!canvas) return;
     const publishId = crypto.randomUUID().slice(0, 8);
@@ -424,6 +442,8 @@ export function DashboardCanvasPage() {
                 widgets={widgets}
                 onLayoutChange={handleLayoutChange}
                 onRemoveWidget={handleRemoveWidget}
+                onEditChart={handleEditChart}
+                onTitleChange={handleTitleChange}
                 highlightWidgetId={highlightWidgetId ?? undefined}
               />
             )}
