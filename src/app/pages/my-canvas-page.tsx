@@ -385,7 +385,12 @@ export function MyCanvasPage() {
     setCanvases(canvasStorage.getCanvases());
   }, []);
 
-  const filteredCanvases = canvases.filter((canvas) => {
+  // Sort by lastEdited descending so newest appear first
+  const sortedCanvases = [...canvases].sort((a, b) =>
+    new Date(b.lastEdited).getTime() - new Date(a.lastEdited).getTime()
+  );
+
+  const filteredCanvases = sortedCanvases.filter((canvas) => {
     const matchesSearch = canvas.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       canvas.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDomain = !domainFilter || canvas.domain === domainFilter;

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp } from '@/app/lib/motion';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { Plus, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
@@ -189,7 +189,7 @@ function generateMockData(chartType: string): { data?: any[]; kpiValue?: string;
   switch (chartType) {
     case 'kpi':
       return { kpiValue: `${Math.floor(Math.random() * 100)}K`, kpiChange: `+${(Math.random() * 10).toFixed(1)}%`, kpiTrend: 'up' };
-    case 'pie':
+    case 'donut':
       return { data: marketShareData };
     default:
       return { data: randomData };
@@ -210,6 +210,24 @@ export function DashboardCanvasPage() {
   const [leftTab, setLeftTab] = useState('chat');
   const [maximized, setMaximized] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilter[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [highlightWidgetId, setHighlightWidgetId] = useState<string | null>(
+    () => searchParams.get('highlight'),
+  );
+
+  // Clear highlight param after 2.5s
+  useEffect(() => {
+    if (!highlightWidgetId) return;
+    const timer = setTimeout(() => {
+      setHighlightWidgetId(null);
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('highlight');
+        return next;
+      }, { replace: true });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [highlightWidgetId, setSearchParams]);
 
   const handleToggleMaximize = useCallback(() => {
     setMaximized((prev) => {
@@ -280,7 +298,7 @@ export function DashboardCanvasPage() {
     if (!canvas) return;
     const mockData = generateMockData(chartType);
     const chartLabels: Record<string, string> = {
-      bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', pie: 'Pie Chart', kpi: 'KPI Card',
+      column: 'Column Chart', bar: 'Bar Chart', line: 'Line Chart', area: 'Area Chart', donut: 'Donut Chart', kpi: 'KPI Card',
     };
     const widget: WidgetConfig = {
       id: canvasStorage.generateId(),
@@ -307,6 +325,25 @@ export function DashboardCanvasPage() {
     setWidgets((prev) => prev.filter((w) => w.id !== widgetId));
     updateCanvas({ layout: canvas.layout.filter((l) => l.widgetId !== widgetId) });
   }, [canvas, updateCanvas]);
+
+  const handleEditChart = useCallback((widget: WidgetConfig) => {
+    if (!canvas || !widget.query) return;
+    const params = new URLSearchParams();
+    params.set('source', widget.query.sourceId);
+    params.set('tab', widget.query.sourceType);
+    params.set('dashboard', canvas.id);
+    params.set('widget', widget.id);
+    navigate(`/chart-builder?${params.toString()}`);
+  }, [canvas, navigate]);
+
+  const handleTitleChange = useCallback((widgetId: string, newTitle: string) => {
+    if (!canvas) return;
+    setWidgets((prev) => prev.map((w) => w.id === widgetId ? { ...w, title: newTitle } : w));
+    const widget = widgets.find((w) => w.id === widgetId);
+    if (widget) {
+      canvasStorage.saveCanvasWidget(canvas.id, { ...widget, title: newTitle });
+    }
+  }, [canvas, widgets]);
 
   const handlePublish = useCallback(() => {
     if (!canvas) return;
@@ -369,7 +406,6 @@ export function DashboardCanvasPage() {
           <SourceBrowserPanel
             activeTab={leftTab as any}
             onTabChange={(tab) => setLeftTab(tab)}
-            onChartTypeSelect={handleAddChartFromType}
             onAIComplete={handleAddWidget}
           />
         </LeftPanel>
@@ -379,7 +415,7 @@ export function DashboardCanvasPage() {
             <CanvasTopBar
               canvas={canvas}
               onUpdate={updateCanvas}
-              onAddWidget={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}
+              onAddWidget={() => navigate(`/chart-builder?dashboard=${canvas.id}`)}
               onPublish={handlePublish}
               maximized={maximized}
               onToggleMaximize={handleToggleMaximize}
@@ -407,6 +443,9 @@ export function DashboardCanvasPage() {
                 widgets={widgets}
                 onLayoutChange={handleLayoutChange}
                 onRemoveWidget={handleRemoveWidget}
+                onEditChart={handleEditChart}
+                onTitleChange={handleTitleChange}
+                highlightWidgetId={highlightWidgetId ?? undefined}
               />
             )}
           </CanvasArea>

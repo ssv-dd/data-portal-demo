@@ -3,6 +3,26 @@ import { appConfig } from '@/config/app.config';
 
 const CANVASES_KEY = 'data-portal-canvases';
 const WIDGETS_KEY_PREFIX = 'data-portal-canvas-widgets-';
+const MIGRATION_KEY = 'data-portal-widget-types-migrated';
+
+function migrateWidgetTypes(): void {
+  if (localStorage.getItem(MIGRATION_KEY)) return;
+  const canvases: Canvas[] = JSON.parse(localStorage.getItem(CANVASES_KEY) ?? '[]');
+  for (const canvas of canvases) {
+    const widgetsRaw = localStorage.getItem(WIDGETS_KEY_PREFIX + canvas.id);
+    if (!widgetsRaw) continue;
+    const widgets = JSON.parse(widgetsRaw) as any[];
+    let changed = false;
+    for (const w of widgets) {
+      if (w.type === 'bar') { w.type = 'column'; changed = true; }
+      if (w.type === 'pie') { w.type = 'donut'; changed = true; }
+    }
+    if (changed) {
+      localStorage.setItem(WIDGETS_KEY_PREFIX + canvas.id, JSON.stringify(widgets));
+    }
+  }
+  localStorage.setItem(MIGRATION_KEY, 'true');
+}
 
 function generateId(): string {
   return crypto.randomUUID();
@@ -141,6 +161,7 @@ export const canvasStorage = {
   },
 
   getCanvasWidgets(canvasId: string): WidgetConfig[] {
+    migrateWidgetTypes();
     const raw = localStorage.getItem(WIDGETS_KEY_PREFIX + canvasId);
     return raw ? JSON.parse(raw) : [];
   },

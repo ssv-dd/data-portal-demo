@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Zap, Layers, BarChart3, Database, Sparkles, ChevronRight, ChevronLeft, Search, Hash, Type, Calendar, Plus, Download, CheckCircle2, BarChart2, TrendingUp, PieChart, Activity, AlertTriangle, Clock, Shield, type LucideIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useParams } from 'react-router';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
 import type { WidgetConfig } from '@/types';
@@ -25,8 +26,6 @@ interface SourceItem {
 }
 
 interface SourceBrowserPanelProps {
-  onSourceSelect?: (source: SourceItem) => void;
-  onChartTypeSelect?: (type: WidgetConfig['type']) => void;
   onAIComplete?: (config: AIWidgetConfig) => void;
   activeTab?: SourceType;
   onTabChange?: (tab: SourceType) => void;
@@ -1072,7 +1071,9 @@ const ResetButton = styled.button`
   }
 `;
 
-export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect, onAIComplete, activeTab: controlledTab, onTabChange }: SourceBrowserPanelProps) {
+export function SourceBrowserPanel({ onAIComplete, activeTab: controlledTab, onTabChange }: SourceBrowserPanelProps) {
+  const navigate = useNavigate();
+  const { id: canvasId } = useParams();
   const [internalTab, setInternalTab] = useState<SourceType>('metrics');
   const activeTab = controlledTab ?? internalTab;
   const setActiveTab = (tab: SourceType) => { onTabChange?.(tab); setInternalTab(tab); };
@@ -1180,39 +1181,26 @@ export function SourceBrowserPanel({ onSourceSelect, onChartTypeSelect, onAIComp
     setCacheUrl('');
   }, []);
 
-  const handleCachedWidgetClick = useCallback((widget: CachedWidget) => {
-    onChartTypeSelect?.(widget.chartType);
-  }, [onChartTypeSelect]);
+  const handleCachedWidgetClick = useCallback((_widget: CachedWidget) => {
+    // Cache widget click — kept as placeholder; widget creation handled via AI-BI tab
+  }, []);
 
   const handleSelect = (source: SourceItem) => {
     setSelectedId(source.id);
-    onSourceSelect?.(source);
 
-    // For semantic and sql sources, open field inspector
-    if (activeTab === 'semantic' || activeTab === 'sql') {
-      if (MOCK_FIELDS[source.id]) {
-        setInspectingSource(source);
-      }
+    // Navigate to chart builder for SQL, Semantic, and Metrics tabs
+    if (activeTab === 'sql' || activeTab === 'semantic' || activeTab === 'metrics') {
+      const params = new URLSearchParams();
+      params.set('source', source.id);
+      params.set('tab', source.type);
+      if (canvasId) params.set('dashboard', canvasId);
+      navigate(`/chart-builder?${params.toString()}`);
       return;
-    }
-
-    // For metrics, trigger chart creation directly
-    if (activeTab === 'metrics') {
-      const chartTypes: WidgetConfig['type'][] = ['bar', 'line', 'area', 'kpi', 'pie'];
-      onChartTypeSelect?.(chartTypes[Math.floor(Math.random() * chartTypes.length)]);
     }
   };
 
-  const handleFieldClick = (field: FieldItem) => {
-    // Create a chart based on field role
-    if (field.role === 'measure') {
-      const types: WidgetConfig['type'][] = ['bar', 'line', 'area', 'kpi'];
-      onChartTypeSelect?.(types[Math.floor(Math.random() * types.length)]);
-    } else if (field.role === 'dimension') {
-      onChartTypeSelect?.('pie');
-    } else {
-      onChartTypeSelect?.('line');
-    }
+  const handleFieldClick = (_field: FieldItem) => {
+    // Field clicks now handled via chart builder page
   };
 
   const handleBackToList = () => {

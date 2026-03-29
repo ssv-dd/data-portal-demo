@@ -1,8 +1,8 @@
-import styled from 'styled-components';
-import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X } from 'lucide-react';
+import styled, { keyframes, css } from 'styled-components';
+import { GripVertical, MoreVertical, Trash2, TrendingUp, TrendingDown, Minus, Filter, Database, Code2, X, Pencil } from 'lucide-react';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
 import { Theme } from '@doordash/prism-react';
@@ -12,13 +12,29 @@ import { COLORS } from '@/app/data/mock/dashboard-canvas-data';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// Map legacy type names to canonical types
+const CHART_TYPE_ALIAS: Record<string, string> = {
+  pie: 'donut',
+};
+function resolveChartType(type: string): string {
+  return CHART_TYPE_ALIAS[type] ?? type;
+}
+
 interface ChartCardProps {
   widget: WidgetConfig;
   onRemove?: (widgetId: string) => void;
   onAddFilter?: (widgetId: string) => void;
+  onEditChart?: (widget: WidgetConfig) => void;
+  onTitleChange?: (widgetId: string, newTitle: string) => void;
+  highlight?: boolean;
 }
 
-const CardContainer = styled.div`
+const highlightGlow = keyframes`
+  0% { box-shadow: 0 0 0 2px #FF3A00, 0 0 20px rgba(255, 58, 0, 0.3); }
+  100% { box-shadow: 0 0 0 2px transparent, 0 0 0 transparent; }
+`;
+
+const CardContainer = styled.div<{ $highlight?: boolean }>`
   ${glassPanel}
   border: 1px solid ${colors.border};
   border-radius: ${radius['2xl']};
@@ -26,6 +42,7 @@ const CardContainer = styled.div`
   height: 100%;
   display: flex;
   flex-direction: column;
+  ${({ $highlight }) => $highlight && css`animation: ${highlightGlow} 2.5s ease-out forwards;`}
 `;
 
 const CardHeader = styled.div`
@@ -66,6 +83,19 @@ const Title = styled.h4`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: default;
+`;
+
+const TitleInput = styled.input`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 500;
+  color: ${colors.foreground};
+  background: rgb(var(--app-overlay-rgb) / 0.06);
+  border: 1px solid ${colors.ddPrimary};
+  border-radius: ${radius.sm};
+  padding: 1px 4px;
+  outline: none;
+  width: 100%;
 `;
 
 const Subtitle = styled.p`
@@ -405,96 +435,263 @@ interface WidgetFilter {
   value: string;
 }
 
-function renderChart(widget: WidgetConfig) {
-  switch (widget.type) {
-    case 'kpi':
-      return (
-        <KpiContainer>
-          <KpiValue>{widget.kpiValue}</KpiValue>
-          <KpiTrendRow>
-            {widget.kpiTrend === 'up' && <TrendingUp style={{ width: 16, height: 16, color: colors.green600 }} />}
-            {widget.kpiTrend === 'down' && <TrendingDown style={{ width: 16, height: 16, color: colors.green600 }} />}
-            {widget.kpiTrend === 'flat' && <Minus style={{ width: 16, height: 16, color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
-            <KpiChange $isFlat={widget.kpiTrend === 'flat'}>{widget.kpiChange}</KpiChange>
-            <KpiPeriod>vs prev period</KpiPeriod>
-          </KpiTrendRow>
-        </KpiContainer>
-      );
-    case 'bar':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Bar dataKey="value" fill="var(--app-violet-500)" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      );
-    case 'line':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Line type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} dot={{ r: 3 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      );
-    case 'area':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="var(--app-violet-500)" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="var(--app-violet-500)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
-            <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-            <Area type="monotone" dataKey="value" stroke="var(--app-violet-500)" strokeWidth={2} fill="url(#areaGradient)" />
-          </AreaChart>
-        </ResponsiveContainer>
-      );
-    case 'pie':
-      return (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={widget.data}
-              cx="50%"
-              cy="50%"
-              innerRadius={45}
-              outerRadius={75}
-              paddingAngle={2}
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-            >
-              {widget.data!.map((_entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip contentStyle={{ borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background }} />
-          </PieChart>
-        </ResponsiveContainer>
-      );
-    default:
-      return null;
+const tooltipContentStyle = { borderRadius: '8px', border: `1px solid ${colors.border}`, fontSize: '12px', background: colors.background };
+
+const CHART_COLORS = ['var(--app-violet-500)', '#FF3A00', '#4ade80', '#60a5fa', '#facc15'];
+
+/** Get the measure data keys from widget.query, or fall back to 'value' */
+function getMeasureKeys(widget: WidgetConfig): string[] {
+  if (widget.query?.measures && widget.query.measures.length > 0) {
+    return widget.query.measures.map((m) => m.name);
   }
+  // Fallback: detect non-'name' numeric keys from first data row
+  if (widget.data && widget.data.length > 0) {
+    const first = widget.data[0] as Record<string, unknown>;
+    const keys = Object.keys(first).filter((k) => k !== 'name' && typeof first[k] === 'number');
+    if (keys.length > 0) return keys;
+  }
+  return ['value'];
 }
 
-export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: ChartCardProps) {
+/** Get the X-axis (category/label) key from widget.query or fall back to 'name' */
+function getLabelKey(widget: WidgetConfig): string {
+  // Chart builder widgets: use dimension or date field name as the label key
+  if (widget.query) {
+    if (widget.query.dimensions && widget.query.dimensions.length > 0) {
+      return widget.query.dimensions[0].name;
+    }
+    if (widget.query.dateField) {
+      return widget.query.dateField.name;
+    }
+  }
+  // Fallback: detect the first non-numeric key from the data
+  if (widget.data && widget.data.length > 0) {
+    const first = widget.data[0] as Record<string, unknown>;
+    const labelKey = Object.keys(first).find((k) => typeof first[k] === 'string');
+    if (labelKey) return labelKey;
+  }
+  return 'name';
+}
+
+function renderChart(widget: WidgetConfig) {
+  const resolved = resolveChartType(widget.type);
+  const measureKeys = getMeasureKeys(widget);
+  const labelKey = getLabelKey(widget);
+
+  if (resolved === 'kpi') {
+    return (
+      <KpiContainer>
+        <KpiValue>{widget.kpiValue}</KpiValue>
+        <KpiTrendRow>
+          {widget.kpiTrend === 'up' && <TrendingUp style={{ width: 16, height: 16, color: colors.green600 }} />}
+          {widget.kpiTrend === 'down' && <TrendingDown style={{ width: 16, height: 16, color: colors.green600 }} />}
+          {widget.kpiTrend === 'flat' && <Minus style={{ width: 16, height: 16, color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
+          <KpiChange $isFlat={widget.kpiTrend === 'flat'}>{widget.kpiChange}</KpiChange>
+          <KpiPeriod>vs prev period</KpiPeriod>
+        </KpiTrendRow>
+      </KpiContainer>
+    );
+  }
+
+  if (resolved === 'column') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          {measureKeys.map((key, i) => (
+            <Bar key={key} dataKey={key} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[4, 4, 0, 0]} />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'bar') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart layout="vertical" data={widget.data} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis type="number" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis dataKey="name" type="category" tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" width={80} />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          {measureKeys.map((key, i) => (
+            <Bar key={key} dataKey={key} fill={CHART_COLORS[i % CHART_COLORS.length]} radius={[0, 4, 4, 0]} />
+          ))}
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'line') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          {measureKeys.map((key, i) => (
+            <Line key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'area') {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={widget.data} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--app-violet-500)" stopOpacity={0.15} />
+              <stop offset="95%" stopColor="var(--app-violet-500)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey={labelKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <YAxis tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          {measureKeys.map((key, i) => (
+            <Area key={key} type="monotone" dataKey={key} stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} fill="url(#areaGradient)" />
+          ))}
+        </AreaChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'scatter') {
+    const xKey = measureKeys[0] ?? 'name';
+    const yKey = measureKeys[1] ?? measureKeys[0] ?? 'value';
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgb(var(--app-overlay-rgb) / 0.08)" />
+          <XAxis dataKey={xKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" name={xKey} />
+          <YAxis dataKey={yKey} tick={{ fontSize: 11 }} stroke="rgb(var(--app-muted-fg-rgb) / 0.4)" name={yKey} />
+          <Tooltip contentStyle={tooltipContentStyle} />
+          <Scatter data={widget.data} fill="var(--app-violet-500)" />
+        </ScatterChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'donut') {
+    const pieKey = measureKeys[0] ?? 'value';
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={widget.data}
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={75}
+            paddingAngle={2}
+            dataKey={pieKey}
+            nameKey={labelKey}
+            label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
+          >
+            {widget.data!.map((_entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={tooltipContentStyle} />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  if (resolved === 'table') {
+    if (!widget.data || widget.data.length === 0) return null;
+    const columns = Object.keys(widget.data[0]);
+    return (
+      <div style={{ width: '100%', height: '100%', overflow: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <thead>
+            <tr>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  style={{
+                    padding: '6px 10px',
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    color: colors.mutedForeground,
+                    borderBottom: `1px solid ${colors.border}`,
+                    background: 'rgb(var(--app-muted-rgb) / 0.4)',
+                    whiteSpace: 'nowrap',
+                    position: 'sticky',
+                    top: 0,
+                  }}
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {widget.data.map((row, i) => (
+              <tr key={i}>
+                {columns.map((col) => (
+                  <td
+                    key={col}
+                    style={{
+                      padding: '5px 10px',
+                      color: colors.foreground,
+                      borderBottom: `1px solid ${colors.border}`,
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {typeof row[col] === 'number' ? Number(row[col]).toLocaleString() : String(row[col] ?? '')}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, onEditChart, onTitleChange, highlight }: ChartCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [overlay, setOverlay] = useState<'filter' | 'source' | 'sql' | null>(null);
   const [localFilters, setLocalFilters] = useState<WidgetFilter[]>([]);
   const [draftFilter, setDraftFilter] = useState<WidgetFilter>({ column: FILTER_COLUMNS[0], operator: FILTER_OPERATORS[0], value: '' });
+  const [editingTitle, setEditingTitle] = useState(false);
+  const [titleDraft, setTitleDraft] = useState(widget.title);
   const menuRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTitleCommit = useCallback(() => {
+    const trimmed = titleDraft.trim();
+    if (trimmed && trimmed !== widget.title) {
+      onTitleChange?.(widget.id, trimmed);
+    } else {
+      setTitleDraft(widget.title);
+    }
+    setEditingTitle(false);
+  }, [titleDraft, widget.id, widget.title, onTitleChange]);
+
+  const handleTitleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleTitleCommit();
+    if (e.key === 'Escape') { setTitleDraft(widget.title); setEditingTitle(false); }
+  }, [handleTitleCommit, widget.title]);
+
+  // Scroll into view when highlighted
+  useEffect(() => {
+    if (highlight && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [highlight]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -521,14 +718,27 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: Chart
 
   return (
     <>
-      <CardContainer>
+      <CardContainer ref={cardRef} $highlight={highlight}>
         <CardHeader>
           <TitleArea>
             <GripHandle className="drag-handle">
               <GripVertical style={{ width: 16, height: 16 }} />
             </GripHandle>
             <TitleText>
-              <Title>{widget.title}</Title>
+              {editingTitle ? (
+                <TitleInput
+                  ref={titleInputRef}
+                  value={titleDraft}
+                  onChange={(e) => setTitleDraft(e.target.value)}
+                  onBlur={handleTitleCommit}
+                  onKeyDown={handleTitleKeyDown}
+                  autoFocus
+                />
+              ) : (
+                <Title onDoubleClick={() => { if (onTitleChange) { setEditingTitle(true); setTitleDraft(widget.title); } }}>
+                  {widget.title}
+                </Title>
+              )}
               <Subtitle>{widget.subtitle}</Subtitle>
             </TitleText>
           </TitleArea>
@@ -538,6 +748,15 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter }: Chart
             </MenuButton>
             {menuOpen && (
               <Dropdown>
+                {widget.query && onEditChart && (
+                  <>
+                    <DropdownItem onClick={() => { onEditChart(widget); setMenuOpen(false); }}>
+                      <Pencil style={{ width: 14, height: 14 }} />
+                      Edit Chart
+                    </DropdownItem>
+                    <MenuSeparator />
+                  </>
+                )}
                 <DropdownItem onClick={() => { setOverlay('filter'); setMenuOpen(false); }}>
                   <Filter style={{ width: 14, height: 14 }} />
                   Add Filter

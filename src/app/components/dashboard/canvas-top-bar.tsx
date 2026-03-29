@@ -59,7 +59,7 @@ const TitleInput = styled.input`
   margin: -1px -6px;
   outline: none;
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
 
   &:hover {
     border-color: ${colors.border};
@@ -283,7 +283,7 @@ const AllChartsLabel = styled.span`
   font-style: italic;
 `;
 
-export function CanvasTopBar({ canvas, onUpdate, onAddWidget: _onAddWidget, onPublish, maximized = false, onToggleMaximize, dashboardFilters = [], onDashboardFiltersChange }: CanvasTopBarProps) {
+export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, maximized = false, onToggleMaximize, dashboardFilters = [], onDashboardFiltersChange }: CanvasTopBarProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(canvas.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -412,6 +412,11 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget: _onAddWidget, onPu
                 {dashboardFilters.length}
               </span>
             )}
+          </FilterToggleBtn>
+
+          <FilterToggleBtn $active={false} onClick={onAddWidget}>
+            <Plus style={{ width: 13, height: 13 }} />
+            Add Chart
           </FilterToggleBtn>
 
           {showFilterBar && (
