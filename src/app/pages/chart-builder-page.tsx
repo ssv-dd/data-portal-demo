@@ -149,6 +149,22 @@ const RightPanel = styled.div`
   overflow: hidden;
 `;
 
+const ChartTitleInput = styled.input`
+  font-size: ${Theme.usage.fontSize.small};
+  font-weight: 600;
+  color: ${colors.foreground};
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  outline: none;
+  flex-shrink: 0;
+
+  &:hover { border-bottom-color: ${colors.border}; }
+  &:focus { border-bottom-color: ${colors.ddPrimary}; }
+  &::placeholder { color: ${colors.mutedForeground}; }
+`;
+
 const RightTopBar = styled.div`
   display: flex;
   align-items: center;
@@ -307,6 +323,9 @@ export function ChartBuilderPage() {
   const [chartType, setChartType] = useState<ChartType>(
     () => editingWidget?.type ?? 'column',
   );
+  const [chartTitle, setChartTitle] = useState<string>(
+    () => editingWidget?.title ?? '',
+  );
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [sourceInfoOpen, setSourceInfoOpen] = useState(false);
 
@@ -390,7 +409,7 @@ export function ChartBuilderPage() {
 
       const widget: WidgetConfig = {
         id: widgetId,
-        title: isEditing ? editingWidget.title : `${sourceName} — ${typeName}`,
+        title: chartTitle.trim() || `${sourceName} — ${typeName}`,
         subtitle: selectedMeasures.map((m) => `${m.aggregation ?? 'SUM'}(${m.name})`).join(', '),
         type: chartType,
         data: chartType === 'kpi' ? undefined : mockData,
@@ -418,7 +437,7 @@ export function ChartBuilderPage() {
       setPinDialogOpen(false);
       navigate(`/dashboard/${canvasId}?highlight=${widgetId}`);
     },
-    [editingWidget, selectedSource, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
+    [editingWidget, chartTitle, selectedSource, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
   );
 
   const handleBack = useCallback(() => {
@@ -517,6 +536,11 @@ export function ChartBuilderPage() {
 
         {/* Right panel: takes remaining space */}
         <RightPanel>
+          <ChartTitleInput
+            value={chartTitle}
+            onChange={(e) => setChartTitle(e.target.value)}
+            placeholder="Untitled chart — click to name"
+          />
           <RightTopBar>
             <RightTopLeft>
               <FormulaBar
