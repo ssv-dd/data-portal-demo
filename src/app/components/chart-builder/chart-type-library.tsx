@@ -43,6 +43,12 @@ const TriggerButton = styled.button`
   svg { flex-shrink: 0; }
 `;
 
+const TriggerLabel = styled.span`
+  font-size: 11px;
+  color: ${colors.mutedForeground};
+  font-weight: 400;
+`;
+
 const ActiveIcon = styled.span`
   display: flex;
   align-items: center;
@@ -60,17 +66,17 @@ const ChevronIcon = styled(ChevronDown)<{ $open: boolean }>`
 const Dropdown = styled.div`
   position: absolute;
   top: calc(100% + 4px);
-  left: 0;
+  right: 0;
   z-index: 50;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(8, 1fr);
   gap: 4px;
   padding: 8px;
   background: var(--app-card);
   border: 1px solid ${colors.border};
   border-radius: ${radius.lg};
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  min-width: 240px;
+  white-space: nowrap;
 `;
 
 const TypeButton = styled.button<{ $active: boolean }>`
@@ -153,6 +159,7 @@ export function ChartTypeLibrary({ activeType, onTypeSelect }: ChartTypeLibraryP
   return (
     <Wrapper ref={wrapperRef}>
       <TriggerButton onClick={() => setOpen((v) => !v)}>
+        <TriggerLabel>Chart Type:</TriggerLabel>
         <ActiveIcon>
           <active.Icon size={14} />
         </ActiveIcon>
