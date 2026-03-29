@@ -17,7 +17,8 @@ const Bar = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  min-height: 40px;
+  min-height: 36px;
+  width: 100%;
   padding: 6px ${Theme.usage.space.xSmall};
   background: rgb(var(--app-muted-rgb) / 0.3);
   border-radius: ${radius.sm};
