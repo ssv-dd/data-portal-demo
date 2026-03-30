@@ -178,6 +178,8 @@ export interface ChartBuilderField {
   dataType: 'number' | 'string' | 'date';
   description?: string;
   aggregation?: 'SUM' | 'COUNT' | 'AVG' | 'MIN' | 'MAX';
+  isDerived?: boolean;
+  expression?: string;
 }
 
 export type ChartType = 'column' | 'bar' | 'line' | 'area' | 'scatter' | 'donut' | 'kpi' | 'table';
