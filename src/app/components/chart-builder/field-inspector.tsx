@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { ChevronRight, Search } from 'lucide-react';
+import { ChevronRight, Search, Pencil, Trash2 } from 'lucide-react';
 import { colors, radius, Theme } from '@/styles/theme';
 import type { ChartBuilderField } from '@/types';
 import type { SourceFields } from '@/app/data/mock/chart-builder-data';
+import { DerivedFieldForm } from './derived-field-form';
 
 interface FieldInspectorProps {
   fields: SourceFields;
@@ -14,6 +15,9 @@ interface FieldInspectorProps {
   onDimensionToggle: (field: ChartBuilderField) => void;
   onDateFieldSelect: (field: ChartBuilderField | null) => void;
   onAggregationChange: (fieldId: string, agg: ChartBuilderField['aggregation']) => void;
+  onAddDerivedField: (field: ChartBuilderField) => void;
+  onEditDerivedField: (field: ChartBuilderField) => void;
+  onDeleteDerivedField: (fieldId: string) => void;
 }
 
 const Container = styled.div`
@@ -111,6 +115,33 @@ const FieldList = styled.div`
   padding: 4px 0 8px;
 `;
 
+const HoverActions = styled.div`
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  flex-shrink: 0;
+`;
+
+const ActionIcon = styled.button<{ $hoverColor?: string }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: ${colors.mutedForeground};
+
+  &:hover {
+    background: rgb(var(--app-muted-rgb) / 0.5);
+    color: ${({ $hoverColor }) => $hoverColor ?? colors.foreground};
+  }
+`;
+
 const FieldRow = styled.div<{ $borderColor: string; $selected: boolean }>`
   display: flex;
   align-items: center;
@@ -126,6 +157,10 @@ const FieldRow = styled.div<{ $borderColor: string; $selected: boolean }>`
   &:hover {
     background: rgb(var(--app-muted-rgb) / 0.3);
     border-left-color: ${({ $borderColor }) => $borderColor};
+  }
+
+  &:hover ${HoverActions} {
+    opacity: 1;
   }
 `;
 
@@ -185,6 +220,39 @@ const AggSelect = styled.select`
   }
 `;
 
+const AddDerivedButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: calc(100% - 16px);
+  margin: 6px 8px;
+  padding: 6px 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: #FF3A00;
+  background: transparent;
+  border: 1px dashed #FF3A00;
+  border-radius: ${radius.sm};
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: rgb(255 58 0 / 0.08);
+  }
+`;
+
+const DerivedBadge = styled.span`
+  font-size: 9px;
+  font-weight: 600;
+  color: #FF3A00;
+  background: rgb(255 58 0 / 0.15);
+  padding: 0 5px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 16px;
+`;
+
 const AGG_OPTIONS: ChartBuilderField['aggregation'][] = ['SUM', 'COUNT', 'AVG', 'MIN', 'MAX'];
 
 const MEASURE_COLOR = '#4ade80';
@@ -200,23 +268,59 @@ export function FieldInspector({
   onDimensionToggle,
   onDateFieldSelect,
   onAggregationChange,
+  onAddDerivedField,
+  onEditDerivedField,
+  onDeleteDerivedField,
 }: FieldInspectorProps) {
   const [search, setSearch] = useState('');
   const [measuresOpen, setMeasuresOpen] = useState(true);
   const [dimensionsOpen, setDimensionsOpen] = useState(true);
   const [datesOpen, setDatesOpen] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingField, setEditingField] = useState<ChartBuilderField | null>(null);
 
   const q = search.toLowerCase();
 
   const filteredMeasures = fields.measures.filter(
-    (f) => !q || f.name.toLowerCase().includes(q) || (f.description ?? '').toLowerCase().includes(q)
+    (f) => !q || f.name.toLowerCase().includes(q) || (f.description ?? '').toLowerCase().includes(q) || (f.expression ?? '').toLowerCase().includes(q)
   );
   const filteredDimensions = fields.dimensions.filter(
-    (f) => !q || f.name.toLowerCase().includes(q) || (f.description ?? '').toLowerCase().includes(q)
+    (f) => !q || f.name.toLowerCase().includes(q) || (f.description ?? '').toLowerCase().includes(q) || (f.expression ?? '').toLowerCase().includes(q)
   );
   const filteredDates = fields.dateFields.filter(
     (f) => !q || f.name.toLowerCase().includes(q) || (f.description ?? '').toLowerCase().includes(q)
   );
+
+  const existingFieldNames = [
+    ...fields.measures.map((f) => f.name),
+    ...fields.dimensions.map((f) => f.name),
+    ...fields.dateFields.map((f) => f.name),
+  ];
+
+  const handleOpenAdd = () => {
+    setEditingField(null);
+    setFormOpen(true);
+  };
+
+  const handleOpenEdit = (field: ChartBuilderField) => {
+    setEditingField(field);
+    setFormOpen(true);
+  };
+
+  const handleFormSubmit = (field: ChartBuilderField) => {
+    if (editingField) {
+      onEditDerivedField(field);
+    } else {
+      onAddDerivedField(field);
+    }
+    setFormOpen(false);
+    setEditingField(null);
+  };
+
+  const handleFormCancel = () => {
+    setFormOpen(false);
+    setEditingField(null);
+  };
 
   const isMeasureSelected = (id: string) => selectedMeasures.some((m) => m.id === id);
   const isDimensionSelected = (id: string) => selectedDimensions.some((d) => d.id === id);
@@ -236,6 +340,19 @@ export function FieldInspector({
           onChange={(e) => setSearch(e.target.value)}
         />
       </SearchWrapper>
+
+      {formOpen ? (
+        <DerivedFieldForm
+          editingField={editingField ?? undefined}
+          existingFieldNames={existingFieldNames}
+          onSubmit={handleFormSubmit}
+          onCancel={handleFormCancel}
+        />
+      ) : (
+        <AddDerivedButton onClick={handleOpenAdd}>
+          + Add Derived Field
+        </AddDerivedButton>
+      )}
 
       {/* Measures */}
       <Section>
@@ -263,7 +380,11 @@ export function FieldInspector({
                   />
                   <FieldInfo>
                     <FieldName>{field.name}</FieldName>
-                    {field.description && <FieldDesc>{field.description}</FieldDesc>}
+                    {field.isDerived && <DerivedBadge>derived</DerivedBadge>}
+                    {field.description && !field.isDerived && <FieldDesc>{field.description}</FieldDesc>}
+                    {field.isDerived && field.expression && (
+                      <FieldDesc>{field.expression}</FieldDesc>
+                    )}
                   </FieldInfo>
                   {selected && (
                     <AggSelect
@@ -278,6 +399,23 @@ export function FieldInspector({
                         <option key={agg} value={agg}>{agg}</option>
                       ))}
                     </AggSelect>
+                  )}
+                  {field.isDerived && (
+                    <HoverActions>
+                      <ActionIcon
+                        onClick={(e) => { e.stopPropagation(); handleOpenEdit(field); }}
+                        title="Edit derived field"
+                      >
+                        <Pencil style={{ width: 12, height: 12 }} />
+                      </ActionIcon>
+                      <ActionIcon
+                        $hoverColor="#ef4444"
+                        onClick={(e) => { e.stopPropagation(); onDeleteDerivedField(field.id); }}
+                        title="Delete derived field"
+                      >
+                        <Trash2 style={{ width: 12, height: 12 }} />
+                      </ActionIcon>
+                    </HoverActions>
                   )}
                 </FieldRow>
               );
@@ -315,8 +453,29 @@ export function FieldInspector({
                   />
                   <FieldInfo>
                     <FieldName>{field.name}</FieldName>
-                    {field.description && <FieldDesc>{field.description}</FieldDesc>}
+                    {field.isDerived && <DerivedBadge>derived</DerivedBadge>}
+                    {field.description && !field.isDerived && <FieldDesc>{field.description}</FieldDesc>}
+                    {field.isDerived && field.expression && (
+                      <FieldDesc>{field.expression}</FieldDesc>
+                    )}
                   </FieldInfo>
+                  {field.isDerived && (
+                    <HoverActions>
+                      <ActionIcon
+                        onClick={(e) => { e.stopPropagation(); handleOpenEdit(field); }}
+                        title="Edit derived field"
+                      >
+                        <Pencil style={{ width: 12, height: 12 }} />
+                      </ActionIcon>
+                      <ActionIcon
+                        $hoverColor="#ef4444"
+                        onClick={(e) => { e.stopPropagation(); onDeleteDerivedField(field.id); }}
+                        title="Delete derived field"
+                      >
+                        <Trash2 style={{ width: 12, height: 12 }} />
+                      </ActionIcon>
+                    </HoverActions>
+                  )}
                 </FieldRow>
               );
             })}

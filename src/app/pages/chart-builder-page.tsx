@@ -18,6 +18,7 @@ import {
   generateMockChartData,
   generateMockKpiData,
   type SourceItem,
+  type SourceFields,
 } from '@/app/data/mock/chart-builder-data';
 import { canvasStorage } from '@/app/data/canvas-storage';
 import type { ChartBuilderField, ChartType, WidgetConfig } from '@/types';
@@ -328,6 +329,15 @@ export function ChartBuilderPage() {
   );
   const [pinDialogOpen, setPinDialogOpen] = useState(false);
   const [sourceInfoOpen, setSourceInfoOpen] = useState(false);
+  const [derivedFields, setDerivedFields] = useState<ChartBuilderField[]>(() => {
+    if (editingWidget?.query) {
+      return [
+        ...(editingWidget.query.measures ?? []),
+        ...(editingWidget.query.dimensions ?? []),
+      ].filter((f) => f.isDerived);
+    }
+    return [];
+  });
 
   // Generate mock data
   const mockData = useMemo(
@@ -349,6 +359,7 @@ export function ChartBuilderPage() {
     setSelectedMeasures([]);
     setSelectedDimensions([]);
     setSelectedDateField(null);
+    setDerivedFields([]);
     setChartType(source.type === 'metrics' ? 'kpi' : 'column');
     setSourceInfoOpen(false);
   }, []);
@@ -359,6 +370,7 @@ export function ChartBuilderPage() {
     setSelectedMeasures([]);
     setSelectedDimensions([]);
     setSelectedDateField(null);
+    setDerivedFields([]);
     setSourceInfoOpen(false);
   }, []);
 
@@ -367,6 +379,7 @@ export function ChartBuilderPage() {
     setSelectedMeasures([]);
     setSelectedDimensions([]);
     setSelectedDateField(null);
+    setDerivedFields([]);
     setSourceInfoOpen(false);
   }, []);
 
@@ -398,6 +411,34 @@ export function ChartBuilderPage() {
     },
     [],
   );
+
+  const handleAddDerivedField = useCallback((field: ChartBuilderField) => {
+    setDerivedFields((prev) => [...prev, field]);
+  }, []);
+
+  const handleEditDerivedField = useCallback((updated: ChartBuilderField) => {
+    setDerivedFields((prev) =>
+      prev.map((f) => (f.id === updated.id ? updated : f))
+    );
+    setSelectedMeasures((prev) => {
+      const idx = prev.findIndex((m) => m.id === updated.id);
+      if (idx === -1) return prev;
+      if (updated.role !== 'measure') return prev.filter((m) => m.id !== updated.id);
+      return prev.map((m) => (m.id === updated.id ? updated : m));
+    });
+    setSelectedDimensions((prev) => {
+      const idx = prev.findIndex((d) => d.id === updated.id);
+      if (idx === -1) return prev;
+      if (updated.role !== 'dimension') return prev.filter((d) => d.id !== updated.id);
+      return prev.map((d) => (d.id === updated.id ? updated : d));
+    });
+  }, []);
+
+  const handleDeleteDerivedField = useCallback((fieldId: string) => {
+    setDerivedFields((prev) => prev.filter((f) => f.id !== fieldId));
+    setSelectedMeasures((prev) => prev.filter((m) => m.id !== fieldId));
+    setSelectedDimensions((prev) => prev.filter((d) => d.id !== fieldId));
+  }, []);
 
   // When editing, save updates the existing widget. When new, creates + adds layout.
   const handleSaveOrPin = useCallback(
@@ -448,7 +489,21 @@ export function ChartBuilderPage() {
     }
   }, [dashboardId, navigate]);
 
-  const fields = selectedSource ? SOURCE_FIELDS[selectedSource.id] : null;
+  const sourceFields = selectedSource ? SOURCE_FIELDS[selectedSource.id] : null;
+
+  const fields: SourceFields | null = sourceFields
+    ? {
+        measures: [
+          ...sourceFields.measures,
+          ...derivedFields.filter((f) => f.role === 'measure'),
+        ],
+        dimensions: [
+          ...sourceFields.dimensions,
+          ...derivedFields.filter((f) => f.role === 'dimension'),
+        ],
+        dateFields: sourceFields.dateFields,
+      }
+    : null;
   const hasMeasures = selectedMeasures.length > 0;
 
   return (
@@ -497,6 +552,9 @@ export function ChartBuilderPage() {
                     onDimensionToggle={handleDimensionToggle}
                     onDateFieldSelect={handleDateFieldSelect}
                     onAggregationChange={handleAggregationChange}
+                    onAddDerivedField={handleAddDerivedField}
+                    onEditDerivedField={handleEditDerivedField}
+                    onDeleteDerivedField={handleDeleteDerivedField}
                   />
                 </FieldInspectorWrapper>
               )}
