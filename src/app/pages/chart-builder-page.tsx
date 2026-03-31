@@ -381,22 +381,35 @@ export function ChartBuilderPage() {
 
   const handleTabChange = useCallback((tab: SourceTab) => {
     setActiveTab(tab);
-    setSelectedSource(null);
-    setSelectedMeasures([]);
-    setSelectedDimensions([]);
-    setSelectedDateField(null);
-    setDerivedFields([]);
+    // When switching back to AI tab, restore the AI source and fields
+    if (tab === 'ai' && aiSourceData) {
+      setSelectedSource(aiSourceData.source);
+      setSelectedMeasures(aiSourceData.fields.measures);
+      setSelectedDimensions(aiSourceData.fields.dimensions.slice(0, 1));
+      setSelectedDateField(aiSourceData.fields.dateFields[0] ?? null);
+      setDerivedFields([]);
+    } else if (tab !== 'ai') {
+      setSelectedSource(null);
+      setSelectedMeasures([]);
+      setSelectedDimensions([]);
+      setSelectedDateField(null);
+      setDerivedFields([]);
+    }
     setSourceInfoOpen(false);
-  }, []);
+  }, [aiSourceData]);
 
   const handleChangeSource = useCallback(() => {
+    // When on AI tab, switch to SQL tab to pick a real source
+    if (activeTab === 'ai') {
+      setActiveTab('sql');
+    }
     setSelectedSource(null);
     setSelectedMeasures([]);
     setSelectedDimensions([]);
     setSelectedDateField(null);
     setDerivedFields([]);
     setSourceInfoOpen(false);
-  }, []);
+  }, [activeTab]);
 
   const handleMeasureToggle = useCallback((field: ChartBuilderField) => {
     setSelectedMeasures((prev) => {
@@ -459,10 +472,12 @@ export function ChartBuilderPage() {
   const handleSaveOrPin = useCallback(
     (canvasId: string) => {
       const isEditing = !!editingWidget;
-      if (!selectedSource) return;
+      const effectiveSource = selectedSource ?? (aiSourceData ? aiSourceData.source : null);
+      if (!effectiveSource) return;
       const widgetId = isEditing ? editingWidget.id : canvasStorage.generateId();
-      const sourceName = selectedSource?.name ?? 'Chart';
+      const sourceName = effectiveSource.name ?? 'Chart';
       const typeName = chartType.charAt(0).toUpperCase() + chartType.slice(1);
+      const effectiveSourceType = effectiveSource.type === 'ai' ? 'ai' as const : activeTab;
 
       const widget: WidgetConfig = {
         id: widgetId,
@@ -472,8 +487,8 @@ export function ChartBuilderPage() {
         data: chartType === 'kpi' ? undefined : mockData,
         ...(chartType === 'kpi' ? kpiData : {}),
         query: {
-          sourceId: selectedSource!.id,
-          sourceType: activeTab,
+          sourceId: effectiveSource.id,
+          sourceType: effectiveSourceType,
           measures: selectedMeasures,
           dimensions: selectedDimensions,
           dateField: selectedDateField ?? undefined,
@@ -494,7 +509,7 @@ export function ChartBuilderPage() {
       setPinDialogOpen(false);
       navigate(`/dashboard/${canvasId}?highlight=${widgetId}`);
     },
-    [editingWidget, chartTitle, selectedSource, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
+    [editingWidget, chartTitle, selectedSource, aiSourceData, chartType, selectedMeasures, selectedDimensions, selectedDateField, mockData, kpiData, activeTab, navigate],
   );
 
   const handleBack = useCallback(() => {
