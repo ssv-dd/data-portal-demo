@@ -42,7 +42,7 @@ const ALL_TABS: { key: SourceTab; label: string; Icon: React.ElementType }[] = [
   { key: 'sql', label: 'SQL', Icon: Zap },
   { key: 'semantic', label: 'Semantic', Icon: Layers },
   { key: 'metrics', label: 'Metrics', Icon: BarChart3 },
-  { key: 'ai', label: 'AI Generated', Icon: Sparkles },
+  { key: 'ai', label: 'AI', Icon: Sparkles },
 ];
 
 export function SourceTabBar({ activeTab, onTabChange, showAiTab = false }: SourceTabBarProps) {
