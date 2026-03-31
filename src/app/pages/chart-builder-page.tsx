@@ -301,7 +301,6 @@ export function ChartBuilderPage() {
   const initialSourceId = searchParams.get('source');
   const dashboardId = searchParams.get('dashboard');
   const editingWidgetId = searchParams.get('widget');
-
   // Load widget being edited (if any)
   const editingWidget = useMemo(
     () => loadEditingWidget(dashboardId, editingWidgetId),
@@ -444,6 +443,7 @@ export function ChartBuilderPage() {
   const handleSaveOrPin = useCallback(
     (canvasId: string) => {
       const isEditing = !!editingWidget;
+      if (!selectedSource) return;
       const widgetId = isEditing ? editingWidget.id : canvasStorage.generateId();
       const sourceName = selectedSource?.name ?? 'Chart';
       const typeName = chartType.charAt(0).toUpperCase() + chartType.slice(1);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { Sparkles, ArrowRight, CheckCircle2, MessageCircle, Loader2, RotateCcw, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,15 +18,55 @@ interface ThoughtStep {
   status: 'processing' | 'complete';
 }
 
-interface AIQuestion {
+interface ChatMessage {
   id: string;
-  question: string;
-  options?: string[];
-  answered?: boolean;
-  answer?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  widgetPreview?: AIWidgetConfig | null;
+  thoughts?: ThoughtStep[];
+  question?: {
+    text: string;
+    options: string[];
+    answered?: boolean;
+    answer?: string;
+  };
 }
 
-type SidebarMode = 'input' | 'processing';
+const SUGGESTED_PROMPTS = [
+  'Show me revenue growth over time',
+  'Track customer satisfaction scores',
+  'Display delivery efficiency metrics',
+  'Monitor conversion rate trends',
+];
+
+function classifyIntent(input: string): 'direct' | 'guided' {
+  const lower = input.toLowerCase();
+  const metricKeywords = ['revenue', 'orders', 'delivery', 'conversion', 'growth', 'kpi', 'aov', 'gov'];
+  const chartKeywords = ['show', 'chart', 'graph', 'plot', 'visualize', 'trend', 'compare', 'breakdown'];
+  const hasMetric = metricKeywords.some(k => lower.includes(k));
+  const hasChart = chartKeywords.some(k => lower.includes(k));
+  if (hasMetric && hasChart) return 'direct';
+  return 'guided';
+}
+
+function generateDirectConfig(input: string): AIWidgetConfig {
+  const lower = input.toLowerCase();
+  if (lower.includes('orders')) return { title: 'Daily Orders', description: 'Order volume over time', category: 'operational', chartType: 'bar', metricId: 'daily-orders-ai' };
+  if (lower.includes('delivery')) return { title: 'Avg Delivery Time', description: 'Mean delivery duration trend', category: 'operational', chartType: 'line', metricId: 'delivery-time-ai' };
+  if (lower.includes('conversion')) return { title: 'Conversion Rate', description: 'Conversion rate trend', category: 'financial', chartType: 'area', metricId: 'conversion-rate-ai' };
+  if (lower.includes('kpi')) return { title: 'Revenue KPI', description: 'Key revenue indicator', category: 'financial', chartType: 'line', metricId: 'revenue-kpi-ai' };
+  return { title: 'Revenue Growth Rate', description: 'Month-over-month revenue growth', category: 'financial', chartType: 'line', metricId: 'revenue-growth-ai' };
+}
+
+const FOLLOW_UP_SUGGESTIONS: Record<string, string[]> = {
+  financial: ['Add a KPI card for this metric', 'Break down by region'],
+  operational: ['Compare week-over-week', 'Add a KPI summary'],
+  'customer-support': ['Show trend over time', 'Add satisfaction KPI'],
+  default: ['Add another chart', 'Add a KPI card'],
+};
+
+/* ─── Styled Components ─── */
 
 const Container = styled.div`
   display: flex;
@@ -136,36 +176,6 @@ const SendButton = styled.button<{ $active: boolean }>`
   }
 `;
 
-const SuggestionChips = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: ${Theme.usage.space.xxSmall};
-`;
-
-const SuggestionLabel = styled.p`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.mutedForeground};
-  font-weight: 500;
-`;
-
-const SuggestionPill = styled.button`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
-  border-radius: ${Theme.usage.borderRadius.full};
-  background: rgb(var(--app-surface-rgb) / 0.5);
-  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
-  cursor: pointer;
-  text-align: left;
-  color: ${colors.foreground};
-  transition: all 150ms;
-  line-height: 1.3;
-
-  &:hover {
-    border-color: rgb(var(--app-primary-rgb) / 0.3);
-    background: rgb(var(--app-primary-rgb) / 0.04);
-  }
-`;
-
 const ThoughtStream = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -182,16 +192,6 @@ const ThoughtStream = styled.div`
     background: rgb(var(--app-overlay-rgb) / 0.12);
     border-radius: 2px;
   }
-`;
-
-const QueryBadge = styled.div`
-  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
-  background: rgb(var(--app-primary-rgb) / 0.05);
-  border: 1px solid rgb(var(--app-primary-rgb) / 0.12);
-  border-radius: ${radius.md};
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.foreground};
-  line-height: 1.4;
 `;
 
 const ThoughtRow = styled(motion.div)`
@@ -323,158 +323,560 @@ const FinalBadges = styled.div`
   margin-top: ${Theme.usage.space.xxSmall};
 `;
 
-const ActionRow = styled.div`
+/* ─── New Chat-Mode Styled Components ─── */
+
+const WelcomeArea = styled.div`
+  flex: 1;
   display: flex;
-  gap: ${Theme.usage.space.xxSmall};
-  padding-top: ${Theme.usage.space.xSmall};
-  border-top: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${Theme.usage.space.xSmall};
+  text-align: center;
+  padding: ${Theme.usage.space.small};
 `;
 
+const WelcomeIconBox = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: ${radius.lg};
+  background: linear-gradient(to bottom right, rgb(var(--app-purple-rgb) / 0.15), rgb(var(--app-fuchsia-rgb) / 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const WelcomeTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.small};
+  font-weight: 600;
+  color: ${colors.foreground};
+  margin: 0;
+`;
+
+const WelcomeDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  line-height: 1.5;
+  max-width: 240px;
+`;
+
+const PromptChipGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-top: ${Theme.usage.space.xxSmall};
+`;
+
+const PromptChip = styled.button`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  padding: ${Theme.usage.space.xxSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.full};
+  background: rgb(var(--app-surface-rgb) / 0.5);
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.06);
+  cursor: pointer;
+  text-align: left;
+  color: ${colors.foreground};
+  transition: all 150ms;
+  line-height: 1.3;
+
+  &:hover {
+    border-color: rgb(var(--app-violet-rgb) / 0.2);
+    background: rgb(var(--app-violet-rgb) / 0.04);
+  }
+`;
+
+const InputDock = styled.div`
+  flex-shrink: 0;
+  padding-top: ${Theme.usage.space.xxSmall};
+`;
+
+const UserBubble = styled.div`
+  background: rgb(var(--app-violet-rgb) / 0.06);
+  border-radius: ${radius['2xl'] ?? '16px'};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  max-width: 85%;
+  margin-left: auto;
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.foreground};
+  line-height: 1.4;
+`;
+
+const NewChatButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  color: ${colors.mutedForeground};
+  padding: 2px 6px;
+  border-radius: ${radius.sm};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+
+  &:hover {
+    color: ${colors.foreground};
+    background: rgb(var(--app-overlay-rgb) / 0.06);
+  }
+`;
+
+const SuggestionChip = styled.button`
+  padding: 4px 10px;
+  border-radius: ${radius.md};
+  border: 1px solid rgb(var(--app-overlay-rgb) / 0.08);
+  background: rgb(var(--app-surface-rgb) / 0.5);
+  color: ${colors.mutedForeground};
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 150ms;
+
+  &:hover {
+    border-color: rgb(var(--app-violet-rgb) / 0.15);
+    color: ${colors.foreground};
+  }
+`;
+
+const SuggestionRow = styled.div`
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: ${Theme.usage.space.xxSmall};
+`;
+
+const SuccessText = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.green600};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.4;
+`;
+
+/* ─── Component ─── */
+
 export function AIWidgetSidebar({ onAIComplete }: AIWidgetSidebarProps) {
-  const [mode, setMode] = useState<SidebarMode>('input');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [userInput, setUserInput] = useState('');
-  const [thoughtSteps, setThoughtSteps] = useState<ThoughtStep[]>([]);
-  const [questions, setQuestions] = useState<AIQuestion[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [finalConfig, setFinalConfig] = useState<AIWidgetConfig | null>(null);
-  const thoughtsEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    thoughtsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [thoughtSteps, questions, finalConfig]);
-
-  const resetState = () => {
-    setMode('input');
+  const handleNewChat = useCallback(() => {
+    setMessages([]);
     setUserInput('');
-    setThoughtSteps([]);
-    setQuestions([]);
     setIsProcessing(false);
-    setFinalConfig(null);
-  };
+  }, []);
 
-  const simulateAIProcessing = async () => {
+  const handleAddWidget = useCallback((config: AIWidgetConfig) => {
+    onAIComplete(config);
+    const category = config.category || 'default';
+    const suggestions = FOLLOW_UP_SUGGESTIONS[category] || FOLLOW_UP_SUGGESTIONS.default;
+    setMessages((prev) => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: `Added "${config.title}" to your dashboard.`,
+      timestamp: Date.now(),
+    }, {
+      id: crypto.randomUUID(),
+      role: 'assistant',
+      content: '_suggestions_',
+      timestamp: Date.now(),
+      question: { text: '', options: suggestions, answered: false },
+    }]);
+  }, [onAIComplete]);
+
+  const runDirectFlow = useCallback(async (input: string) => {
     setIsProcessing(true);
-    setMode('processing');
+    const thinkingId = crypto.randomUUID();
 
-    const input = userInput.toLowerCase();
-    const isDeliveryRelated = input.includes('delivery') || input.includes('dasher') || input.includes('efficiency');
-    const isCustomerRelated = input.includes('customer') || input.includes('satisfaction') || input.includes('support');
+    setMessages((prev) => [...prev, {
+      id: thinkingId,
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      thoughts: [{ id: '1', text: 'Analyzing your request...', status: 'processing' }],
+    }]);
 
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setThoughtSteps(prev => [...prev, { id: '1', text: 'Analyzing your request and identifying the metric type...', status: 'processing' }]);
+    await new Promise(r => setTimeout(r, 800));
+    setMessages((prev) => prev.map((m) => m.id === thinkingId ? {
+      ...m,
+      thoughts: [
+        { id: '1', text: 'Analyzing your request...', status: 'complete' },
+        { id: '2', text: 'Searching available metrics and data sources...', status: 'processing' },
+      ],
+    } : m));
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setThoughtSteps(prev => prev.map(step => step.id === '1' ? { ...step, status: 'complete' } : step));
+    await new Promise(r => setTimeout(r, 1200));
+    setMessages((prev) => prev.map((m) => m.id === thinkingId ? {
+      ...m,
+      thoughts: [
+        { id: '1', text: 'Analyzing your request...', status: 'complete' },
+        { id: '2', text: 'Searching available metrics and data sources...', status: 'complete' },
+        { id: '3', text: 'Generating widget configuration...', status: 'processing' },
+      ],
+    } : m));
 
-    await new Promise(resolve => setTimeout(resolve, 600));
-    setThoughtSteps(prev => [...prev, { id: '2', text: 'Searching available metrics and data sources...', status: 'processing' }]);
+    await new Promise(r => setTimeout(r, 1000));
+    const config = generateDirectConfig(input);
 
-    await new Promise(resolve => setTimeout(resolve, 1400));
-    setThoughtSteps(prev => prev.map(step => step.id === '2' ? { ...step, status: 'complete' } : step));
+    setMessages((prev) => prev.map((m) => m.id === thinkingId ? {
+      ...m,
+      content: `Here's a ${config.chartType} chart for "${config.title}":`,
+      thoughts: m.thoughts?.map((t) => ({ ...t, status: 'complete' as const })),
+      widgetPreview: config,
+    } : m));
 
-    await new Promise(resolve => setTimeout(resolve, 600));
-    setThoughtSteps(prev => [...prev, { id: '3', text: 'Found multiple relevant metrics. Asking for clarification...', status: 'complete' }]);
+    setIsProcessing(false);
+  }, []);
 
-    await new Promise(resolve => setTimeout(resolve, 400));
+  const runGuidedFlow = useCallback(async (input: string) => {
+    setIsProcessing(true);
+    const thinkingId = crypto.randomUUID();
 
-    let question: AIQuestion;
-    if (isDeliveryRelated) {
-      question = { id: 'q1', question: 'I found several delivery-related metrics. Which aspect would you like to track?', options: ['Average Delivery Time (speed focus)', 'Dasher Efficiency Score (performance)', 'Order Accuracy Rate (quality)'], answered: false };
-    } else if (isCustomerRelated) {
-      question = { id: 'q1', question: 'I found several customer-related metrics. Which one interests you most?', options: ['Customer Satisfaction Score (CSAT)', 'Average Resolution Time (support speed)', 'Customer Service Call Rate'], answered: false };
+    setMessages((prev) => [...prev, {
+      id: thinkingId,
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      thoughts: [{ id: '1', text: 'Analyzing your request...', status: 'processing' }],
+    }]);
+
+    await new Promise(r => setTimeout(r, 800));
+    setMessages((prev) => prev.map((m) => m.id === thinkingId ? {
+      ...m,
+      thoughts: [
+        { id: '1', text: 'Analyzing your request...', status: 'complete' },
+        { id: '2', text: 'Found multiple relevant metrics. Asking for clarification...', status: 'complete' },
+      ],
+    } : m));
+
+    await new Promise(r => setTimeout(r, 600));
+
+    const lower = input.toLowerCase();
+    const isDelivery = lower.includes('delivery') || lower.includes('dasher') || lower.includes('efficiency');
+    const isCustomer = lower.includes('customer') || lower.includes('satisfaction') || lower.includes('support');
+
+    let options: string[];
+    if (isDelivery) {
+      options = ['Average Delivery Time (speed focus)', 'Dasher Efficiency Score (performance)', 'Order Accuracy Rate (quality)'];
+    } else if (isCustomer) {
+      options = ['Customer Satisfaction Score (CSAT)', 'Average Resolution Time (support speed)', 'Customer Service Call Rate'];
     } else {
-      question = { id: 'q1', question: 'I found several revenue-related metrics. Which one would you like to track?', options: ['Revenue Growth Rate (month-over-month)', 'Gross Order Revenue (total revenue)', 'Average Order Value (per transaction)'], answered: false };
+      options = ['Revenue Growth Rate (month-over-month)', 'Gross Order Revenue (total revenue)', 'Average Order Value (per transaction)'];
     }
 
-    setQuestions([question]);
-    setIsProcessing(false);
-  };
-
-  const handleQuestionAnswer = async (questionId: string, answer: string) => {
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, answered: true, answer } : q));
-    setIsProcessing(true);
-
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setThoughtSteps(prev => [...prev, { id: '4', text: 'Determining the best visualization type...', status: 'processing' }]);
-
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    setThoughtSteps(prev => prev.map(step => step.id === '4' ? { ...step, status: 'complete' } : step));
-
-    await new Promise(resolve => setTimeout(resolve, 600));
-    setThoughtSteps(prev => [...prev, { id: '5', text: 'Considering optimal chart type...', status: 'complete' }]);
-
-    await new Promise(resolve => setTimeout(resolve, 400));
-    setQuestions(prev => [...prev, { id: 'q2', question: 'Which chart type would you prefer?', options: ['Line chart — trends over time', 'Bar chart — comparisons', 'Area chart — magnitude & volume'], answered: false }]);
+    setMessages((prev) => prev.map((m) => m.id === thinkingId ? {
+      ...m,
+      content: 'I found several related metrics.',
+      thoughts: m.thoughts?.map((t) => ({ ...t, status: 'complete' as const })),
+      question: { text: 'Which metric would you like to track?', options, answered: false },
+    } : m));
 
     setIsProcessing(false);
-  };
+  }, []);
 
-  const handleSecondQuestionAnswer = async (questionId: string, answer: string) => {
-    setQuestions(prev => prev.map(q => q.id === questionId ? { ...q, answered: true, answer } : q));
-    setIsProcessing(true);
+  const handleQuestionAnswer = useCallback(async (messageId: string, answer: string) => {
+    // Mark question as answered
+    setMessages((prev) => prev.map((m) => m.id === messageId && m.question ? {
+      ...m,
+      question: { ...m.question, answered: true, answer },
+    } : m));
 
-    await new Promise(resolve => setTimeout(resolve, 800));
-    setThoughtSteps(prev => [...prev, { id: '6', text: 'Configuring widget with your preferences...', status: 'processing' }]);
+    // Add user answer as a message
+    setMessages((prev) => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: answer,
+      timestamp: Date.now(),
+    }]);
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setThoughtSteps(prev => prev.map(step => step.id === '6' ? { ...step, status: 'complete' } : step));
+    // Check if this is a chart type question
+    const msg = messages.find((m) => m.id === messageId);
+    const isChartTypeQuestion = msg?.question?.options?.some((o) => o.includes('chart'));
 
-    await new Promise(resolve => setTimeout(resolve, 400));
-    setThoughtSteps(prev => [...prev, { id: '7', text: 'Widget ready!', status: 'complete' }]);
+    if (isChartTypeQuestion) {
+      // Generate widget from both answers
+      setIsProcessing(true);
+      const resultId = crypto.randomUUID();
+      setMessages((prev) => [...prev, {
+        id: resultId,
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+        thoughts: [{ id: '1', text: 'Configuring widget...', status: 'processing' }],
+      }]);
 
-    const firstQuestion = questions[0];
-    const firstAnswer = firstQuestion?.answer || '';
+      await new Promise(r => setTimeout(r, 1000));
 
-    let chartType: 'line' | 'area' | 'bar' = 'line';
-    if (answer.includes('Line')) chartType = 'line';
-    else if (answer.includes('Bar')) chartType = 'bar';
-    else if (answer.includes('Area')) chartType = 'area';
+      let chartType: 'line' | 'area' | 'bar' = 'line';
+      if (answer.includes('Bar')) chartType = 'bar';
+      else if (answer.includes('Area')) chartType = 'area';
 
-    let config: AIWidgetConfig;
+      const metricMsg = messages.find((m) => m.question?.answered && !m.question.options?.some((o) => o.includes('chart')));
+      const metricAnswer = metricMsg?.question?.answer || '';
 
-    if (firstAnswer.includes('Revenue Growth')) {
-      config = { title: 'Revenue Growth Rate', description: 'Month-over-month revenue growth percentage', category: 'financial', chartType, metricId: 'revenue-growth-ai' };
-    } else if (firstAnswer.includes('Gross Order Revenue')) {
-      config = { title: 'Gross Order Revenue', description: 'Total revenue from all orders', category: 'financial', chartType, metricId: 'gross-revenue-ai' };
-    } else if (firstAnswer.includes('Average Order Value')) {
-      config = { title: 'Average Order Value', description: 'Mean revenue per order', category: 'financial', chartType, metricId: 'average-order-value-ai' };
-    } else if (firstAnswer.includes('Delivery Time')) {
-      config = { title: 'Average Delivery Time', description: 'Mean time from order to delivery', category: 'operational', chartType, metricId: 'delivery-time-ai' };
-    } else if (firstAnswer.includes('Dasher Efficiency')) {
-      config = { title: 'Dasher Efficiency Score', description: 'Delivery performance and efficiency rating', category: 'operational', chartType, metricId: 'dasher-efficiency-ai' };
-    } else if (firstAnswer.includes('Satisfaction')) {
-      config = { title: 'Customer Satisfaction Score', description: 'Overall customer satisfaction rating', category: 'customer-support', chartType, metricId: 'csat-score-ai' };
+      let config: AIWidgetConfig;
+      if (metricAnswer.includes('Revenue Growth')) config = { title: 'Revenue Growth Rate', description: 'Month-over-month revenue growth', category: 'financial', chartType, metricId: 'revenue-growth-ai' };
+      else if (metricAnswer.includes('Gross Order')) config = { title: 'Gross Order Revenue', description: 'Total revenue from all orders', category: 'financial', chartType, metricId: 'gross-revenue-ai' };
+      else if (metricAnswer.includes('Average Order')) config = { title: 'Average Order Value', description: 'Mean revenue per order', category: 'financial', chartType, metricId: 'aov-ai' };
+      else if (metricAnswer.includes('Delivery Time')) config = { title: 'Average Delivery Time', description: 'Mean time from order to delivery', category: 'operational', chartType, metricId: 'delivery-time-ai' };
+      else if (metricAnswer.includes('Dasher')) config = { title: 'Dasher Efficiency Score', description: 'Delivery performance rating', category: 'operational', chartType, metricId: 'dasher-efficiency-ai' };
+      else if (metricAnswer.includes('Satisfaction')) config = { title: 'Customer Satisfaction Score', description: 'Overall CSAT rating', category: 'customer-support', chartType, metricId: 'csat-ai' };
+      else config = { title: 'Revenue Growth Rate', description: 'Month-over-month revenue growth', category: 'financial', chartType, metricId: 'revenue-growth-ai' };
+
+      setMessages((prev) => prev.map((m) => m.id === resultId ? {
+        ...m,
+        content: `Here's a ${config.chartType} chart for "${config.title}":`,
+        thoughts: [{ id: '1', text: 'Configuring widget...', status: 'complete' }],
+        widgetPreview: config,
+      } : m));
+
+      setIsProcessing(false);
     } else {
-      config = { title: 'Revenue Growth Rate', description: 'Month-over-month revenue growth percentage', category: 'financial', chartType, metricId: 'revenue-growth-ai' };
+      // Ask chart type question
+      setIsProcessing(true);
+      await new Promise(r => setTimeout(r, 600));
+
+      setMessages((prev) => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Great choice!',
+        timestamp: Date.now(),
+        question: {
+          text: 'Which chart type would you prefer?',
+          options: ['Line chart — trends over time', 'Bar chart — comparisons', 'Area chart — magnitude & volume'],
+          answered: false,
+        },
+      }]);
+
+      setIsProcessing(false);
     }
+  }, [messages]);
 
-    setFinalConfig(config);
-    setIsProcessing(false);
-  };
+  const handleSubmit = useCallback(() => {
+    const trimmed = userInput.trim();
+    if (!trimmed || isProcessing) return;
 
-  const handleSubmit = () => {
-    if (!userInput.trim()) return;
-    simulateAIProcessing();
-  };
+    setMessages((prev) => [...prev, {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: trimmed,
+      timestamp: Date.now(),
+    }]);
+    setUserInput('');
 
-  const handleAddWidget = () => {
-    if (finalConfig) {
-      onAIComplete(finalConfig);
-      resetState();
+    const intent = classifyIntent(trimmed);
+    if (intent === 'direct') {
+      runDirectFlow(trimmed);
+    } else {
+      runGuidedFlow(trimmed);
     }
-  };
+  }, [userInput, isProcessing, runDirectFlow, runGuidedFlow]);
 
-  if (mode === 'input') {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    setUserInput(suggestion);
+    setTimeout(() => {
+      setMessages((prev) => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: suggestion,
+        timestamp: Date.now(),
+      }]);
+      const intent = classifyIntent(suggestion);
+      if (intent === 'direct') {
+        runDirectFlow(suggestion);
+      } else {
+        runGuidedFlow(suggestion);
+      }
+      setUserInput('');
+    }, 100);
+  }, [runDirectFlow, runGuidedFlow]);
+
+  /* ─── Welcome State ─── */
+  if (messages.length === 0) {
     return (
       <Container>
-        <Header>
-          <HeaderIcon><Sparkles /></HeaderIcon>
-          <HeaderTitle>AI Widget Creator</HeaderTitle>
-        </Header>
+        <WelcomeArea>
+          <WelcomeIconBox>
+            <Sparkles style={{ width: 22, height: 22, color: colors.violet600 }} />
+          </WelcomeIconBox>
+          <WelcomeTitle>AI-BI Assistant</WelcomeTitle>
+          <WelcomeDescription>
+            Describe the chart or metric you need and I'll build it for your dashboard.
+          </WelcomeDescription>
+          <PromptChipGrid>
+            {SUGGESTED_PROMPTS.map((prompt, idx) => (
+              <PromptChip key={idx} onClick={() => setUserInput(prompt)}>
+                {prompt}
+              </PromptChip>
+            ))}
+          </PromptChipGrid>
+        </WelcomeArea>
 
+        <InputDock>
+          <ChatInputWrapper>
+            <ChatTextarea
+              placeholder="Describe the widget you want to create..."
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
+            />
+            <ChatInputFooter>
+              <SendButton $active={!!userInput.trim()} onClick={handleSubmit}>
+                <ArrowUp />
+              </SendButton>
+            </ChatInputFooter>
+          </ChatInputWrapper>
+        </InputDock>
+      </Container>
+    );
+  }
+
+  /* ─── Chat State ─── */
+  return (
+    <Container>
+      <Header>
+        <HeaderIcon><Sparkles /></HeaderIcon>
+        <HeaderTitle>AI-BI Assistant</HeaderTitle>
+        <NewChatButton onClick={handleNewChat}>
+          <RotateCcw style={{ width: 12, height: 12 }} />
+          New Chat
+        </NewChatButton>
+      </Header>
+
+      <ThoughtStream style={{ padding: Theme.usage.space.small }}>
+        <AnimatePresence>
+          {messages.map((msg) => (
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {msg.role === 'user' && (
+                <UserBubble>{msg.content}</UserBubble>
+              )}
+
+              {msg.role === 'assistant' && (
+                <div>
+                  {msg.thoughts && msg.thoughts.map((step) => (
+                    <ThoughtRow key={step.id}>
+                      <ThoughtIcon>
+                        {step.status === 'processing' ? (
+                          <Loader2 style={{ height: 14, width: 14, color: colors.primary, animation: 'spin 1s linear infinite' }} />
+                        ) : (
+                          <CheckCircle2 style={{ height: 14, width: 14, color: colors.green600 }} />
+                        )}
+                      </ThoughtIcon>
+                      <ThoughtText>{step.text}</ThoughtText>
+                    </ThoughtRow>
+                  ))}
+
+                  {msg.content && msg.content !== '_suggestions_' && !msg.widgetPreview && !msg.question && (
+                    <SuccessText>
+                      <CheckCircle2 style={{ height: 14, width: 14 }} />
+                      {msg.content}
+                    </SuccessText>
+                  )}
+
+                  {msg.content && msg.widgetPreview && (
+                    <ThoughtText style={{ marginBottom: Theme.usage.space.xxSmall }}>{msg.content}</ThoughtText>
+                  )}
+
+                  {msg.widgetPreview && (
+                    <FinalCard>
+                      <FinalHeader>
+                        <FinalIconWrap>
+                          <CheckCircle2 style={{ height: 14, width: 14, color: colors.white }} />
+                        </FinalIconWrap>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 2 }}>
+                            <span style={{ fontSize: '13px', fontWeight: 600 }}>Widget Ready</span>
+                            <Sparkles style={{ height: 12, width: 12, color: colors.green600 }} />
+                          </div>
+                          <p style={{ fontSize: '11px', color: colors.mutedForeground, lineHeight: 1.4 }}>
+                            {msg.widgetPreview.description}
+                          </p>
+                          <FinalBadges>
+                            <Badge variant="secondary" style={{ fontSize: '10px' }}>{msg.widgetPreview.title}</Badge>
+                            <Badge variant="outline" style={{ fontSize: '10px' }}>{msg.widgetPreview.chartType} chart</Badge>
+                          </FinalBadges>
+                        </div>
+                      </FinalHeader>
+                      <div style={{ marginTop: Theme.usage.space.xSmall }}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddWidget(msg.widgetPreview!)}
+                          style={{ gap: '4px', fontSize: '12px', width: '100%' }}
+                        >
+                          <CheckCircle2 style={{ height: 12, width: 12 }} />
+                          Add to Dashboard
+                        </Button>
+                      </div>
+                    </FinalCard>
+                  )}
+
+                  {msg.question && msg.question.text && (
+                    <QuestionCard>
+                      <QuestionHeaderRow>
+                        <QuestionBubble>
+                          <MessageCircle style={{ height: 12, width: 12, color: colors.white }} />
+                        </QuestionBubble>
+                        <div style={{ flex: 1 }}>
+                          <QuestionLabel>AI Assistant</QuestionLabel>
+                          <QuestionText>{msg.question.text}</QuestionText>
+                        </div>
+                      </QuestionHeaderRow>
+
+                      {msg.question.answered ? (
+                        <AnswerBox>
+                          <CheckCircle2 style={{ height: 14, width: 14, color: colors.green600, flexShrink: 0, marginTop: 1 }} />
+                          <span style={{ fontSize: '12px' }}>{msg.question.answer}</span>
+                        </AnswerBox>
+                      ) : (
+                        <OptionsContainer>
+                          {msg.question.options.map((option, optIndex) => (
+                            <OptionButton
+                              key={optIndex}
+                              $disabled={isProcessing}
+                              disabled={isProcessing}
+                              onClick={() => handleQuestionAnswer(msg.id, option)}
+                            >
+                              <ArrowRight />
+                              <OptionText>{option}</OptionText>
+                            </OptionButton>
+                          ))}
+                        </OptionsContainer>
+                      )}
+                    </QuestionCard>
+                  )}
+
+                  {msg.content === '_suggestions_' && msg.question && !msg.question.answered && (
+                    <SuggestionRow>
+                      {msg.question.options.map((s, i) => (
+                        <SuggestionChip key={i} onClick={() => handleSuggestionClick(s)}>
+                          {s}
+                        </SuggestionChip>
+                      ))}
+                    </SuggestionRow>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        <div ref={messagesEndRef} />
+      </ThoughtStream>
+
+      <InputDock>
         <ChatInputWrapper>
           <ChatTextarea
-            placeholder="What widget would you like to create? Describe the metric or chart you need..."
+            placeholder="Ask for another chart or metric..."
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             onKeyDown={(e) => {
@@ -483,162 +885,15 @@ export function AIWidgetSidebar({ onAIComplete }: AIWidgetSidebarProps) {
                 handleSubmit();
               }
             }}
+            disabled={isProcessing}
           />
           <ChatInputFooter>
-            <SendButton $active={!!userInput.trim()} onClick={handleSubmit}>
+            <SendButton $active={!!userInput.trim() && !isProcessing} onClick={handleSubmit}>
               <ArrowUp />
             </SendButton>
           </ChatInputFooter>
         </ChatInputWrapper>
-
-        <SuggestionChips>
-          <SuggestionLabel>Try asking:</SuggestionLabel>
-          {[
-            'Show me revenue growth over time',
-            'Track customer satisfaction scores',
-            'Display delivery efficiency metrics',
-            'Monitor conversion rate trends',
-          ].map((example, idx) => (
-            <SuggestionPill key={idx} onClick={() => setUserInput(example)}>
-              {example}
-            </SuggestionPill>
-          ))}
-        </SuggestionChips>
-      </Container>
-    );
-  }
-
-  return (
-    <Container>
-      <Header>
-        <HeaderIcon><Sparkles /></HeaderIcon>
-        <HeaderTitle>AI Widget Creator</HeaderTitle>
-      </Header>
-
-      <ThoughtStream>
-        <QueryBadge>
-          <span style={{ color: colors.mutedForeground }}>Query:</span> {userInput}
-        </QueryBadge>
-
-        <AnimatePresence>
-          {thoughtSteps.map((step) => (
-            <ThoughtRow
-              key={step.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ThoughtIcon>
-                {step.status === 'processing' ? (
-                  <Loader2 style={{ height: 14, width: 14, color: colors.primary, animation: 'spin 1s linear infinite' }} />
-                ) : (
-                  <CheckCircle2 style={{ height: 14, width: 14, color: colors.green600 }} />
-                )}
-              </ThoughtIcon>
-              <ThoughtText>{step.text}</ThoughtText>
-            </ThoughtRow>
-          ))}
-
-          {questions.map((question) => (
-            <motion.div
-              key={question.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <QuestionCard>
-                <QuestionHeaderRow>
-                  <QuestionBubble>
-                    <MessageCircle style={{ height: 12, width: 12, color: colors.white }} />
-                  </QuestionBubble>
-                  <div style={{ flex: 1 }}>
-                    <QuestionLabel>AI Assistant</QuestionLabel>
-                    <QuestionText>{question.question}</QuestionText>
-                  </div>
-                </QuestionHeaderRow>
-
-                {question.answered ? (
-                  <AnswerBox>
-                    <CheckCircle2 style={{ height: 14, width: 14, color: colors.green600, flexShrink: 0, marginTop: 1 }} />
-                    <span style={{ fontSize: '12px' }}>{question.answer}</span>
-                  </AnswerBox>
-                ) : (
-                  <OptionsContainer>
-                    {question.options?.map((option, optIndex) => (
-                      <OptionButton
-                        key={optIndex}
-                        $disabled={isProcessing}
-                        disabled={isProcessing}
-                        onClick={() => {
-                          if (question.id === 'q1') handleQuestionAnswer(question.id, option);
-                          else handleSecondQuestionAnswer(question.id, option);
-                        }}
-                      >
-                        <ArrowRight />
-                        <OptionText>{option}</OptionText>
-                      </OptionButton>
-                    ))}
-                  </OptionsContainer>
-                )}
-              </QuestionCard>
-            </motion.div>
-          ))}
-
-          {finalConfig && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <FinalCard>
-                <FinalHeader>
-                  <FinalIconWrap>
-                    <CheckCircle2 style={{ height: 14, width: 14, color: colors.white }} />
-                  </FinalIconWrap>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: 2 }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>Widget Ready</span>
-                      <Sparkles style={{ height: 12, width: 12, color: colors.green600 }} />
-                    </div>
-                    <p style={{ fontSize: '11px', color: colors.mutedForeground, lineHeight: 1.4 }}>
-                      {finalConfig.description}
-                    </p>
-                    <FinalBadges>
-                      <Badge variant="secondary" style={{ fontSize: '10px' }}>{finalConfig.title}</Badge>
-                      <Badge variant="outline" style={{ fontSize: '10px' }}>{finalConfig.chartType} chart</Badge>
-                    </FinalBadges>
-                  </div>
-                </FinalHeader>
-              </FinalCard>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div ref={thoughtsEndRef} />
-      </ThoughtStream>
-
-      <ActionRow>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={resetState}
-          disabled={isProcessing}
-          style={{ gap: '4px', fontSize: '12px', flex: 1 }}
-        >
-          <RotateCcw style={{ height: 12, width: 12 }} />
-          Start Over
-        </Button>
-        {finalConfig && (
-          <Button
-            size="sm"
-            onClick={handleAddWidget}
-            style={{ gap: '4px', fontSize: '12px', flex: 1 }}
-          >
-            <CheckCircle2 style={{ height: 12, width: 12 }} />
-            Add Widget
-          </Button>
-        )}
-      </ActionRow>
+      </InputDock>
     </Container>
   );
 }

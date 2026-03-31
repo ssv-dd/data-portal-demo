@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
-import { Eye, Share2, Maximize2, Minimize2, Filter, Plus, X } from 'lucide-react';
+import { Eye, Share2, Maximize2, Minimize2, Filter, Plus, X, Pencil } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/app/components/ui/button';
 import { Theme } from '@doordash/prism-react';
@@ -23,10 +23,13 @@ interface CanvasTopBarProps {
   onUpdate: (updates: Partial<Canvas>) => void;
   onAddWidget: () => void;
   onPublish: () => void;
+  onPreview?: () => void;
   maximized?: boolean;
   onToggleMaximize?: () => void;
   dashboardFilters?: DashboardFilter[];
   onDashboardFiltersChange?: (filters: DashboardFilter[]) => void;
+  readOnly?: boolean;
+  onEdit?: () => void;
 }
 
 const TopBarOuter = styled.div``;
@@ -69,6 +72,14 @@ const TitleInput = styled.input`
     border-color: ${colors.violet500};
     background: rgb(var(--app-surface-rgb) / 0.5);
   }
+`;
+
+const ReadOnlyTitle = styled.h1`
+  font-size: ${Theme.usage.fontSize.large};
+  color: ${colors.foreground};
+  font-weight: 600;
+  padding: 1px 6px;
+  margin: -1px -6px;
 `;
 
 const MetaRow = styled.div`
@@ -283,7 +294,7 @@ const AllChartsLabel = styled.span`
   font-style: italic;
 `;
 
-export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, maximized = false, onToggleMaximize, dashboardFilters = [], onDashboardFiltersChange }: CanvasTopBarProps) {
+export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, onPreview, maximized = false, onToggleMaximize, dashboardFilters = [], onDashboardFiltersChange, readOnly = false, onEdit }: CanvasTopBarProps) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState(canvas.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -348,18 +359,22 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, maximiz
       <ToolbarContainer>
         <ToolbarRow>
           <TitleSection>
-            <TitleInput
-              ref={inputRef}
-              value={titleValue}
-              readOnly={!editingTitle}
-              onClick={() => setEditingTitle(true)}
-              onChange={(e) => setTitleValue(e.target.value)}
-              onBlur={commitTitle}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitTitle();
-                if (e.key === 'Escape') { setTitleValue(canvas.title); setEditingTitle(false); }
-              }}
-            />
+            {readOnly ? (
+              <ReadOnlyTitle>{canvas.title}</ReadOnlyTitle>
+            ) : (
+              <TitleInput
+                ref={inputRef}
+                value={titleValue}
+                readOnly={!editingTitle}
+                onClick={() => setEditingTitle(true)}
+                onChange={(e) => setTitleValue(e.target.value)}
+                onBlur={commitTitle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') commitTitle();
+                  if (e.key === 'Escape') { setTitleValue(canvas.title); setEditingTitle(false); }
+                }}
+              />
+            )}
             <MetaRow>
               <Badge $color={domainColor}>{canvas.domain}</Badge>
               <Badge>{canvas.tier}</Badge>
@@ -371,28 +386,41 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, maximiz
             </MetaRow>
           </TitleSection>
           <Actions>
-            <Button variant="outline" style={{ gap: '8px', fontSize: '13px' }}>
-              <Eye style={{ width: 14, height: 14 }} />
-              Preview
-            </Button>
-            <Button
-              variant="outline"
-              style={{ gap: '8px', fontSize: '13px', backgroundColor: colors.violet600, color: colors.white, borderColor: colors.violet600 }}
-              onClick={onPublish}
-            >
-              <Share2 style={{ width: 14, height: 14 }} />
-              Publish
-            </Button>
-            {onToggleMaximize && (
-              <MaximizeButton
-                onClick={onToggleMaximize}
-                title={maximized ? 'Restore panels' : 'Maximize canvas'}
+            {readOnly ? (
+              <Button
+                variant="outline"
+                style={{ gap: '8px', fontSize: '13px', backgroundColor: colors.violet600, color: colors.white, borderColor: colors.violet600 }}
+                onClick={onEdit}
               >
-                {maximized
-                  ? <Minimize2 style={{ width: 16, height: 16 }} />
-                  : <Maximize2 style={{ width: 16, height: 16 }} />
-                }
-              </MaximizeButton>
+                <Pencil style={{ width: 14, height: 14 }} />
+                Edit
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" style={{ gap: '8px', fontSize: '13px' }} onClick={onPreview}>
+                  <Eye style={{ width: 14, height: 14 }} />
+                  Preview
+                </Button>
+                <Button
+                  variant="outline"
+                  style={{ gap: '8px', fontSize: '13px', backgroundColor: colors.violet600, color: colors.white, borderColor: colors.violet600 }}
+                  onClick={onPublish}
+                >
+                  <Share2 style={{ width: 14, height: 14 }} />
+                  Publish
+                </Button>
+                {onToggleMaximize && (
+                  <MaximizeButton
+                    onClick={onToggleMaximize}
+                    title={maximized ? 'Restore panels' : 'Maximize canvas'}
+                  >
+                    {maximized
+                      ? <Minimize2 style={{ width: 16, height: 16 }} />
+                      : <Maximize2 style={{ width: 16, height: 16 }} />
+                    }
+                  </MaximizeButton>
+                )}
+              </>
             )}
           </Actions>
         </ToolbarRow>
@@ -401,47 +429,71 @@ export function CanvasTopBar({ canvas, onUpdate, onAddWidget, onPublish, maximiz
       {/* Dashboard-level filter bar — separate line below title */}
       <FilterBarContainer>
         <FilterBar>
-          <FilterToggleBtn
-            $active={showFilterBar}
-            onClick={() => { setShowFilterBar((p) => !p); if (!showFilterBar) setShowFilterForm(false); }}
-          >
-            <Filter style={{ width: 13, height: 13 }} />
-            Filters
-            {dashboardFilters.length > 0 && (
-              <span style={{ background: colors.violet600, color: 'white', borderRadius: '9999px', padding: '0 5px', fontSize: '10px', lineHeight: '16px' }}>
-                {dashboardFilters.length}
-              </span>
-            )}
-          </FilterToggleBtn>
-
-          <FilterToggleBtn $active={false} onClick={onAddWidget}>
-            <Plus style={{ width: 13, height: 13 }} />
-            Add Chart
-          </FilterToggleBtn>
-
-          {showFilterBar && (
+          {readOnly ? (
             <>
-              {dashboardFilters.map((f) => (
-                <DashFilterChip key={f.id}>
-                  {f.column} {f.operator} "{f.value}"
-                  <DashFilterChipRemove onClick={() => handleRemoveDashboardFilter(f.id)}>
-                    <X style={{ width: 10, height: 10 }} />
-                  </DashFilterChipRemove>
-                </DashFilterChip>
-              ))}
-              <AddFilterBtn onClick={() => setShowFilterForm(true)}>
-                <Plus style={{ width: 12, height: 12 }} />
-                Add filter
-              </AddFilterBtn>
               {dashboardFilters.length > 0 && (
-                <AllChartsLabel>Applied to all charts</AllChartsLabel>
+                <>
+                  <FilterToggleBtn $active style={{ cursor: 'default' }}>
+                    <Filter style={{ width: 13, height: 13 }} />
+                    Filters
+                    <span style={{ background: colors.violet600, color: 'white', borderRadius: '9999px', padding: '0 5px', fontSize: '10px', lineHeight: '16px' }}>
+                      {dashboardFilters.length}
+                    </span>
+                  </FilterToggleBtn>
+                  {dashboardFilters.map((f) => (
+                    <DashFilterChip key={f.id}>
+                      {f.column} {f.operator} "{f.value}"
+                    </DashFilterChip>
+                  ))}
+                  <AllChartsLabel>Applied to all charts</AllChartsLabel>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <FilterToggleBtn
+                $active={showFilterBar}
+                onClick={() => { setShowFilterBar((p) => !p); if (!showFilterBar) setShowFilterForm(false); }}
+              >
+                <Filter style={{ width: 13, height: 13 }} />
+                Filters
+                {dashboardFilters.length > 0 && (
+                  <span style={{ background: colors.violet600, color: 'white', borderRadius: '9999px', padding: '0 5px', fontSize: '10px', lineHeight: '16px' }}>
+                    {dashboardFilters.length}
+                  </span>
+                )}
+              </FilterToggleBtn>
+
+              <FilterToggleBtn $active={false} onClick={onAddWidget}>
+                <Plus style={{ width: 13, height: 13 }} />
+                Add Chart
+              </FilterToggleBtn>
+
+              {showFilterBar && (
+                <>
+                  {dashboardFilters.map((f) => (
+                    <DashFilterChip key={f.id}>
+                      {f.column} {f.operator} "{f.value}"
+                      <DashFilterChipRemove onClick={() => handleRemoveDashboardFilter(f.id)}>
+                        <X style={{ width: 10, height: 10 }} />
+                      </DashFilterChipRemove>
+                    </DashFilterChip>
+                  ))}
+                  <AddFilterBtn onClick={() => setShowFilterForm(true)}>
+                    <Plus style={{ width: 12, height: 12 }} />
+                    Add filter
+                  </AddFilterBtn>
+                  {dashboardFilters.length > 0 && (
+                    <AllChartsLabel>Applied to all charts</AllChartsLabel>
+                  )}
+                </>
               )}
             </>
           )}
         </FilterBar>
 
         <AnimatePresence>
-          {showFilterForm && (
+          {!readOnly && showFilterForm && (
             <FilterDropdown
               ref={filterFormRef}
               initial={{ opacity: 0, y: -4 }}
