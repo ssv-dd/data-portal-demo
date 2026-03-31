@@ -748,7 +748,7 @@ export function ChartCard({ widget, onRemove, onAddFilter: _onAddFilter, onEditC
             </MenuButton>
             {menuOpen && (
               <Dropdown>
-                {widget.query && onEditChart && (
+                {onEditChart && (
                   <>
                     <DropdownItem onClick={() => { onEditChart(widget); setMenuOpen(false); }}>
                       <Pencil style={{ width: 14, height: 14 }} />

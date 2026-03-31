@@ -6,7 +6,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router';
 import { Plus, LayoutDashboard, Copy, Check, ExternalLink } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Dialog, DialogContent, DialogDescription } from '../components/ui/dialog';
-import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
+// AIAssistantSidebar removed — AI interaction consolidated into left panel AI-BI tab
 import { LeftPanel } from '../components/layout/left-panel';
 import { SourceBrowserPanel, SOURCE_TABS } from '../components/panels/source-browser-panel';
 import { CanvasTopBar, type DashboardFilter } from '../components/dashboard/canvas-top-bar';
@@ -206,7 +206,6 @@ export function DashboardCanvasPage() {
   const [shareUrl, setShareUrl] = useState('');
   const [copied, setCopied] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('chat');
   const [maximized, setMaximized] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilter[]>([]);
@@ -214,6 +213,7 @@ export function DashboardCanvasPage() {
   const [highlightWidgetId, setHighlightWidgetId] = useState<string | null>(
     () => searchParams.get('highlight'),
   );
+  const [isReportMode, setIsReportMode] = useState(() => searchParams.has('shared'));
 
   // Clear highlight param after 2.5s
   useEffect(() => {
@@ -229,16 +229,24 @@ export function DashboardCanvasPage() {
     return () => clearTimeout(timer);
   }, [highlightWidgetId, setSearchParams]);
 
+  const handleEnterEditMode = useCallback(() => {
+    setIsReportMode(false);
+    setLeftPanelOpen(true);
+  }, []);
+
+  const handlePreview = useCallback(() => {
+    setIsReportMode(true);
+    setLeftPanelOpen(false);
+  }, []);
+
   const handleToggleMaximize = useCallback(() => {
     setMaximized((prev) => {
       if (!prev) {
-        // Maximize: collapse both panels
+        // Maximize: collapse left panel
         setLeftPanelOpen(false);
-        setRightPanelOpen(false);
       } else {
-        // Restore: expand both panels
+        // Restore: expand left panel
         setLeftPanelOpen(true);
-        setRightPanelOpen(true);
       }
       return !prev;
     });
@@ -327,12 +335,18 @@ export function DashboardCanvasPage() {
   }, [canvas, updateCanvas]);
 
   const handleEditChart = useCallback((widget: WidgetConfig) => {
-    if (!canvas || !widget.query) return;
+    if (!canvas) return;
     const params = new URLSearchParams();
-    params.set('source', widget.query.sourceId);
-    params.set('tab', widget.query.sourceType);
     params.set('dashboard', canvas.id);
     params.set('widget', widget.id);
+
+    if (widget.query) {
+      params.set('source', widget.query.sourceId);
+      params.set('tab', widget.query.sourceType);
+    } else {
+      params.set('prefill', 'true');
+    }
+
     navigate(`/chart-builder?${params.toString()}`);
   }, [canvas, navigate]);
 
@@ -393,22 +407,24 @@ export function DashboardCanvasPage() {
       <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
       <ContentLayout>
-        <LeftPanel
-          tabs={SOURCE_TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
-          activeTab={leftTab}
-          onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); if (maximized) setMaximized(false); }}
-          collapsed={!leftPanelOpen}
-          onToggleCollapse={() => { setLeftPanelOpen((prev) => !prev); if (maximized) setMaximized(false); }}
-          showSearch={false}
-          title="Source"
-          tabsOnlyWhenCollapsed
-        >
-          <SourceBrowserPanel
-            activeTab={leftTab as any}
-            onTabChange={(tab) => setLeftTab(tab)}
-            onAIComplete={handleAddWidget}
-          />
-        </LeftPanel>
+        {!isReportMode && (
+          <LeftPanel
+            tabs={SOURCE_TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
+            activeTab={leftTab}
+            onTabChange={(tab) => { setLeftTab(tab); setLeftPanelOpen(true); if (maximized) setMaximized(false); }}
+            collapsed={!leftPanelOpen}
+            onToggleCollapse={() => { setLeftPanelOpen((prev) => !prev); if (maximized) setMaximized(false); }}
+            showSearch={false}
+            title="Source"
+            tabsOnlyWhenCollapsed
+          >
+            <SourceBrowserPanel
+              activeTab={leftTab as any}
+              onTabChange={(tab) => setLeftTab(tab)}
+              onAIComplete={handleAddWidget}
+            />
+          </LeftPanel>
+        )}
 
         <CenterPanel>
           <motion.div variants={fadeInUp} initial="hidden" animate="visible">
@@ -417,10 +433,13 @@ export function DashboardCanvasPage() {
               onUpdate={updateCanvas}
               onAddWidget={() => navigate(`/chart-builder?dashboard=${canvas.id}`)}
               onPublish={handlePublish}
+              onPreview={handlePreview}
               maximized={maximized}
               onToggleMaximize={handleToggleMaximize}
               dashboardFilters={dashboardFilters}
               onDashboardFiltersChange={setDashboardFilters}
+              readOnly={isReportMode}
+              onEdit={handleEnterEditMode}
             />
           </motion.div>
 
@@ -428,14 +447,25 @@ export function DashboardCanvasPage() {
             {canvas.layout.length === 0 ? (
               <EmptyState>
                 <EmptyIcon />
-                <EmptyTitle>Start building your dashboard</EmptyTitle>
-                <EmptyDescription>
-                  Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
-                </EmptyDescription>
-                <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}>
-                  <Plus style={{ width: 16, height: 16 }} />
-                  Add your first widget
-                </Button>
+                {isReportMode ? (
+                  <>
+                    <EmptyTitle>This dashboard has no widgets yet</EmptyTitle>
+                    <EmptyDescription>
+                      The dashboard owner hasn't added any widgets to this dashboard.
+                    </EmptyDescription>
+                  </>
+                ) : (
+                  <>
+                    <EmptyTitle>Start building your dashboard</EmptyTitle>
+                    <EmptyDescription>
+                      Add widgets to visualize your metrics. Use the AI assistant to quickly create charts and KPIs.
+                    </EmptyDescription>
+                    <Button style={{ backgroundColor: colors.violet600, color: colors.white, gap: '8px' }} onClick={() => { setLeftTab('chat'); setLeftPanelOpen(true); }}>
+                      <Plus style={{ width: 16, height: 16 }} />
+                      Add your first widget
+                    </Button>
+                  </>
+                )}
               </EmptyState>
             ) : (
               <CanvasGrid
@@ -446,27 +476,12 @@ export function DashboardCanvasPage() {
                 onEditChart={handleEditChart}
                 onTitleChange={handleTitleChange}
                 highlightWidgetId={highlightWidgetId ?? undefined}
+                readOnly={isReportMode}
               />
             )}
           </CanvasArea>
         </CenterPanel>
 
-        <AIAssistantSidebar
-          title="Dashboard Assistant"
-          contextLabel="Dashboard aware"
-          knowledgeBaseId="dashboards"
-          welcomeMessage="I can help you add widgets, rearrange your dashboard, or generate summaries from your metrics."
-          suggestions={[
-            { text: 'Add a KPI card' },
-            { text: 'Generate summary' },
-            { text: 'Compare periods' },
-            { text: 'Add trend chart' },
-          ]}
-          suggestedActions={['Add metric', 'Create chart', 'Export to PDF']}
-          collapsible
-          collapsed={!rightPanelOpen}
-          onToggleCollapse={() => { setRightPanelOpen((prev) => !prev); if (maximized) setMaximized(false); }}
-        />
       </ContentLayout>
 
       <Dialog open={showPublishModal} onOpenChange={setShowPublishModal} title="Dashboard Published">

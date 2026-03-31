@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Zap, Layers, BarChart3 } from 'lucide-react';
+import { Zap, Layers, BarChart3, Sparkles } from 'lucide-react';
 import { colors, Theme } from '@/styles/theme';
 
-export type SourceTab = 'sql' | 'semantic' | 'metrics';
+export type SourceTab = 'sql' | 'semantic' | 'metrics' | 'ai';
 
 interface SourceTabBarProps {
   activeTab: SourceTab;
   onTabChange: (tab: SourceTab) => void;
+  showAiTab?: boolean;
 }
 
 const TabBar = styled.div`
@@ -37,13 +38,15 @@ const Tab = styled.button<{ $active: boolean }>`
   }
 `;
 
-const tabs: { key: SourceTab; label: string; Icon: React.ElementType }[] = [
+const ALL_TABS: { key: SourceTab; label: string; Icon: React.ElementType }[] = [
   { key: 'sql', label: 'SQL', Icon: Zap },
   { key: 'semantic', label: 'Semantic', Icon: Layers },
   { key: 'metrics', label: 'Metrics', Icon: BarChart3 },
+  { key: 'ai', label: 'AI', Icon: Sparkles },
 ];
 
-export function SourceTabBar({ activeTab, onTabChange }: SourceTabBarProps) {
+export function SourceTabBar({ activeTab, onTabChange, showAiTab = false }: SourceTabBarProps) {
+  const tabs = showAiTab ? ALL_TABS : ALL_TABS.filter(t => t.key !== 'ai');
   return (
     <TabBar>
       {tabs.map(({ key, label, Icon }) => (
