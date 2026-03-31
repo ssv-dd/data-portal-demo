@@ -201,7 +201,7 @@ export interface WidgetConfig {
   metricId?: string;
   query?: {
     sourceId: string;
-    sourceType: 'sql' | 'semantic' | 'metrics';
+    sourceType: 'sql' | 'semantic' | 'metrics' | 'ai';
     measures: ChartBuilderField[];
     dimensions: ChartBuilderField[];
     dateField?: ChartBuilderField;

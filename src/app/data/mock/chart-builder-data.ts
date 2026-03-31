@@ -4,7 +4,7 @@ export interface SourceItem {
   id: string;
   name: string;
   description: string;
-  type: 'sql' | 'semantic' | 'metrics';
+  type: 'sql' | 'semantic' | 'metrics' | 'ai';
 }
 
 // Source metadata for the info panel (query preview, repo link)
@@ -384,3 +384,43 @@ export function generateMockKpiData(_measure: ChartBuilderField): {
 
 // Re-export ChartType for consumers of this module
 export type { ChartType };
+
+/**
+ * Extract fields from raw widget data for the virtual AI source.
+ * Infers measures (number), dimensions (string), and date fields from the first data row.
+ */
+export function extractFieldsFromWidgetData(
+  data: Record<string, unknown>[],
+  widgetTitle: string,
+): { source: SourceItem; fields: SourceFields } {
+  const source: SourceItem = {
+    id: 'ai-virtual',
+    name: widgetTitle || 'AI-Generated Data',
+    description: 'Fields extracted from AI-generated widget data',
+    type: 'ai',
+  };
+
+  if (!data || data.length === 0) {
+    return { source, fields: { measures: [], dimensions: [], dateFields: [] } };
+  }
+
+  const sample = data[0] as Record<string, unknown>;
+  const measures: ChartBuilderField[] = [];
+  const dimensions: ChartBuilderField[] = [];
+  const dateFields: ChartBuilderField[] = [];
+
+  for (const key of Object.keys(sample)) {
+    const val = sample[key];
+    if (typeof val === 'number') {
+      measures.push({ id: `ai-f-${key}`, name: key, dataType: 'number', role: 'measure', aggregation: 'SUM' });
+    } else if (typeof val === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}/.test(val) || /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/.test(val)) {
+        dateFields.push({ id: `ai-f-${key}`, name: key, dataType: 'date', role: 'date' });
+      } else {
+        dimensions.push({ id: `ai-f-${key}`, name: key, dataType: 'string', role: 'dimension' });
+      }
+    }
+  }
+
+  return { source, fields: { measures, dimensions, dateFields } };
+}

@@ -17,6 +17,7 @@ import {
   SOURCE_META,
   generateMockChartData,
   generateMockKpiData,
+  extractFieldsFromWidgetData,
   type SourceItem,
   type SourceFields,
 } from '@/app/data/mock/chart-builder-data';
@@ -301,24 +302,34 @@ export function ChartBuilderPage() {
   const initialSourceId = searchParams.get('source');
   const dashboardId = searchParams.get('dashboard');
   const editingWidgetId = searchParams.get('widget');
+  const isPrefill = searchParams.get('prefill') === 'true';
+
   // Load widget being edited (if any)
   const editingWidget = useMemo(
     () => loadEditingWidget(dashboardId, editingWidgetId),
     [dashboardId, editingWidgetId],
   );
 
-  const [activeTab, setActiveTab] = useState<SourceTab>(initialTab);
+  // Virtual AI source for editing AI-generated widgets (no query metadata)
+  const aiSourceData = useMemo(() => {
+    if (!isPrefill || !editingWidget || editingWidget.query || !editingWidget.data) return null;
+    return extractFieldsFromWidgetData(editingWidget.data as Record<string, unknown>[], editingWidget.title);
+  }, [isPrefill, editingWidget]);
+
+  const [activeTab, setActiveTab] = useState<SourceTab>(
+    () => aiSourceData ? 'ai' as SourceTab : initialTab,
+  );
   const [selectedSource, setSelectedSource] = useState<SourceItem | null>(
-    () => findSourceById(initialSourceId),
+    () => aiSourceData ? aiSourceData.source : findSourceById(initialSourceId),
   );
   const [selectedMeasures, setSelectedMeasures] = useState<ChartBuilderField[]>(
-    () => editingWidget?.query?.measures ?? [],
+    () => editingWidget?.query?.measures ?? aiSourceData?.fields.measures ?? [],
   );
   const [selectedDimensions, setSelectedDimensions] = useState<ChartBuilderField[]>(
-    () => editingWidget?.query?.dimensions ?? [],
+    () => editingWidget?.query?.dimensions ?? aiSourceData?.fields.dimensions.slice(0, 1) ?? [],
   );
   const [selectedDateField, setSelectedDateField] = useState<ChartBuilderField | null>(
-    () => editingWidget?.query?.dateField ?? null,
+    () => editingWidget?.query?.dateField ?? aiSourceData?.fields.dateFields[0] ?? null,
   );
   const [chartType, setChartType] = useState<ChartType>(
     () => editingWidget?.type ?? 'column',
@@ -338,11 +349,16 @@ export function ChartBuilderPage() {
     return [];
   });
 
-  // Generate mock data
-  const mockData = useMemo(
+  // Generate mock data (or use AI widget's existing data)
+  const generatedMockData = useMemo(
     () => generateMockChartData(selectedMeasures, selectedDimensions, selectedDateField ?? undefined),
     [selectedMeasures, selectedDimensions, selectedDateField],
   );
+
+  const mockData = useMemo(() => {
+    if (selectedSource?.type === 'ai' && editingWidget?.data) return editingWidget.data;
+    return generatedMockData;
+  }, [selectedSource, editingWidget, generatedMockData]);
 
   const kpiData = useMemo(() => {
     if (selectedMeasures.length === 0) return undefined;
@@ -491,19 +507,31 @@ export function ChartBuilderPage() {
 
   const sourceFields = selectedSource ? SOURCE_FIELDS[selectedSource.id] : null;
 
-  const fields: SourceFields | null = sourceFields
+  const fields: SourceFields | null = selectedSource?.type === 'ai' && aiSourceData
     ? {
         measures: [
-          ...sourceFields.measures,
+          ...aiSourceData.fields.measures,
           ...derivedFields.filter((f) => f.role === 'measure'),
         ],
         dimensions: [
-          ...sourceFields.dimensions,
+          ...aiSourceData.fields.dimensions,
           ...derivedFields.filter((f) => f.role === 'dimension'),
         ],
-        dateFields: sourceFields.dateFields,
+        dateFields: aiSourceData.fields.dateFields,
       }
-    : null;
+    : sourceFields
+      ? {
+          measures: [
+            ...sourceFields.measures,
+            ...derivedFields.filter((f) => f.role === 'measure'),
+          ],
+          dimensions: [
+            ...sourceFields.dimensions,
+            ...derivedFields.filter((f) => f.role === 'dimension'),
+          ],
+          dateFields: sourceFields.dateFields,
+        }
+      : null;
   const hasMeasures = selectedMeasures.length > 0;
 
   return (
@@ -518,12 +546,12 @@ export function ChartBuilderPage() {
       <PanelsContainer>
         {/* Left panel: narrower, fixed width */}
         <LeftPanel>
-          <SourceTabBar activeTab={activeTab} onTabChange={handleTabChange} />
+          <SourceTabBar activeTab={activeTab} onTabChange={handleTabChange} showAiTab={!!aiSourceData} />
 
-          {/* Show source list only when no source is selected */}
-          {!selectedSource && (
+          {/* Show source list only when no source is selected (not for AI tab) */}
+          {!selectedSource && activeTab !== 'ai' && (
             <SourceList
-              sources={CHART_BUILDER_SOURCES[activeTab]}
+              sources={CHART_BUILDER_SOURCES[activeTab as 'sql' | 'semantic' | 'metrics']}
               selectedSourceId={null}
               onSourceSelect={handleSourceSelect}
             />
