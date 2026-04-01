@@ -5,6 +5,7 @@ import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { useNavigate } from 'react-router';
 import { Plus, BookOpen, Search, FileText, Clock, Users, FileCode2 } from 'lucide-react';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
@@ -315,10 +316,10 @@ const ModalActions = styled.div`
 `;
 
 export function NotebooksPage() {
+  const navigate = useNavigate();
   const [showScaffoldModal, setShowScaffoldModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [notebookName, setNotebookName] = useState('');
-  const [notebookOwner, setNotebookOwner] = useState('');
   const [selectedLibrary, setSelectedLibrary] = useState('ds-standard');
   const [customDockerUrl, setCustomDockerUrl] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -335,10 +336,11 @@ export function NotebooksPage() {
   });
 
   const handleCreateNotebook = () => {
+    const newId = `new-${Date.now()}`;
     setShowScaffoldModal(false);
     setSelectedTemplate(null);
     setNotebookName('');
-    setNotebookOwner('');
+    navigate(`/notebook/${newId}`);
   };
 
   const handleTabChange = (tab: string) => {
@@ -412,6 +414,7 @@ export function NotebooksPage() {
                 <NotebookCard
                   key={notebook.id}
                   variants={staggerItem}
+                  onClick={() => navigate(`/notebook/${notebook.id}`)}
                 >
                   <CardHeader>
                     <CardTitleRow>
@@ -558,12 +561,13 @@ export function NotebooksPage() {
             )}
 
             <ModalActions>
-              <Button variant="outline" onClick={() => setShowScaffoldModal(false)}>
+              <Button variant="outline" size="sm" style={{ fontSize: '13px' }} onClick={() => setShowScaffoldModal(false)}>
                 Cancel
               </Button>
               <Button
+                variant="outline"
                 size="sm"
-                style={{ backgroundColor: colors.ddPrimary, color: colors.white, fontSize: '13px' }}
+                style={{ backgroundColor: colors.ddPrimary, color: colors.white, fontSize: '13px', borderColor: colors.ddPrimary }}
                 onClick={handleCreateNotebook}
                 disabled={!notebookName}
               >
