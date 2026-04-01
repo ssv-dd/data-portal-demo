@@ -319,6 +319,8 @@ export function NotebooksPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [notebookName, setNotebookName] = useState('');
   const [notebookOwner, setNotebookOwner] = useState('');
+  const [selectedLibrary, setSelectedLibrary] = useState('ds-standard');
+  const [customDockerUrl, setCustomDockerUrl] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'mine' | 'shared'>('all');
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
@@ -487,21 +489,6 @@ export function NotebooksPage() {
         <DialogContent style={{ maxWidth: '512px' }}>
           <ModalFormGroup>
             <ModalField>
-              <Label style={{ marginBottom: '4px' }}>Template</Label>
-              <ModalSelect
-                value={selectedTemplate || ''}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-              >
-                <option value="">Select a template</option>
-                {notebookTemplates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                  </option>
-                ))}
-              </ModalSelect>
-            </ModalField>
-
-            <ModalField>
               <Label style={{ marginBottom: '4px' }}>Notebook Name</Label>
               <Input
                 placeholder="e.g., Q1 Revenue Analysis"
@@ -511,13 +498,56 @@ export function NotebooksPage() {
             </ModalField>
 
             <ModalField>
-              <Label style={{ marginBottom: '4px' }}>Owner</Label>
-              <Input
-                placeholder="e.g., J. Smith"
-                value={notebookOwner}
-                onChange={(e) => setNotebookOwner(e.target.value)}
-              />
+              <Label style={{ marginBottom: '4px' }}>Server Type</Label>
+              <ModalSelect defaultValue="cpu-small">
+                <optgroup label="CPU Only Notebook Server">
+                  <option value="cpu-small">Small — 1 CPU / 7GB</option>
+                  <option value="cpu-medium">Medium — 3 CPUs / 15GB</option>
+                  <option value="cpu-large">Large — 7 CPUs / 30GB</option>
+                </optgroup>
+                <optgroup label="GPU Notebook Server">
+                  <option value="t4-x1">T4 x1 — 1 GPU / 12 CPUs / 48GB</option>
+                  <option value="t4-x2">T4 x2 — 2 GPUs / 24 CPUs / 96GB</option>
+                  <option value="t4-x4">T4 x4 — 4 GPUs / 44 CPUs / 172GB</option>
+                  <option value="a10g-x1">A10G x1 — 1 GPU / 12 CPUs / 48GB</option>
+                  <option value="a10g-x2">A10G x2 — 2 GPUs / 24 CPUs / 96GB</option>
+                  <option value="a10g-x4">A10G x4 — 4 GPUs / 48 CPUs / 192GB</option>
+                  <option value="a100-x1">A100 x1 — 1 GPU / 11 CPUs / 122GB</option>
+                  <option value="a100-x2">A100 x2 — 2 GPUs / 22 CPUs / 266GB</option>
+                  <option value="a100-x4">A100 x4 — 4 GPUs / 44 CPUs / 553GB</option>
+                  <option value="a100-80-x1">A100 80GB (p4de) x1 — 1 GPU / 11 CPUs / 122GB</option>
+                  <option value="a100-80-x2">A100 80GB (p4de) x2 — 2 GPUs / 22 CPUs / 266GB</option>
+                  <option value="a100-80-x4">A100 80GB (p4de) x4 — 4 GPUs / 44 CPUs / 553GB</option>
+                  <option value="h100-x1">H100 x1 — 1 GPU / 12 CPUs / 252GB</option>
+                  <option value="h200-x1">H200 x1 — 1 GPU / 24 CPUs / 229GB</option>
+                  <option value="h200-x2">H200 x2 — 2 GPUs / 48 CPUs / 479GB</option>
+                  <option value="h200-x4">H200 x4 — 4 GPUs / 96 CPUs / 979GB</option>
+                </optgroup>
+              </ModalSelect>
             </ModalField>
+
+            <ModalField>
+              <Label style={{ marginBottom: '4px' }}>Pre-installed libraries</Label>
+              <ModalSelect
+                value={selectedLibrary}
+                onChange={(e) => setSelectedLibrary(e.target.value)}
+              >
+                <option value="ds-standard">Standard (pandas, scikit-learn, SQL)</option>
+                <option value="ds-ml">ML (PyTorch, TensorFlow, CUDA)</option>
+                <option value="custom">Custom environment</option>
+              </ModalSelect>
+            </ModalField>
+
+            {selectedLibrary === 'custom' && (
+              <ModalField>
+                <Label style={{ marginBottom: '4px' }}>Custom Docker Image URL</Label>
+                <Input
+                  placeholder="e.g., gcr.io/doordash/my-custom-image:latest"
+                  value={customDockerUrl}
+                  onChange={(e) => setCustomDockerUrl(e.target.value)}
+                />
+              </ModalField>
+            )}
 
             {selectedTemplate && (
               <ModalInfoBox>
@@ -532,9 +562,10 @@ export function NotebooksPage() {
                 Cancel
               </Button>
               <Button
-                style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
+                size="sm"
+                style={{ backgroundColor: colors.ddPrimary, color: colors.white, fontSize: '13px' }}
                 onClick={handleCreateNotebook}
-                disabled={!selectedTemplate || !notebookName}
+                disabled={!notebookName}
               >
                 Create Notebook
               </Button>
