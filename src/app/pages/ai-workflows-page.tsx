@@ -153,73 +153,56 @@ const StatsSectionTitle = styled.div`
   margin-bottom: ${Theme.usage.space.xxSmall};
 `;
 
-/* ─── Entry Points Strip ─── */
+/* ─── Hero Entry Cards ─── */
 
-const EntryStrip = styled.div`
-  display: flex;
+const HeroRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: ${Theme.usage.space.small};
   margin-bottom: ${Theme.usage.space.large};
-  overflow-x: auto;
-  padding-bottom: 2px;
-
-  &::-webkit-scrollbar { height: 0; }
 `;
 
-const EntryCard = styled.button`
-  flex-shrink: 0;
+const HeroCard = styled.button`
   display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
-  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  flex-direction: column;
+  align-items: flex-start;
+  padding: ${Theme.usage.space.medium};
   background: rgb(var(--app-surface-rgb) / 0.4);
   border: 1px solid ${colors.border};
   border-radius: ${radius['2xl']};
   cursor: pointer;
   transition: all 200ms;
-  color: ${colors.foreground};
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  font-weight: 500;
-  white-space: nowrap;
+  text-align: left;
 
   &:hover {
     border-color: ${colors.violet500};
-    box-shadow: 0 2px 8px rgb(var(--app-overlay-rgb) / 0.06);
-    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgb(var(--app-violet-rgb) / 0.08);
+    transform: translateY(-2px);
   }
 `;
 
-const EntryIconBox = styled.div<{ $bg?: string }>`
-  width: 28px;
-  height: 28px;
-  border-radius: ${radius.md};
+const HeroIconBox = styled.div<{ $bg?: string }>`
+  width: 36px;
+  height: 36px;
+  border-radius: ${radius.lg};
   display: flex;
   align-items: center;
   justify-content: center;
   background: ${({ $bg }) => $bg ?? 'rgb(var(--app-violet-rgb) / 0.1)'};
-  flex-shrink: 0;
+  margin-bottom: ${Theme.usage.space.small};
 `;
 
-const MiniTemplateCard = styled.button`
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xxSmall};
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px dashed ${colors.border};
-  border-radius: ${radius.lg};
-  cursor: pointer;
-  transition: all 200ms;
-  color: ${colors.mutedForeground};
-  font-size: 11px;
-  white-space: nowrap;
+const HeroTitle = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: ${colors.foreground};
+  margin-bottom: 2px;
+`;
 
-  &:hover {
-    border-color: ${colors.violet500};
-    border-style: solid;
-    color: ${colors.violet600};
-    background: rgb(var(--app-violet-rgb) / 0.03);
-  }
+const HeroDesc = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  line-height: 1.4;
 `;
 
 /* ─── Workflow Tabs ─── */
@@ -338,16 +321,17 @@ const StatusBadge = styled.span<{ $color: string; $bg: string; $border: string }
   flex-shrink: 0;
 `;
 
+const CardRightGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  flex-shrink: 0;
+`;
+
 const CardActions = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-  opacity: 0;
-  transition: opacity 200ms;
-
-  ${WorkflowCard}:hover & {
-    opacity: 1;
-  }
 `;
 
 const ActionBtn = styled.button<{ $variant?: 'danger' }>`
@@ -391,6 +375,9 @@ const MetaItem = styled.span`
 `;
 
 const OwnerTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 11px;
   color: ${colors.mutedForeground};
   background: rgb(var(--app-overlay-rgb) / 0.06);
@@ -466,30 +453,29 @@ export function AIWorkflowsPage() {
           <CenterContent>
             {/* Entry Points */}
             <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-              <EntryStrip>
-                <EntryCard>
-                  <EntryIconBox>
-                    <Plus style={{ width: 14, height: 14, color: colors.violet600 }} />
-                  </EntryIconBox>
-                  Create New Workflow
-                </EntryCard>
-                <EntryCard>
-                  <EntryIconBox $bg="linear-gradient(135deg, rgb(var(--app-purple-rgb) / 0.15), rgb(var(--app-fuchsia-rgb) / 0.1))">
-                    <Sparkles style={{ width: 14, height: 14, color: colors.violet600 }} />
-                  </EntryIconBox>
-                  Chat to Create
-                </EntryCard>
-                {templates.slice(0, 4).map((t) => (
-                  <MiniTemplateCard key={t.id}>
-                    <t.icon style={{ width: 12, height: 12 }} />
-                    {t.name}
-                  </MiniTemplateCard>
-                ))}
-                <MiniTemplateCard>
-                  <Plus style={{ width: 12, height: 12 }} />
-                  More templates...
-                </MiniTemplateCard>
-              </EntryStrip>
+              <HeroRow>
+                <HeroCard>
+                  <HeroIconBox>
+                    <Plus style={{ width: 18, height: 18, color: colors.violet600 }} />
+                  </HeroIconBox>
+                  <HeroTitle>Create from Scratch</HeroTitle>
+                  <HeroDesc>Start a blank workflow with drag-and-drop nodes</HeroDesc>
+                </HeroCard>
+                <HeroCard>
+                  <HeroIconBox $bg="linear-gradient(135deg, rgb(var(--app-purple-rgb) / 0.15), rgb(var(--app-fuchsia-rgb) / 0.1))">
+                    <Sparkles style={{ width: 18, height: 18, color: colors.violet600 }} />
+                  </HeroIconBox>
+                  <HeroTitle>Create with AI</HeroTitle>
+                  <HeroDesc>Describe what you need and AI builds it for you</HeroDesc>
+                </HeroCard>
+                <HeroCard>
+                  <HeroIconBox $bg="rgb(var(--app-blue-rgb, 59 130 246) / 0.1)">
+                    <BarChart3 style={{ width: 18, height: 18, color: '#3b82f6' }} />
+                  </HeroIconBox>
+                  <HeroTitle>Browse Templates</HeroTitle>
+                  <HeroDesc>Pick from {templates.length} ready-made workflow templates</HeroDesc>
+                </HeroCard>
+              </HeroRow>
             </motion.div>
 
             {/* Workflow Tabs */}
@@ -546,28 +532,29 @@ export function AIWorkflowsPage() {
                       <CardTopRow>
                         <CardTitleGroup>
                           <CardTitle>{wf.title}</CardTitle>
+                          {wf.shared && <Users style={{ width: 13, height: 13, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)' }} />}
+                        </CardTitleGroup>
+                        <CardRightGroup>
+                          <CardActions>
+                            {wf.status === 'active' && (
+                              <ActionBtn title="Pause"><Pause style={{ width: 13, height: 13 }} /></ActionBtn>
+                            )}
+                            {wf.status === 'paused' && (
+                              <ActionBtn title="Resume"><Play style={{ width: 13, height: 13 }} /></ActionBtn>
+                            )}
+                            {wf.status === 'failed' && (
+                              <ActionBtn title="Retry"><RefreshCw style={{ width: 13, height: 13 }} /></ActionBtn>
+                            )}
+                            {(wf.status === 'active' || wf.status === 'paused') && (
+                              <ActionBtn $variant="danger" title="Stop"><Square style={{ width: 11, height: 11 }} /></ActionBtn>
+                            )}
+                            <ActionBtn title="More options"><MoreVertical style={{ width: 13, height: 13 }} /></ActionBtn>
+                          </CardActions>
                           <StatusBadge $color={st.color} $bg={st.bg} $border={st.borderColor}>
                             <StIcon style={{ width: 11, height: 11 }} />
                             {st.label}
                           </StatusBadge>
-                          {wf.shared && <Users style={{ width: 13, height: 13, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)' }} />}
-                        </CardTitleGroup>
-                        <CardActions>
-                          {wf.status === 'active' && (
-                            <ActionBtn title="Pause"><Pause style={{ width: 13, height: 13 }} /></ActionBtn>
-                          )}
-                          {wf.status === 'paused' && (
-                            <ActionBtn title="Resume"><Play style={{ width: 13, height: 13 }} /></ActionBtn>
-                          )}
-                          {wf.status === 'failed' && (
-                            <ActionBtn title="Retry"><RefreshCw style={{ width: 13, height: 13 }} /></ActionBtn>
-                          )}
-                          {(wf.status === 'active' || wf.status === 'paused') && (
-                            <ActionBtn $variant="danger" title="Stop"><Square style={{ width: 11, height: 11 }} /></ActionBtn>
-                          )}
-                          <ActionBtn title="More options"><MoreVertical style={{ width: 13, height: 13 }} /></ActionBtn>
-                          <ChevronRight style={{ width: 14, height: 14, color: 'rgb(var(--app-muted-fg-rgb) / 0.3)' }} />
-                        </CardActions>
+                        </CardRightGroup>
                       </CardTopRow>
                       <CardDescription>{wf.description}</CardDescription>
                       <CardMeta>
@@ -576,7 +563,8 @@ export function AIWorkflowsPage() {
                         {wf.nextRun && <MetaItem><RefreshCw style={{ width: 11, height: 11 }} /> {wf.nextRun}</MetaItem>}
                         <MetaItem>{wf.steps} steps</MetaItem>
                         <MetaItem>{wf.successRate}</MetaItem>
-                        {wf.owner !== appConfig.user.name && <OwnerTag>{wf.owner}</OwnerTag>}
+                        <OwnerTag><Users style={{ width: 10, height: 10 }} /> {wf.owner}</OwnerTag>
+                        {wf.team && <OwnerTag>{wf.team}</OwnerTag>}
                       </CardMeta>
                     </WorkflowCard>
                   );
