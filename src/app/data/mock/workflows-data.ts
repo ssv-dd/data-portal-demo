@@ -26,7 +26,7 @@ export const templates: WorkflowTemplate[] = [
 ];
 
 export const statusConfig: Record<string, WorkflowStatusConfig> = {
-  active: { icon: Play, label: 'Active', color: '#15803d', bg: '#f0fdf4', borderColor: '#bbf7d0' },
+  active: { icon: Play, label: 'Running', color: '#15803d', bg: '#f0fdf4', borderColor: '#bbf7d0' },
   paused: { icon: Pause, label: 'Paused', color: '#b45309', bg: '#fffbeb', borderColor: '#fde68a' },
   completed: { icon: CheckCircle, label: 'Completed', color: '#1d4ed8', bg: '#eff6ff', borderColor: '#bfdbfe' },
   failed: { icon: AlertCircle, label: 'Failed', color: '#b91c1c', bg: '#fef2f2', borderColor: '#fecaca' },
