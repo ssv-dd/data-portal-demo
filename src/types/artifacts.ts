@@ -150,6 +150,7 @@ export interface Workflow {
   shared: boolean;
   steps: number;
   successRate: string;
+  team?: string;
 }
 
 export interface WorkflowTemplate {

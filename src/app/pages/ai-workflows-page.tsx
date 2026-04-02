@@ -5,8 +5,9 @@ import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import {
-  Search, Plus, Zap, Play, Pause, Clock, AlertCircle,
+  Search, Plus, Zap, Play, Pause, Clock, AlertCircle, Square,
   Calendar, ChevronRight, MoreVertical, Users, RefreshCw, GitBranch, Wand2,
+  Sparkles, BarChart3,
 } from 'lucide-react';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
@@ -14,7 +15,10 @@ import { WorkflowNodesPanel } from '../components/panels/workflow-nodes-panel';
 import { mockWorkflows, templates, statusConfig } from '../data/mock/workflows-data';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
-import { colors, glassPanel, shadows } from '@/styles/theme';
+import { colors, glassPanel, radius } from '@/styles/theme';
+import { appConfig } from '@/config/app.config';
+
+/* ─── Page Shell ─── */
 
 const PageContainer = styled.div`
   height: 100%;
@@ -48,73 +52,211 @@ const CenterPanel = styled.div`
 `;
 
 const CenterContent = styled.div`
-  padding: ${Theme.usage.space.xLarge};
+  padding: ${Theme.usage.space.large} ${Theme.usage.space.xLarge};
 `;
 
-const PageHeader = styled.div`
-  margin-bottom: ${Theme.usage.space.xLarge};
+/* ─── Right Panel (Stats + AI tabs) ─── */
+
+const RightPanel = styled.div`
+  width: 340px;
+  min-width: 300px;
+  ${glassPanel}
+  border-radius: ${Theme.usage.borderRadius.xLarge};
+  border: 1px solid ${colors.border};
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 `;
 
-const TitleRow = styled.div`
+const RightPanelTabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid ${colors.border};
+  flex-shrink: 0;
+`;
+
+const RightPanelTab = styled.button<{ $active: boolean }>`
+  flex: 1;
+  padding: ${Theme.usage.space.small};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: ${({ $active }) => ($active ? '600' : '400')};
+  color: ${({ $active }) => ($active ? colors.violet600 : colors.mutedForeground)};
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid ${({ $active }) => ($active ? colors.violet600 : 'transparent')};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 150ms;
+
+  &:hover {
+    color: ${({ $active }) => ($active ? colors.violet600 : colors.foreground)};
+  }
+`;
+
+const RightPanelContent = styled.div`
+  flex: 1;
+  overflow: auto;
+`;
+
+const StatsPanel = styled.div`
+  padding: ${Theme.usage.space.medium};
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+`;
+
+const StatRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: ${Theme.usage.space.small};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.lg};
+`;
+
+const StatRowLeft = styled.div`
   display: flex;
   align-items: center;
   gap: ${Theme.usage.space.small};
-  margin-bottom: ${Theme.usage.space.small};
-`;
-
-const PageTitle = styled.h1`
-  font-size: ${Theme.usage.fontSize.xxLarge};
-  color: ${colors.slate900};
-  font-weight: 600;
-`;
-
-const PageDescription = styled.p`
-  color: ${colors.slate600};
-`;
-
-const StatsGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: ${Theme.usage.space.medium};
-  margin-bottom: ${Theme.usage.space.xLarge};
-`;
-
-const StatCard = styled(motion.div)`
-  background-color: rgb(var(--app-surface-rgb) / 0.4);
-  border: 1px solid ${colors.border};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  padding: ${Theme.usage.space.medium};
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.medium};
 `;
 
 const StatIconBox = styled.div<{ $color: string }>`
-  width: 40px;
-  height: 40px;
-  border-radius: ${Theme.usage.borderRadius.large};
+  width: 32px;
+  height: 32px;
+  border-radius: ${radius.md};
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: ${({ $color }) => `${$color}15`};
 `;
 
-const StatValue = styled.div`
-  font-size: ${Theme.usage.fontSize.xxLarge};
-  font-weight: 700;
-  color: ${colors.slate900};
+const StatRowLabel = styled.span`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
 `;
 
-const StatLabel = styled.div`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.slate600};
+const StatRowValue = styled.span`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 700;
+  color: ${colors.foreground};
 `;
+
+const StatsSectionTitle = styled.div`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 600;
+  color: ${colors.mutedForeground};
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: ${Theme.usage.space.xxSmall};
+`;
+
+/* ─── Entry Points Strip ─── */
+
+const EntryStrip = styled.div`
+  display: flex;
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.large};
+  overflow-x: auto;
+  padding-bottom: 2px;
+
+  &::-webkit-scrollbar { height: 0; }
+`;
+
+const EntryCard = styled.button`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  background: rgb(var(--app-surface-rgb) / 0.4);
+  border: 1px solid ${colors.border};
+  border-radius: ${radius['2xl']};
+  cursor: pointer;
+  transition: all 200ms;
+  color: ${colors.foreground};
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  font-weight: 500;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: ${colors.violet500};
+    box-shadow: 0 2px 8px rgb(var(--app-overlay-rgb) / 0.06);
+    transform: translateY(-1px);
+  }
+`;
+
+const EntryIconBox = styled.div<{ $bg?: string }>`
+  width: 28px;
+  height: 28px;
+  border-radius: ${radius.md};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ $bg }) => $bg ?? 'rgb(var(--app-violet-rgb) / 0.1)'};
+  flex-shrink: 0;
+`;
+
+const MiniTemplateCard = styled.button`
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xxSmall};
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed ${colors.border};
+  border-radius: ${radius.lg};
+  cursor: pointer;
+  transition: all 200ms;
+  color: ${colors.mutedForeground};
+  font-size: 11px;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: ${colors.violet500};
+    border-style: solid;
+    color: ${colors.violet600};
+    background: rgb(var(--app-violet-rgb) / 0.03);
+  }
+`;
+
+/* ─── Workflow Tabs ─── */
+
+const TabBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.xSmall};
+  margin-bottom: ${Theme.usage.space.medium};
+  border-bottom: 1px solid ${colors.border};
+`;
+
+const WfTab = styled.button<{ $active: boolean }>`
+  padding: ${Theme.usage.space.small} ${Theme.usage.space.medium};
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: ${({ $active }) => ($active ? '600' : '400')};
+  color: ${({ $active }) => ($active ? colors.violet600 : colors.mutedForeground)};
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid ${({ $active }) => ($active ? colors.violet600 : 'transparent')};
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 150ms;
+  white-space: nowrap;
+
+  &:hover {
+    color: ${({ $active }) => ($active ? colors.violet600 : colors.foreground)};
+  }
+`;
+
+/* ─── Actions Bar ─── */
 
 const ActionsBar = styled.div`
   display: flex;
   align-items: center;
-  gap: ${Theme.usage.space.medium};
-  margin-bottom: ${Theme.usage.space.large};
+  gap: ${Theme.usage.space.small};
+  margin-bottom: ${Theme.usage.space.medium};
 `;
 
 const SearchWrapper = styled.div`
@@ -122,110 +264,84 @@ const SearchWrapper = styled.div`
   position: relative;
 `;
 
-const SearchIcon = styled(Search)`
+const SearchIconStyled = styled(Search)`
   position: absolute;
   left: ${Theme.usage.space.small};
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
+  width: 14px;
+  height: 14px;
+  color: rgb(var(--app-muted-fg-rgb) / 0.5);
 `;
 
-const NewButton = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  background-color: ${colors.white};
-  border: 1px solid ${colors.slate200};
-  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.medium};
-  font-size: ${Theme.usage.fontSize.xSmall};
-  font-weight: 600;
-  color: ${colors.slate900};
-  cursor: pointer;
-  box-shadow: ${shadows.sm};
-  transition: background-color 200ms;
-
-  &:hover {
-    background-color: ${colors.slate50};
-  }
-`;
-
-const FilterRow = styled.div`
+const StatusFilterRow = styled.div`
   display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
-  margin-bottom: ${Theme.usage.space.large};
+  gap: 4px;
 `;
+
+/* ─── Workflow Cards (Modernized) ─── */
 
 const WorkflowList = styled(motion.div)`
   display: flex;
   flex-direction: column;
-  gap: ${Theme.usage.space.small};
-  margin-bottom: ${Theme.usage.space.xxLarge};
+  gap: ${Theme.usage.space.xSmall};
 `;
 
 const WorkflowCard = styled(motion.div)`
-  background-color: rgb(var(--app-surface-rgb) / 0.4);
+  background: rgb(var(--app-surface-rgb) / 0.4);
   border: 1px solid ${colors.border};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  padding: 20px;
+  border-radius: ${radius['2xl']};
+  padding: ${Theme.usage.space.medium} ${Theme.usage.space.large};
   cursor: pointer;
-  transition: box-shadow 200ms;
+  transition: all 200ms;
 
   &:hover {
-    box-shadow: ${shadows.cardHover};
+    border-color: rgb(var(--app-violet-rgb) / 0.2);
+    box-shadow: 0 2px 12px rgb(var(--app-overlay-rgb) / 0.06);
   }
 `;
 
-const WorkflowRow = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-`;
-
-const WorkflowContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const WorkflowTitleRow = styled.div`
+const CardTopRow = styled.div`
   display: flex;
   align-items: center;
-  gap: ${Theme.usage.space.small};
+  justify-content: space-between;
   margin-bottom: ${Theme.usage.space.xxSmall};
 `;
 
-const WorkflowTitle = styled.h3`
-  font-weight: 500;
-  color: ${colors.slate900};
+const CardTitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  min-width: 0;
 `;
 
-const WorkflowDescription = styled.p`
+const CardTitle = styled.h3`
   font-size: ${Theme.usage.fontSize.xSmall};
-  color: ${colors.mutedForeground};
-  margin-bottom: ${Theme.usage.space.small};
+  font-weight: 600;
+  color: ${colors.foreground};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-const WorkflowMeta = styled.div`
-  display: flex;
+const StatusBadge = styled.span<{ $color: string; $bg: string; $border: string }>`
+  display: inline-flex;
   align-items: center;
-  gap: 20px;
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.mutedForeground};
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  color: ${({ $color }) => $color};
+  background: ${({ $bg }) => $bg};
+  border: 1px solid ${({ $border }) => $border};
+  flex-shrink: 0;
 `;
 
-const MetaItem = styled.div`
+const CardActions = styled.div`
   display: flex;
   align-items: center;
-  gap: ${Theme.usage.space.xxSmall};
-`;
-
-const WorkflowActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xSmall};
+  gap: 4px;
   opacity: 0;
   transition: opacity 200ms;
 
@@ -234,356 +350,317 @@ const WorkflowActions = styled.div`
   }
 `;
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 64px 0;
-  background-color: rgb(var(--app-muted-rgb) / 0.5);
-  border: 1px solid ${colors.border};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  margin-bottom: ${Theme.usage.space.xxLarge};
-`;
-
-const EmptyIcon = styled(Zap)`
-  width: 48px;
-  height: 48px;
-  margin: 0 auto ${Theme.usage.space.medium};
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
-`;
-
-const EmptyText = styled.p`
-  color: ${colors.slate600};
-  margin-bottom: ${Theme.usage.space.medium};
-`;
-
-const TemplatesSection = styled.div``;
-
-const TemplatesTitle = styled.h2`
-  font-size: ${Theme.usage.fontSize.medium};
-  color: ${colors.slate900};
-  margin-bottom: ${Theme.usage.space.medium};
-`;
-
-const TemplatesGrid = styled(motion.div)`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: ${Theme.usage.space.medium};
-
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-`;
-
-const TemplateCard = styled(motion.div)`
-  border: 1px solid ${colors.border};
-  border-radius: ${Theme.usage.borderRadius.xLarge};
-  padding: 20px;
-  background-color: rgb(var(--app-surface-rgb) / 0.4);
-  cursor: pointer;
-  transition: box-shadow 200ms;
-
-  &:hover {
-    box-shadow: ${shadows.cardHover};
-  }
-`;
-
-const TemplateHeader = styled.div`
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: ${Theme.usage.space.small};
-`;
-
-const TemplateIconBox = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: ${Theme.usage.borderRadius.large};
+const ActionBtn = styled.button<{ $variant?: 'danger' }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgb(var(--app-violet-rgb) / 0.1);
-`;
+  width: 28px;
+  height: 28px;
+  border-radius: ${radius.md};
+  border: 1px solid ${({ $variant }) => $variant === 'danger' ? 'rgb(239 68 68 / 0.2)' : colors.border};
+  background: transparent;
+  color: ${({ $variant }) => $variant === 'danger' ? '#ef4444' : colors.mutedForeground};
+  cursor: pointer;
+  transition: all 150ms;
 
-const TemplateBadge = styled.span`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  padding: ${Theme.usage.space.xxxSmall} ${Theme.usage.space.xSmall};
-  border-radius: ${Theme.usage.borderRadius.full};
-  background-color: ${colors.muted};
-  color: ${colors.mutedForeground};
-`;
-
-const TemplateName = styled.h3`
-  font-size: ${Theme.usage.fontSize.xSmall};
-  font-weight: 500;
-  color: ${colors.foreground};
-  margin-bottom: ${Theme.usage.space.xxSmall};
-`;
-
-const TemplateDescription = styled.p`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: ${colors.mutedForeground};
-  margin-bottom: ${Theme.usage.space.small};
-`;
-
-const TemplateFooter = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const TemplateSteps = styled.span`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  color: rgb(var(--app-muted-fg-rgb) / 0.6);
-`;
-
-const TemplateAction = styled.span`
-  font-size: ${Theme.usage.fontSize.xxSmall};
-  font-weight: 500;
-  color: ${colors.violet600};
-  opacity: 0;
-  transition: opacity 200ms;
-
-  ${TemplateCard}:hover & {
-    opacity: 1;
+  &:hover {
+    background: ${({ $variant }) => $variant === 'danger' ? 'rgb(239 68 68 / 0.06)' : 'rgb(var(--app-overlay-rgb) / 0.06)'};
+    color: ${({ $variant }) => $variant === 'danger' ? '#dc2626' : colors.foreground};
   }
 `;
 
+const CardDescription = styled.p`
+  font-size: ${Theme.usage.fontSize.xxSmall};
+  color: ${colors.mutedForeground};
+  margin-bottom: ${Theme.usage.space.xSmall};
+  line-height: 1.4;
+`;
+
+const CardMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.medium};
+  font-size: 11px;
+  color: rgb(var(--app-muted-fg-rgb) / 0.6);
+`;
+
+const MetaItem = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const OwnerTag = styled.span`
+  font-size: 11px;
+  color: ${colors.mutedForeground};
+  background: rgb(var(--app-overlay-rgb) / 0.06);
+  padding: 1px 6px;
+  border-radius: 9999px;
+`;
+
+/* ─── Component ─── */
+
+const MY_TEAM = 'Data Platform';
+
+type WorkflowTabKey = 'all' | 'mine' | 'team';
+
 export function AIWorkflowsPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<'all' | 'active' | 'paused' | 'failed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused' | 'failed'>('all');
+  const [workflowTab, setWorkflowTab] = useState<WorkflowTabKey>('all');
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('workflows');
+  const [rightTab, setRightTab] = useState<'assistant' | 'overview'>('assistant');
 
-  const filteredWorkflows = mockWorkflows.filter((wf) => {
+  const tabFiltered = mockWorkflows.filter((wf) => {
+    if (workflowTab === 'mine') return wf.owner === appConfig.user.name;
+    if (workflowTab === 'team') return wf.team === MY_TEAM;
+    return true;
+  });
+
+  const filteredWorkflows = tabFiltered.filter((wf) => {
     const matchesSearch = wf.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       wf.description.toLowerCase().includes(searchTerm.toLowerCase());
-    if (filter === 'all') return matchesSearch;
-    return matchesSearch && wf.status === filter;
+    if (statusFilter === 'all') return matchesSearch;
+    return matchesSearch && wf.status === statusFilter;
   });
 
   const counts = {
+    all: tabFiltered.length,
+    active: tabFiltered.filter(w => w.status === 'active').length,
+    paused: tabFiltered.filter(w => w.status === 'paused').length,
+    failed: tabFiltered.filter(w => w.status === 'failed').length,
+  };
+
+  const globalCounts = {
     all: mockWorkflows.length,
     active: mockWorkflows.filter(w => w.status === 'active').length,
     paused: mockWorkflows.filter(w => w.status === 'paused').length,
     failed: mockWorkflows.filter(w => w.status === 'failed').length,
+    completed: mockWorkflows.filter(w => w.status === 'completed').length,
   };
 
   return (
     <PageContainer>
       <GradientOverlay />
-
       <GradientOrb variant="primary" style={{ left: '-120px', top: '-20px' }} />
       <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
 
       <ContentLayout>
-      <LeftPanel
-        tabs={[
-          { key: 'workflows', label: 'Workflows', icon: GitBranch },
-          { key: 'nodes', label: 'Nodes', icon: Wand2 },
-        ]}
-        activeTab={leftTab}
-        onTabChange={setLeftTab}
-        collapsed={!leftPanelOpen}
-        onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
-        showSearch={true}
-        searchPlaceholder="Search workflows..."
-      >
-        <WorkflowNodesPanel activeTab={leftTab} />
-      </LeftPanel>
+        <LeftPanel
+          tabs={[
+            { key: 'workflows', label: 'Workflows', icon: GitBranch },
+            { key: 'nodes', label: 'Nodes', icon: Wand2 },
+          ]}
+          activeTab={leftTab}
+          onTabChange={setLeftTab}
+          collapsed={!leftPanelOpen}
+          onToggleCollapse={() => setLeftPanelOpen(!leftPanelOpen)}
+          showSearch={true}
+          searchPlaceholder="Search workflows..."
+        >
+          <WorkflowNodesPanel activeTab={leftTab} />
+        </LeftPanel>
 
-      <CenterPanel>
-        <CenterContent>
-          <motion.div variants={fadeInUp} initial="hidden" animate="visible">
-            <PageHeader>
-              <TitleRow>
-                <Zap style={{ width: '24px', height: '24px', color: colors.violet600 }} />
-                <PageTitle>AI Workflows</PageTitle>
-              </TitleRow>
-              <PageDescription>
-                Automate recurring data tasks — scheduled reports, alerts, pipelines, and AI analyses
-              </PageDescription>
-            </PageHeader>
-          </motion.div>
+        <CenterPanel>
+          <CenterContent>
+            {/* Entry Points */}
+            <motion.div variants={fadeInUp} initial="hidden" animate="visible">
+              <EntryStrip>
+                <EntryCard>
+                  <EntryIconBox>
+                    <Plus style={{ width: 14, height: 14, color: colors.violet600 }} />
+                  </EntryIconBox>
+                  Create New Workflow
+                </EntryCard>
+                <EntryCard>
+                  <EntryIconBox $bg="linear-gradient(135deg, rgb(var(--app-purple-rgb) / 0.15), rgb(var(--app-fuchsia-rgb) / 0.1))">
+                    <Sparkles style={{ width: 14, height: 14, color: colors.violet600 }} />
+                  </EntryIconBox>
+                  Chat to Create
+                </EntryCard>
+                {templates.slice(0, 4).map((t) => (
+                  <MiniTemplateCard key={t.id}>
+                    <t.icon style={{ width: 12, height: 12 }} />
+                    {t.name}
+                  </MiniTemplateCard>
+                ))}
+                <MiniTemplateCard>
+                  <Plus style={{ width: 12, height: 12 }} />
+                  More templates...
+                </MiniTemplateCard>
+              </EntryStrip>
+            </motion.div>
 
-          <StatsGrid variants={staggerContainer} initial="hidden" animate="visible">
-            {[
-              { label: 'Total Workflows', value: counts.all, icon: Zap, color: 'var(--dd-primary)' },
-              { label: 'Active', value: counts.active, icon: Play, color: '#10b981' },
-              { label: 'Paused', value: counts.paused, icon: Pause, color: '#f59e0b' },
-              { label: 'Failed', value: counts.failed, icon: AlertCircle, color: '#ef4444' },
-            ].map((stat) => (
-              <StatCard key={stat.label} variants={staggerItem}>
-                <StatIconBox $color={stat.color}>
-                  <stat.icon style={{ width: '20px', height: '20px', color: stat.color }} />
-                </StatIconBox>
-                <div>
-                  <StatValue>{stat.value}</StatValue>
-                  <StatLabel>{stat.label}</StatLabel>
-                </div>
-              </StatCard>
-            ))}
-          </StatsGrid>
+            {/* Workflow Tabs */}
+            <TabBar>
+              <WfTab $active={workflowTab === 'all'} onClick={() => setWorkflowTab('all')}>
+                All ({mockWorkflows.length})
+              </WfTab>
+              <WfTab $active={workflowTab === 'mine'} onClick={() => setWorkflowTab('mine')}>
+                My Workflows ({mockWorkflows.filter(w => w.owner === appConfig.user.name).length})
+              </WfTab>
+              <WfTab $active={workflowTab === 'team'} onClick={() => setWorkflowTab('team')}>
+                My Team ({mockWorkflows.filter(w => w.team === MY_TEAM).length})
+              </WfTab>
+            </TabBar>
 
-          <ActionsBar>
-            <SearchWrapper>
-              <SearchIcon />
-              <Input
-                placeholder="Search workflows..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ paddingLeft: '40px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
-              />
-            </SearchWrapper>
-            <NewButton>
-              <Plus style={{ height: '16px', width: '16px' }} />
-              New workflow
-            </NewButton>
-          </ActionsBar>
-
-          <FilterRow>
-            {(['all', 'active', 'paused', 'failed'] as const).map((f) => (
-              <Button
-                key={f}
-                variant="outline"
-                size="sm"
-                style={filter === f ? { backgroundColor: colors.muted, color: colors.foreground } : {}}
-                onClick={() => setFilter(f)}
-              >
-                {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} ({counts[f]})
-              </Button>
-            ))}
-          </FilterRow>
-
-          {filteredWorkflows.length > 0 ? (
-            <WorkflowList variants={staggerContainer} initial="hidden" animate="visible">
-              {filteredWorkflows.map((workflow) => {
-                const status = statusConfig[workflow.status];
-                const StatusIcon = status.icon;
-                return (
-                  <WorkflowCard
-                    key={workflow.id}
-                    variants={staggerItem}
+            {/* Search + Status Filter */}
+            <ActionsBar>
+              <SearchWrapper>
+                <SearchIconStyled />
+                <Input
+                  placeholder="Search workflows..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{ paddingLeft: '36px', height: '34px', fontSize: '13px', backgroundColor: 'rgb(var(--app-surface-rgb) / 0.5)', borderColor: colors.border }}
+                />
+              </SearchWrapper>
+              <StatusFilterRow>
+                {(['all', 'active', 'paused', 'failed'] as const).map((f) => (
+                  <Button
+                    key={f}
+                    variant="outline"
+                    size="sm"
+                    style={{
+                      height: '34px',
+                      fontSize: '12px',
+                      ...(statusFilter === f ? { backgroundColor: 'rgb(var(--app-violet-rgb) / 0.06)', color: colors.violet600, borderColor: colors.violet500 } : {}),
+                    }}
+                    onClick={() => setStatusFilter(f)}
                   >
-                    <WorkflowRow>
-                      <WorkflowContent>
-                        <WorkflowTitleRow>
-                          <WorkflowTitle>{workflow.title}</WorkflowTitle>
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '2px 8px',
-                              borderRadius: '9999px',
-                              fontSize: '12px',
-                              fontWeight: 500,
-                              color: status.color,
-                              backgroundColor: status.bg,
-                              border: `1px solid ${status.borderColor}`,
-                            }}
-                          >
-                            <StatusIcon style={{ width: '12px', height: '12px' }} />
-                            {status.label}
-                          </span>
-                          {workflow.shared && <Users style={{ width: '14px', height: '14px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />}
-                        </WorkflowTitleRow>
-                        <WorkflowDescription>{workflow.description}</WorkflowDescription>
-                        <WorkflowMeta>
-                          <MetaItem>
-                            <Calendar style={{ width: '12px', height: '12px' }} />
-                            <span>{workflow.schedule}</span>
-                          </MetaItem>
-                          <MetaItem>
-                            <Clock style={{ width: '12px', height: '12px' }} />
-                            <span>Last run: {workflow.lastRun}</span>
-                          </MetaItem>
-                          {workflow.nextRun && (
-                            <MetaItem>
-                              <RefreshCw style={{ width: '12px', height: '12px' }} />
-                              <span>Next: {workflow.nextRun}</span>
-                            </MetaItem>
+                    {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)} ({counts[f]})
+                  </Button>
+                ))}
+              </StatusFilterRow>
+            </ActionsBar>
+
+            {/* Workflow List */}
+            {filteredWorkflows.length > 0 ? (
+              <WorkflowList variants={staggerContainer} initial="hidden" animate="visible">
+                {filteredWorkflows.map((wf) => {
+                  const st = statusConfig[wf.status];
+                  const StIcon = st.icon;
+                  return (
+                    <WorkflowCard key={wf.id} variants={staggerItem}>
+                      <CardTopRow>
+                        <CardTitleGroup>
+                          <CardTitle>{wf.title}</CardTitle>
+                          <StatusBadge $color={st.color} $bg={st.bg} $border={st.borderColor}>
+                            <StIcon style={{ width: 11, height: 11 }} />
+                            {st.label}
+                          </StatusBadge>
+                          {wf.shared && <Users style={{ width: 13, height: 13, color: 'rgb(var(--app-muted-fg-rgb) / 0.5)' }} />}
+                        </CardTitleGroup>
+                        <CardActions>
+                          {wf.status === 'active' && (
+                            <ActionBtn title="Pause"><Pause style={{ width: 13, height: 13 }} /></ActionBtn>
                           )}
-                          <span>{workflow.steps} steps</span>
-                          <span>Success rate: {workflow.successRate}</span>
-                        </WorkflowMeta>
-                      </WorkflowContent>
-                      <WorkflowActions>
-                        {workflow.status === 'active' && (
-                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
-                            <Pause style={{ width: '12px', height: '12px' }} /> Pause
-                          </Button>
-                        )}
-                        {workflow.status === 'paused' && (
-                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
-                            <Play style={{ width: '12px', height: '12px' }} /> Resume
-                          </Button>
-                        )}
-                        {workflow.status === 'failed' && (
-                          <Button variant="outline" size="sm" style={{ height: '28px', fontSize: '12px', gap: '4px' }}>
-                            <RefreshCw style={{ width: '12px', height: '12px' }} /> Retry
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" style={{ height: '28px', width: '28px', padding: 0 }}>
-                          <MoreVertical style={{ width: '16px', height: '16px', color: 'rgb(var(--app-muted-fg-rgb) / 0.6)' }} />
-                        </Button>
-                        <ChevronRight style={{ width: '16px', height: '16px', color: colors.border }} />
-                      </WorkflowActions>
-                    </WorkflowRow>
-                  </WorkflowCard>
-                );
-              })}
-            </WorkflowList>
-          ) : (
-            <EmptyState>
-              <EmptyIcon />
-              <EmptyText>No workflows match your search</EmptyText>
-            </EmptyState>
-          )}
+                          {wf.status === 'paused' && (
+                            <ActionBtn title="Resume"><Play style={{ width: 13, height: 13 }} /></ActionBtn>
+                          )}
+                          {wf.status === 'failed' && (
+                            <ActionBtn title="Retry"><RefreshCw style={{ width: 13, height: 13 }} /></ActionBtn>
+                          )}
+                          {(wf.status === 'active' || wf.status === 'paused') && (
+                            <ActionBtn $variant="danger" title="Stop"><Square style={{ width: 11, height: 11 }} /></ActionBtn>
+                          )}
+                          <ActionBtn title="More options"><MoreVertical style={{ width: 13, height: 13 }} /></ActionBtn>
+                          <ChevronRight style={{ width: 14, height: 14, color: 'rgb(var(--app-muted-fg-rgb) / 0.3)' }} />
+                        </CardActions>
+                      </CardTopRow>
+                      <CardDescription>{wf.description}</CardDescription>
+                      <CardMeta>
+                        <MetaItem><Calendar style={{ width: 11, height: 11 }} /> {wf.schedule}</MetaItem>
+                        <MetaItem><Clock style={{ width: 11, height: 11 }} /> {wf.lastRun}</MetaItem>
+                        {wf.nextRun && <MetaItem><RefreshCw style={{ width: 11, height: 11 }} /> {wf.nextRun}</MetaItem>}
+                        <MetaItem>{wf.steps} steps</MetaItem>
+                        <MetaItem>{wf.successRate}</MetaItem>
+                        {wf.owner !== appConfig.user.name && <OwnerTag>{wf.owner}</OwnerTag>}
+                      </CardMeta>
+                    </WorkflowCard>
+                  );
+                })}
+              </WorkflowList>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '64px 0', color: colors.mutedForeground }}>
+                <Zap style={{ width: 40, height: 40, color: 'rgb(var(--app-muted-fg-rgb) / 0.4)', marginBottom: '12px' }} />
+                <p>No workflows match your filters</p>
+              </div>
+            )}
+          </CenterContent>
+        </CenterPanel>
 
-          <TemplatesSection>
-            <TemplatesTitle>Workflow Templates</TemplatesTitle>
-            <TemplatesGrid variants={staggerContainer} initial="hidden" animate="visible">
-              {templates.map((template) => (
-                <TemplateCard
-                  key={template.id}
-                  variants={staggerItem}
-                >
-                  <TemplateHeader>
-                    <TemplateIconBox>
-                      <template.icon style={{ width: '20px', height: '20px', color: colors.violet600 }} />
-                    </TemplateIconBox>
-                    <TemplateBadge>{template.category}</TemplateBadge>
-                  </TemplateHeader>
-                  <TemplateName>{template.name}</TemplateName>
-                  <TemplateDescription>{template.description}</TemplateDescription>
-                  <TemplateFooter>
-                    <TemplateSteps>{template.steps} steps</TemplateSteps>
-                    <TemplateAction>
-                      Use template →
-                    </TemplateAction>
-                  </TemplateFooter>
-                </TemplateCard>
-              ))}
-            </TemplatesGrid>
-          </TemplatesSection>
-        </CenterContent>
-      </CenterPanel>
+        {/* Right Panel: AI Assistant + Overview tabs */}
+        <RightPanel>
+          <RightPanelTabs>
+            <RightPanelTab $active={rightTab === 'assistant'} onClick={() => setRightTab('assistant')}>
+              <Sparkles style={{ width: 13, height: 13 }} />
+              Assistant
+            </RightPanelTab>
+            <RightPanelTab $active={rightTab === 'overview'} onClick={() => setRightTab('overview')}>
+              <BarChart3 style={{ width: 13, height: 13 }} />
+              Overview
+            </RightPanelTab>
+          </RightPanelTabs>
 
-      <AIAssistantSidebar
-        title="Workflow Assistant"
-        contextLabel="Workflows aware"
-        knowledgeBaseId="workflows"
-        welcomeMessage="Hi! I can help you create, schedule, and debug AI workflows. Ask me to set up alerts, automate reports, or chain data tasks."
-        suggestions={[
-          { text: 'Create a scheduled report' },
-          { text: 'Set up an anomaly alert' },
-          { text: 'Debug a failed workflow' },
-          { text: 'Chain SQL + notebook' },
-        ]}
-        suggestedActions={['Schedule workflow', 'Add trigger', 'View logs']}
-      />
+          <RightPanelContent>
+            {rightTab === 'assistant' ? (
+              <AIAssistantSidebar
+                title="Workflow Assistant"
+                contextLabel="Workflows aware"
+                knowledgeBaseId="workflows"
+                welcomeMessage="Hi! I can help you create, schedule, and debug AI workflows."
+                suggestions={[
+                  { text: 'Create a scheduled report' },
+                  { text: 'Set up an anomaly alert' },
+                  { text: 'Debug a failed workflow' },
+                  { text: 'Chain SQL + notebook' },
+                ]}
+                suggestedActions={['Schedule workflow', 'Add trigger', 'View logs']}
+              />
+            ) : (
+              <StatsPanel>
+                <StatsSectionTitle>Workflow Health</StatsSectionTitle>
+                {[
+                  { label: 'Total Workflows', value: globalCounts.all, icon: Zap, color: '#FF3A00' },
+                  { label: 'Active', value: globalCounts.active, icon: Play, color: '#10b981' },
+                  { label: 'Paused', value: globalCounts.paused, icon: Pause, color: '#f59e0b' },
+                  { label: 'Failed', value: globalCounts.failed, icon: AlertCircle, color: '#ef4444' },
+                  { label: 'Completed', value: globalCounts.completed, icon: Zap, color: '#3b82f6' },
+                ].map((stat) => (
+                  <StatRow key={stat.label}>
+                    <StatRowLeft>
+                      <StatIconBox $color={stat.color}>
+                        <stat.icon style={{ width: 15, height: 15, color: stat.color }} />
+                      </StatIconBox>
+                      <StatRowLabel>{stat.label}</StatRowLabel>
+                    </StatRowLeft>
+                    <StatRowValue>{stat.value}</StatRowValue>
+                  </StatRow>
+                ))}
+
+                <div style={{ height: '1px', background: colors.border, margin: `${Theme.usage.space.small} 0` }} />
+
+                <StatsSectionTitle>Recent Runs</StatsSectionTitle>
+                {mockWorkflows.slice(0, 4).map((wf) => {
+                  const st = statusConfig[wf.status];
+                  return (
+                    <div key={wf.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: `1px solid ${colors.border}` }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: 500, color: colors.foreground, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{wf.title}</div>
+                        <div style={{ fontSize: '11px', color: colors.mutedForeground }}>{wf.lastRun}</div>
+                      </div>
+                      <StatusBadge $color={st.color} $bg={st.bg} $border={st.borderColor} style={{ fontSize: '10px', padding: '1px 6px' }}>
+                        {st.label}
+                      </StatusBadge>
+                    </div>
+                  );
+                })}
+              </StatsPanel>
+            )}
+          </RightPanelContent>
+        </RightPanel>
       </ContentLayout>
     </PageContainer>
   );
