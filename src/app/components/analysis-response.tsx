@@ -1,11 +1,14 @@
-import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2 } from 'lucide-react';
+import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import styled from 'styled-components';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows } from '@/styles/theme';
+import { PinToDashboardDialog } from './chart-builder/pin-to-dashboard-dialog';
+import { canvasStorage } from '../data/canvas-storage';
+import type { WidgetConfig, CanvasLayoutItem } from '@/types';
 
 interface AnalysisChartDataPoint {
   date: string;
@@ -383,7 +386,40 @@ const NextCutTag = styled.div`
   margin-top: ${Theme.usage.space.xxSmall};
 `;
 
-function SectionActions() {
+const PinSuccessBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: 6px 20px;
+  background: #f0fdf4;
+  border-bottom: 1px solid #bbf7d0;
+`;
+
+const PinSuccessText = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: #15803d;
+  flex: 1;
+`;
+
+const PinSuccessLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: #15803d;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #166534;
+  }
+`;
+
+function SectionActions({ onPinToCanvas }: { onPinToCanvas?: () => void }) {
   const navigate = useNavigate();
   return (
     <SectionActionsWrapper>
@@ -392,11 +428,12 @@ function SectionActions() {
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/dashboards');
+          if (onPinToCanvas) onPinToCanvas();
+          else navigate('/dashboards');
         }}
       >
-        <LayoutDashboard />
-        Canvas
+        <Pin />
+        Pin to Canvas
       </ActionButton>
       <ActionButton
         size="sm"
@@ -425,7 +462,55 @@ function SectionActions() {
 }
 
 export function AnalysisResponse({ chartData, summaryData }: AnalysisResponseProps) {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pendingWidget, setPendingWidget] = useState<WidgetConfig | null>(null);
+  const [pinSuccess, setPinSuccess] = useState<{ canvasId: string; canvasTitle: string; widgetTitle: string; section: 'chart' | 'table' } | null>(null);
+
+  const handlePinChart = useCallback(() => {
+    setPendingWidget({
+      id: crypto.randomUUID(),
+      title: 'Subscriber Growth Trend',
+      subtitle: '60-day window • millions',
+      type: 'area',
+      data: chartData.map((d) => ({ name: d.date, value: d.subscribers, target: d.target })),
+    });
+    setPinSuccess(null);
+    setPinDialogOpen(true);
+  }, [chartData]);
+
+  const handlePinTable = useCallback(() => {
+    setPendingWidget({
+      id: crypto.randomUUID(),
+      title: 'Executive Summary by Region',
+      subtitle: 'DashPass Growth Deep-Dive',
+      type: 'table',
+      data: summaryData.map((r) => ({ name: r.region, value: parseFloat(r.subs.replace(/[^0-9.]/g, '')), growth: r.growth, retention: r.retention, aov: r.aov })),
+    });
+    setPinSuccess(null);
+    setPinDialogOpen(true);
+  }, [summaryData]);
+
+  const handlePin = useCallback((canvasId: string) => {
+    if (!pendingWidget) return;
+    canvasStorage.saveCanvasWidget(canvasId, pendingWidget);
+    const existing = canvasStorage.getCanvas(canvasId);
+    if (existing) {
+      const maxY = existing.layout.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+      const newLayoutItem: CanvasLayoutItem = {
+        widgetId: pendingWidget.id,
+        x: 0,
+        y: maxY,
+        w: 6,
+        h: 4,
+      };
+      canvasStorage.saveCanvas({ ...existing, layout: [...existing.layout, newLayoutItem] });
+      const section = pendingWidget.type === 'table' ? 'table' as const : 'chart' as const;
+      setPinSuccess({ canvasId, canvasTitle: existing.title, widgetTitle: pendingWidget.title, section });
+    }
+    setPendingWidget(null);
+  }, [pendingWidget]);
 
   return (
     <OuterContainer>
@@ -502,8 +587,17 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           <SectionCard>
             <SectionHeader>
               <SectionTitle>Executive Summary by Region</SectionTitle>
-              <SectionActions />
+              <SectionActions onPinToCanvas={handlePinTable} />
             </SectionHeader>
+            {pinSuccess?.section === 'table' && (
+              <PinSuccessBanner>
+                <CheckCircle2 style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
+                  Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
             <TableWrapper>
               <StyledTable>
                 <thead>
@@ -587,8 +681,17 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <SectionTitle>Subscriber Growth Trend</SectionTitle>
                 <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
               </ChartHeaderLeft>
-              <SectionActions />
+              <SectionActions onPinToCanvas={handlePinChart} />
             </ChartHeaderRow>
+            {pinSuccess?.section === 'chart' && (
+              <PinSuccessBanner>
+                <CheckCircle2 style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
+                  Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
             <ChartBody>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -642,6 +745,11 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           </SectionCard>
         </ContentBody>
       )}
+      <PinToDashboardDialog
+        open={pinDialogOpen}
+        onClose={() => { setPinDialogOpen(false); setPendingWidget(null); }}
+        onPin={handlePin}
+      />
     </OuterContainer>
   );
 }
