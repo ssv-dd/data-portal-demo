@@ -1,16 +1,18 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import styled, { keyframes } from 'styled-components';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Plus, BookOpen, Search, FileText, Clock, Users, FileCode2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Plus, BookOpen, Search, FileText, Clock, Users, FileCode2, Loader2, Check, Server, Package, Cpu } from 'lucide-react';
 import { Dialog, DialogContent } from '../components/ui/dialog';
 import { AIAssistantSidebar } from '../components/ai-assistant-sidebar';
 import { LeftPanel } from '../components/layout/left-panel';
 import { NotebookTemplatesPanel } from '../components/panels/notebook-templates-panel';
-import { notebookTemplates, mockNotebooks } from '../data/mock/notebooks-data';
+import { notebookTemplates } from '../data/mock/notebooks-data';
+import { getAllNotebooks, createNotebook } from '../data/notebook-storage';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel, shadows } from '@/styles/theme';
@@ -279,6 +281,88 @@ const TemplateCells = styled.span`
   color: ${colors.slate600};
 `;
 
+/* ── Provisioning overlay ── */
+
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const ProvisioningContainer = styled(motion.div)`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: ${Theme.usage.space.xLarge} ${Theme.usage.space.medium};
+  gap: ${Theme.usage.space.large};
+`;
+
+const ProvisioningSpinner = styled(Loader2)`
+  width: 36px;
+  height: 36px;
+  color: ${colors.violet600};
+  animation: ${spin} 1s linear infinite;
+`;
+
+const ProvisioningTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+  text-align: center;
+`;
+
+const StepsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+  width: 100%;
+`;
+
+const StepRow = styled(motion.div)<{ $status: 'pending' | 'active' | 'done' }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: ${Theme.usage.space.xSmall} ${Theme.usage.space.small};
+  border-radius: ${Theme.usage.borderRadius.large};
+  background: ${({ $status }) => $status === 'active' ? 'rgb(var(--app-violet-rgb) / 0.06)' : 'transparent'};
+  transition: background 300ms;
+`;
+
+const StepIconBox = styled.div<{ $status: 'pending' | 'active' | 'done' }>`
+  width: 28px;
+  height: 28px;
+  border-radius: ${Theme.usage.borderRadius.full};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: ${({ $status }) => {
+    if ($status === 'done') return colors.green600;
+    if ($status === 'active') return colors.violet600;
+    return colors.muted;
+  }};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.white};
+  transition: all 300ms;
+`;
+
+const StepSpinner = styled(Loader2)`
+  width: 14px;
+  height: 14px;
+  animation: ${spin} 1s linear infinite;
+`;
+
+const StepLabel = styled.span<{ $status: 'pending' | 'active' | 'done' }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: ${({ $status }) => $status === 'active' ? 600 : 400};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.foreground};
+  transition: all 300ms;
+`;
+
+const PROVISIONING_STEPS = [
+  { id: 'server', label: 'Provisioning server…', doneLabel: 'Server provisioned', icon: Server },
+  { id: 'env', label: 'Installing environment…', doneLabel: 'Environment ready', icon: Package },
+  { id: 'kernel', label: 'Starting kernel…', doneLabel: 'Kernel started', icon: Cpu },
+];
+
 const ModalFormGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -315,16 +399,23 @@ const ModalActions = styled.div`
 `;
 
 export function NotebooksPage() {
+  const navigate = useNavigate();
   const [showScaffoldModal, setShowScaffoldModal] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [notebookName, setNotebookName] = useState('');
-  const [notebookOwner, setNotebookOwner] = useState('');
+  const [selectedLibrary, setSelectedLibrary] = useState('ds-standard');
+  const [customDockerUrl, setCustomDockerUrl] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'mine' | 'shared'>('all');
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [leftTab, setLeftTab] = useState('recent');
+  const [serverType, setServerType] = useState('cpu-small');
+  const [notebooks, setNotebooks] = useState(getAllNotebooks);
+  const [provisioning, setProvisioning] = useState(false);
+  const [provisionStep, setProvisionStep] = useState(0);
+  const pendingNotebookRef = useRef<{ id: string; title: string } | null>(null);
 
-  const filteredNotebooks = mockNotebooks.filter((notebook) => {
+  const filteredNotebooks = notebooks.filter((notebook) => {
     const matchesSearch = notebook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       notebook.description.toLowerCase().includes(searchTerm.toLowerCase());
     if (filter === 'mine') return matchesSearch && !notebook.shared;
@@ -332,12 +423,37 @@ export function NotebooksPage() {
     return matchesSearch;
   });
 
-  const handleCreateNotebook = () => {
-    setShowScaffoldModal(false);
+  useEffect(() => {
+    if (!provisioning) return;
+    if (provisionStep >= PROVISIONING_STEPS.length) {
+      const nb = pendingNotebookRef.current;
+      if (nb) {
+        const timer = setTimeout(() => {
+          setNotebooks(getAllNotebooks());
+          setProvisioning(false);
+          setProvisionStep(0);
+          setShowScaffoldModal(false);
+          navigate(`/notebook/${nb.id}?name=${encodeURIComponent(nb.title)}`);
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+    const delay = 800 + Math.random() * 600;
+    const timer = setTimeout(() => setProvisionStep((s) => s + 1), delay);
+    return () => clearTimeout(timer);
+  }, [provisioning, provisionStep, navigate]);
+
+  const handleCreateNotebook = useCallback(() => {
+    const serverLabel = (document.querySelector<HTMLSelectElement>('[data-server-select]')?.selectedOptions[0]?.text) ?? serverType;
+    const nb = createNotebook(notebookName, serverLabel, selectedLibrary);
+    pendingNotebookRef.current = { id: nb.id, title: nb.title };
     setSelectedTemplate(null);
     setNotebookName('');
-    setNotebookOwner('');
-  };
+    setServerType('cpu-small');
+    setProvisionStep(0);
+    setProvisioning(true);
+  }, [notebookName, serverType, selectedLibrary]);
 
   const handleTabChange = (tab: string) => {
     setLeftTab(tab);
@@ -410,6 +526,7 @@ export function NotebooksPage() {
                 <NotebookCard
                   key={notebook.id}
                   variants={staggerItem}
+                  onClick={() => navigate(`/notebook/${notebook.id}`)}
                 >
                   <CardHeader>
                     <CardTitleRow>
@@ -483,24 +600,42 @@ export function NotebooksPage() {
       />
       </ContentLayout>
 
-      <Dialog open={showScaffoldModal} onOpenChange={setShowScaffoldModal} title="Create New Notebook">
+      <Dialog open={showScaffoldModal} onOpenChange={(open) => { if (!provisioning) setShowScaffoldModal(open); }} title="Create New Notebook">
         <DialogContent style={{ maxWidth: '512px' }}>
+          {provisioning ? (
+            <ProvisioningContainer
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProvisioningSpinner />
+              <ProvisioningTitle>Setting up your notebook…</ProvisioningTitle>
+              <StepsList>
+                {PROVISIONING_STEPS.map((step, i) => {
+                  const status: 'pending' | 'active' | 'done' =
+                    i < provisionStep ? 'done' : i === provisionStep ? 'active' : 'pending';
+                  const StepIcon = step.icon;
+                  return (
+                    <StepRow key={step.id} $status={status} layout>
+                      <StepIconBox $status={status}>
+                        {status === 'done' ? (
+                          <Check style={{ width: 14, height: 14 }} />
+                        ) : status === 'active' ? (
+                          <StepSpinner />
+                        ) : (
+                          <StepIcon style={{ width: 14, height: 14 }} />
+                        )}
+                      </StepIconBox>
+                      <StepLabel $status={status}>
+                        {status === 'done' ? step.doneLabel : step.label}
+                      </StepLabel>
+                    </StepRow>
+                  );
+                })}
+              </StepsList>
+            </ProvisioningContainer>
+          ) : (
           <ModalFormGroup>
-            <ModalField>
-              <Label style={{ marginBottom: '4px' }}>Template</Label>
-              <ModalSelect
-                value={selectedTemplate || ''}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-              >
-                <option value="">Select a template</option>
-                {notebookTemplates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.name}
-                  </option>
-                ))}
-              </ModalSelect>
-            </ModalField>
-
             <ModalField>
               <Label style={{ marginBottom: '4px' }}>Notebook Name</Label>
               <Input
@@ -511,13 +646,57 @@ export function NotebooksPage() {
             </ModalField>
 
             <ModalField>
-              <Label style={{ marginBottom: '4px' }}>Owner</Label>
-              <Input
-                placeholder="e.g., J. Smith"
-                value={notebookOwner}
-                onChange={(e) => setNotebookOwner(e.target.value)}
-              />
+              <Label style={{ marginBottom: '4px' }}>Server Type</Label>
+              <ModalSelect data-server-select value={serverType} onChange={(e) => setServerType(e.target.value)}>
+                <optgroup label="CPU Only Notebook Server">
+                  <option value="cpu-small">Small (2 CPU / 8 GB)</option>
+                  <option value="cpu-medium">Medium (4 CPU / 16 GB)</option>
+                  <option value="cpu-large">Large (8 CPU / 32 GB)</option>
+                  <option value="cpu-xlarge">XLarge (16 CPU / 64 GB)</option>
+                </optgroup>
+                <optgroup label="GPU Notebook Server">
+                  <option value="t4-x1">T4 x1 — 1 GPU / 12 CPUs / 48GB</option>
+                  <option value="t4-x2">T4 x2 — 2 GPUs / 24 CPUs / 96GB</option>
+                  <option value="t4-x4">T4 x4 — 4 GPUs / 44 CPUs / 172GB</option>
+                  <option value="a10g-x1">A10G x1 — 1 GPU / 12 CPUs / 48GB</option>
+                  <option value="a10g-x2">A10G x2 — 2 GPUs / 24 CPUs / 96GB</option>
+                  <option value="a10g-x4">A10G x4 — 4 GPUs / 48 CPUs / 192GB</option>
+                  <option value="a100-x1">A100 x1 — 1 GPU / 11 CPUs / 122GB</option>
+                  <option value="a100-x2">A100 x2 — 2 GPUs / 22 CPUs / 266GB</option>
+                  <option value="a100-x4">A100 x4 — 4 GPUs / 44 CPUs / 553GB</option>
+                  <option value="a100-80-x1">A100 80GB (p4de) x1 — 1 GPU / 11 CPUs / 122GB</option>
+                  <option value="a100-80-x2">A100 80GB (p4de) x2 — 2 GPUs / 22 CPUs / 266GB</option>
+                  <option value="a100-80-x4">A100 80GB (p4de) x4 — 4 GPUs / 44 CPUs / 553GB</option>
+                  <option value="h100-x1">H100 x1 — 1 GPU / 12 CPUs / 252GB</option>
+                  <option value="h200-x1">H200 x1 — 1 GPU / 24 CPUs / 229GB</option>
+                  <option value="h200-x2">H200 x2 — 2 GPUs / 48 CPUs / 479GB</option>
+                  <option value="h200-x4">H200 x4 — 4 GPUs / 96 CPUs / 979GB</option>
+                </optgroup>
+              </ModalSelect>
             </ModalField>
+
+            <ModalField>
+              <Label style={{ marginBottom: '4px' }}>Environment</Label>
+              <ModalSelect
+                value={selectedLibrary}
+                onChange={(e) => setSelectedLibrary(e.target.value)}
+              >
+                <option value="pyspark">PySpark (Python 3.10 + Spark Connect)</option>
+                <option value="data-science">Data Science (Python 3.11, no Spark)</option>
+                <option value="custom">Custom ECR Image</option>
+              </ModalSelect>
+            </ModalField>
+
+            {selectedLibrary === 'custom' && (
+              <ModalField>
+                <Label style={{ marginBottom: '4px' }}>Custom ECR Image URL</Label>
+                <Input
+                  placeholder="e.g., gcr.io/doordash/my-custom-image:latest"
+                  value={customDockerUrl}
+                  onChange={(e) => setCustomDockerUrl(e.target.value)}
+                />
+              </ModalField>
+            )}
 
             {selectedTemplate && (
               <ModalInfoBox>
@@ -528,18 +707,21 @@ export function NotebooksPage() {
             )}
 
             <ModalActions>
-              <Button variant="outline" onClick={() => setShowScaffoldModal(false)}>
+              <Button variant="outline" size="sm" style={{ fontSize: '13px' }} onClick={() => setShowScaffoldModal(false)}>
                 Cancel
               </Button>
               <Button
-                style={{ backgroundColor: colors.ddPrimary, color: colors.white }}
+                variant="outline"
+                size="sm"
+                style={{ backgroundColor: colors.ddPrimary, color: colors.white, fontSize: '13px', borderColor: colors.ddPrimary }}
                 onClick={handleCreateNotebook}
-                disabled={!selectedTemplate || !notebookName}
+                disabled={!notebookName}
               >
                 Create Notebook
               </Button>
             </ModalActions>
           </ModalFormGroup>
+          )}
         </DialogContent>
       </Dialog>
     </PageContainer>
