@@ -29,33 +29,36 @@ const Nav = styled.nav`
 const LogoContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: ${Theme.usage.space.small};
+  gap: 6px;
 `;
 
-const LogoIcon = styled.div`
+const LogoIcon = styled.img`
   width: 32px;
   height: 32px;
-  border-radius: ${radius.xl};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, ${colors.violet500}, ${colors.cyan400});
-  box-shadow: ${shadows.lg};
+  border-radius: 8px;
+  object-fit: cover;
 `;
 
 const LogoText = styled.span`
   font-size: ${Theme.usage.fontSize.medium};
-  font-weight: 600;
+  font-weight: 700;
   color: ${colors.slate950};
+  letter-spacing: 0.5px;
 `;
 
 const LogoSeparator = styled.span`
-  color: ${colors.slate400};
+  color: ${colors.slate300};
+  font-weight: 300;
+  font-size: 20px;
 `;
 
 const LogoSubtext = styled.span`
   font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 500;
   color: ${colors.slate600};
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 `;
 
 const TabsContainer = styled.div`
@@ -228,17 +231,14 @@ export function TopNav() {
   return (
     <Nav>
       <LogoContainer>
-        <LogoIcon>
-          <span
-            style={{ color: colors.white, fontWeight: 700, fontSize: "18px" }}
-          >
-            D
-          </span>
-        </LogoIcon>
+        <LogoIcon src={`${import.meta.env.BASE_URL}dd-logo.png`} alt="DoorDash" />
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <LogoText>DoorDash</LogoText>
-          <LogoSeparator>|</LogoSeparator>
-          <LogoSubtext>Data Portal</LogoSubtext>
+          <LogoText>OPS</LogoText>
+          <LogoSeparator>/</LogoSeparator>
+          <LogoSubtext>
+            Data Portal
+            <ChevronDown style={{ width: 14, height: 14, opacity: 0.5 }} />
+          </LogoSubtext>
         </div>
       </LogoContainer>
 

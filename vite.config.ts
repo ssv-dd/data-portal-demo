@@ -13,7 +13,12 @@ export default defineConfig({
   server: {
     port: parseInt(process.env.VITE_PORT || '5180'),
   },
+  build: {
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
+  },
   optimizeDeps: {
-    include: ['react-grid-layout', 'react-resizable', 'react-draggable'],
+    include: ['react-grid-layout', 'react-resizable', 'react-draggable', '@doordash/prism-react'],
   },
 })
