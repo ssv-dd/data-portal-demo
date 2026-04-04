@@ -618,8 +618,8 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
         const timer = setTimeout(() => {
           setNbProvisioning(false);
           setNbProvisionStep(0);
-          setNotebookSuccess({ notebookId: nb.id, notebookTitle: nb.title, section: nb.section });
           setPendingNotebook(null);
+          navigate(`/notebook/${nb.id}?name=${encodeURIComponent(nb.title)}`);
         }, 600);
         return () => clearTimeout(timer);
       }
@@ -628,7 +628,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
     const delay = 800 + Math.random() * 600;
     const timer = setTimeout(() => setNbProvisionStep((s) => s + 1), delay);
     return () => clearTimeout(timer);
-  }, [nbProvisioning, nbProvisionStep, pendingNotebook]);
+  }, [nbProvisioning, nbProvisionStep, pendingNotebook, navigate]);
 
   const chartCells = [
     { type: 'markdown' as const, source: '# DashPass Growth Trend Analysis\nGenerated from AI Chat — deeper analysis of subscriber growth trend.' },
@@ -650,7 +650,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
   const handleOpenChartInNotebook = useCallback(() => {
     const title = 'DashPass Growth Trend Analysis';
     const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
-    setPrefillCells(chartCells);
+    setPrefillCells(nb.id, chartCells);
     setPendingNotebook({ id: nb.id, title, section: 'chart' });
     setNotebookSuccess(null);
     setNbProvisionStep(0);
@@ -660,7 +660,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
   const handleOpenTableInNotebook = useCallback(() => {
     const title = 'DashPass Regional Deep-Dive';
     const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
-    setPrefillCells(tableCells);
+    setPrefillCells(nb.id, tableCells);
     setPendingNotebook({ id: nb.id, title, section: 'table' });
     setNotebookSuccess(null);
     setNbProvisionStep(0);
