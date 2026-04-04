@@ -9,6 +9,7 @@ import { colors, radius, shadows } from '@/styles/theme';
 import { PinToDashboardDialog } from './chart-builder/pin-to-dashboard-dialog';
 import { canvasStorage } from '../data/canvas-storage';
 import { createNotebook, setPrefillCells } from '../data/notebook-storage';
+import { setSqlPrefill } from '../data/sql-prefill';
 import type { WidgetConfig, CanvasLayoutItem } from '@/types';
 
 interface AnalysisChartDataPoint {
@@ -511,7 +512,7 @@ const NOTEBOOK_STEPS = [
   { id: 'kernel', label: 'Starting kernel…', doneLabel: 'Kernel started', icon: Cpu },
 ];
 
-function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: () => void; onOpenInNotebook?: () => void }) {
+function SectionActions({ onPinToCanvas, onEditInSql, onOpenInNotebook }: { onPinToCanvas?: () => void; onEditInSql?: () => void; onOpenInNotebook?: () => void }) {
   const navigate = useNavigate();
   return (
     <SectionActionsWrapper>
@@ -532,7 +533,8 @@ function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: (
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/sql-studio');
+          if (onEditInSql) onEditInSql();
+          else navigate('/sql-studio');
         }}
       >
         <Code2 />
@@ -667,6 +669,58 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
     setNbProvisioning(true);
   }, []);
 
+  const handleEditChartInSql = useCallback(() => {
+    setSqlPrefill({
+      tabName: 'dashpass_growth.sql',
+      sourceLabel: 'DashPass Growth Deep-Dive',
+      sql: `-- DashPass Subscriber Growth Trend
+-- Source: AI Chat analysis
+-- Generated: ${new Date().toLocaleDateString()}
+
+SELECT
+    ds,
+    COUNT(DISTINCT subscriber_id) AS active_subscribers,
+    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) AS new_subscribers,
+    COUNT(DISTINCT CASE WHEN is_churned THEN subscriber_id END) AS churned_subscribers,
+    ROUND(
+        COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) * 100.0
+        / NULLIF(COUNT(DISTINCT subscriber_id), 0), 2
+    ) AS new_subscriber_pct
+FROM analytics.dashpass_subscribers
+WHERE ds BETWEEN DATEADD(day, -60, CURRENT_DATE()) AND CURRENT_DATE()
+GROUP BY ds
+ORDER BY ds;`,
+    });
+    navigate('/sql-studio');
+  }, [navigate]);
+
+  const handleEditTableInSql = useCallback(() => {
+    setSqlPrefill({
+      tabName: 'dashpass_regional.sql',
+      sourceLabel: 'DashPass Growth Deep-Dive',
+      sql: `-- DashPass Regional Performance Summary
+-- Source: AI Chat analysis
+-- Generated: ${new Date().toLocaleDateString()}
+
+SELECT
+    region,
+    active_subscribers,
+    mom_growth_pct,
+    retention_rate,
+    avg_order_value,
+    CASE
+        WHEN mom_growth_pct >= 15 THEN 'Hypergrowth'
+        WHEN mom_growth_pct >= 10 THEN 'Strong'
+        WHEN mom_growth_pct >= 5  THEN 'Moderate'
+        ELSE 'Slow'
+    END AS growth_tier
+FROM analytics.dashpass_regional_summary
+WHERE period = 'L60D'
+ORDER BY active_subscribers DESC;`,
+    });
+    navigate('/sql-studio');
+  }, [navigate]);
+
   return (
     <OuterContainer>
       <style>{spin}</style>
@@ -776,7 +830,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           <SectionCard>
             <SectionHeader>
               <SectionTitle>Executive Summary by Region</SectionTitle>
-              <SectionActions onPinToCanvas={handlePinTable} onOpenInNotebook={handleOpenTableInNotebook} />
+              <SectionActions onPinToCanvas={handlePinTable} onEditInSql={handleEditTableInSql} onOpenInNotebook={handleOpenTableInNotebook} />
             </SectionHeader>
             {pinSuccess?.section === 'table' && (
               <PinSuccessBanner>
@@ -879,7 +933,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <SectionTitle>Subscriber Growth Trend</SectionTitle>
                 <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
               </ChartHeaderLeft>
-              <SectionActions onPinToCanvas={handlePinChart} onOpenInNotebook={handleOpenChartInNotebook} />
+              <SectionActions onPinToCanvas={handlePinChart} onEditInSql={handleEditChartInSql} onOpenInNotebook={handleOpenChartInNotebook} />
             </ChartHeaderRow>
             {pinSuccess?.section === 'chart' && (
               <PinSuccessBanner>
