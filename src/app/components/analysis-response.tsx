@@ -1,6 +1,6 @@
-import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink, BookOpen } from 'lucide-react';
+import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink, BookOpen, Loader2, Server, Package, Cpu, Check } from 'lucide-react';
 import { Button } from './ui/button';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import styled from 'styled-components';
@@ -420,6 +420,97 @@ const PinSuccessLink = styled.button`
   }
 `;
 
+const spin = `@keyframes nb-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+
+const NotebookProvisioningOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+`;
+
+const ProvisioningCard = styled.div`
+  background: ${colors.white};
+  border-radius: ${radius.xl};
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${Theme.usage.space.large};
+  min-width: 360px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+`;
+
+const ProvisioningSpinner = styled(Loader2)`
+  width: 32px;
+  height: 32px;
+  color: ${colors.violet600};
+  animation: nb-spin 1s linear infinite;
+`;
+
+const ProvisioningTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const StepsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+  width: 100%;
+`;
+
+const StepRow = styled.div<{ $status: 'pending' | 'active' | 'done' }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: 6px ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background: ${({ $status }) => $status === 'active' ? 'rgb(var(--app-violet-rgb) / 0.06)' : 'transparent'};
+  transition: background 300ms;
+`;
+
+const StepIconBox = styled.div<{ $status: 'pending' | 'active' | 'done' }>`
+  width: 26px;
+  height: 26px;
+  border-radius: ${radius.full};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: ${({ $status }) => {
+    if ($status === 'done') return '#16a34a';
+    if ($status === 'active') return colors.violet600;
+    return colors.muted;
+  }};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.white};
+  transition: all 300ms;
+`;
+
+const StepSpinner = styled(Loader2)`
+  width: 13px;
+  height: 13px;
+  animation: nb-spin 1s linear infinite;
+`;
+
+const StepLabel = styled.span<{ $status: 'pending' | 'active' | 'done' }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: ${({ $status }) => $status === 'active' ? 600 : 400};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.foreground};
+  transition: all 300ms;
+`;
+
+const NOTEBOOK_STEPS = [
+  { id: 'server', label: 'Provisioning server…', doneLabel: 'Server provisioned', icon: Server },
+  { id: 'env', label: 'Installing environment…', doneLabel: 'Environment ready', icon: Package },
+  { id: 'kernel', label: 'Starting kernel…', doneLabel: 'Kernel started', icon: Cpu },
+];
+
 function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: () => void; onOpenInNotebook?: () => void }) {
   const navigate = useNavigate();
   return (
@@ -445,7 +536,7 @@ function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: (
         }}
       >
         <Code2 />
-        SQL
+        Edit in SQL Studio
       </ActionButton>
       <ActionButton
         size="sm"
@@ -457,7 +548,7 @@ function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: (
         }}
       >
         <BookOpen />
-        Notebook
+        Explore in Notebook
       </ActionButton>
     </SectionActionsWrapper>
   );
@@ -515,36 +606,103 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
   }, [pendingWidget]);
 
   const [notebookSuccess, setNotebookSuccess] = useState<{ notebookId: string; notebookTitle: string; section: 'chart' | 'table' } | null>(null);
+  const [nbProvisioning, setNbProvisioning] = useState(false);
+  const [nbProvisionStep, setNbProvisionStep] = useState(0);
+  const [pendingNotebook, setPendingNotebook] = useState<{ id: string; title: string; section: 'chart' | 'table' } | null>(null);
+
+  useEffect(() => {
+    if (!nbProvisioning) return;
+    if (nbProvisionStep >= NOTEBOOK_STEPS.length) {
+      const nb = pendingNotebook;
+      if (nb) {
+        const timer = setTimeout(() => {
+          setNbProvisioning(false);
+          setNbProvisionStep(0);
+          setNotebookSuccess({ notebookId: nb.id, notebookTitle: nb.title, section: nb.section });
+          setPendingNotebook(null);
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+    const delay = 800 + Math.random() * 600;
+    const timer = setTimeout(() => setNbProvisionStep((s) => s + 1), delay);
+    return () => clearTimeout(timer);
+  }, [nbProvisioning, nbProvisionStep, pendingNotebook]);
+
+  const chartCells = [
+    { type: 'markdown' as const, source: '# DashPass Growth Trend Analysis\nGenerated from AI Chat — deeper analysis of subscriber growth trend.' },
+    { type: 'code' as const, source: `import pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+    { type: 'code' as const, source: `query = """\nSELECT\n    ds,\n    COUNT(DISTINCT subscriber_id) as active_subscribers,\n    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) as new_subscribers\nFROM analytics.dashpass_subscribers\nWHERE ds BETWEEN '2026-01-15' AND '2026-03-16'\nGROUP BY ds\nORDER BY ds\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"Loaded {len(df):,} rows")\ndf.head()` },
+    { type: 'code' as const, source: `fig, ax = plt.subplots(figsize=(14, 6))\nax.plot(df['ds'], df['active_subscribers'], color='#7c3aed', linewidth=2, label='Active Subscribers')\nax.fill_between(df['ds'], df['active_subscribers'], alpha=0.1, color='#7c3aed')\nax.set_title('DashPass Subscriber Growth Trend')\nax.set_xlabel('Date')\nax.set_ylabel('Subscribers')\nax.legend()\nplt.tight_layout()\nplt.show()` },
+    { type: 'markdown' as const, source: '## Next steps\n- Segment by acquisition channel (organic vs paid vs referral)\n- Compare retention across cohorts\n- Forecast next 30-day trajectory' },
+    { type: 'code' as const, source: '' },
+  ];
+
+  const tableCells = [
+    { type: 'markdown' as const, source: '# DashPass Regional Deep-Dive\nGenerated from AI Chat — deeper analysis of executive summary by region.' },
+    { type: 'code' as const, source: `import pandas as pd\nimport numpy as np\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+    { type: 'code' as const, source: `query = """\nSELECT\n    region,\n    active_subscribers,\n    mom_growth_pct,\n    retention_rate,\n    avg_order_value\nFROM analytics.dashpass_regional_summary\nWHERE period = 'L60D'\nORDER BY active_subscribers DESC\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"{len(df)} regions loaded")\ndf` },
+    { type: 'code' as const, source: `# Custom segmentation — slice by growth tier\ndf['growth_tier'] = pd.cut(df['mom_growth_pct'], bins=[0, 5, 10, 15, 100], labels=['Slow', 'Moderate', 'Strong', 'Hypergrowth'])\ndf.groupby('growth_tier').agg(\n    regions=('region', 'count'),\n    avg_retention=('retention_rate', 'mean'),\n    total_subs=('active_subscribers', 'sum')\n).round(1)` },
+    { type: 'code' as const, source: '' },
+  ];
 
   const handleOpenChartInNotebook = useCallback(() => {
     const title = 'DashPass Growth Trend Analysis';
-    const nb = createNotebook(title, 'CPU Small', 'data-science');
-    setPrefillCells([
-      { type: 'markdown', source: `# ${title}\nGenerated from AI Chat — deeper analysis of subscriber growth trend.` },
-      { type: 'code', source: `import pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
-      { type: 'code', source: `query = """\nSELECT\n    ds,\n    COUNT(DISTINCT subscriber_id) as active_subscribers,\n    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) as new_subscribers\nFROM analytics.dashpass_subscribers\nWHERE ds BETWEEN '2026-01-15' AND '2026-03-16'\nGROUP BY ds\nORDER BY ds\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"Loaded {len(df):,} rows")\ndf.head()` },
-      { type: 'code', source: `fig, ax = plt.subplots(figsize=(14, 6))\nax.plot(df['ds'], df['active_subscribers'], color='#7c3aed', linewidth=2, label='Active Subscribers')\nax.fill_between(df['ds'], df['active_subscribers'], alpha=0.1, color='#7c3aed')\nax.set_title('DashPass Subscriber Growth Trend')\nax.set_xlabel('Date')\nax.set_ylabel('Subscribers')\nax.legend()\nplt.tight_layout()\nplt.show()` },
-      { type: 'markdown', source: '## Next steps\n- Segment by acquisition channel (organic vs paid vs referral)\n- Compare retention across cohorts\n- Forecast next 30-day trajectory' },
-      { type: 'code', source: '' },
-    ]);
-    setNotebookSuccess({ notebookId: nb.id, notebookTitle: title, section: 'chart' });
+    const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
+    setPrefillCells(chartCells);
+    setPendingNotebook({ id: nb.id, title, section: 'chart' });
+    setNotebookSuccess(null);
+    setNbProvisionStep(0);
+    setNbProvisioning(true);
   }, []);
 
   const handleOpenTableInNotebook = useCallback(() => {
     const title = 'DashPass Regional Deep-Dive';
-    const nb = createNotebook(title, 'CPU Small', 'data-science');
-    setPrefillCells([
-      { type: 'markdown', source: `# ${title}\nGenerated from AI Chat — deeper analysis of executive summary by region.` },
-      { type: 'code', source: `import pandas as pd\nimport numpy as np\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
-      { type: 'code', source: `query = """\nSELECT\n    region,\n    active_subscribers,\n    mom_growth_pct,\n    retention_rate,\n    avg_order_value\nFROM analytics.dashpass_regional_summary\nWHERE period = 'L60D'\nORDER BY active_subscribers DESC\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"{len(df)} regions loaded")\ndf` },
-      { type: 'code', source: `# Custom segmentation — slice by growth tier\ndf['growth_tier'] = pd.cut(df['mom_growth_pct'], bins=[0, 5, 10, 15, 100], labels=['Slow', 'Moderate', 'Strong', 'Hypergrowth'])\ndf.groupby('growth_tier').agg(\n    regions=('region', 'count'),\n    avg_retention=('retention_rate', 'mean'),\n    total_subs=('active_subscribers', 'sum')\n).round(1)` },
-      { type: 'code', source: '' },
-    ]);
-    setNotebookSuccess({ notebookId: nb.id, notebookTitle: title, section: 'table' });
+    const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
+    setPrefillCells(tableCells);
+    setPendingNotebook({ id: nb.id, title, section: 'table' });
+    setNotebookSuccess(null);
+    setNbProvisionStep(0);
+    setNbProvisioning(true);
   }, []);
 
   return (
     <OuterContainer>
+      <style>{spin}</style>
+
+      {nbProvisioning && (
+        <NotebookProvisioningOverlay>
+          <ProvisioningCard>
+            <ProvisioningSpinner />
+            <ProvisioningTitle>Setting up notebook…</ProvisioningTitle>
+            <StepsList>
+              {NOTEBOOK_STEPS.map((step, i) => {
+                const status: 'pending' | 'active' | 'done' =
+                  i < nbProvisionStep ? 'done' : i === nbProvisionStep ? 'active' : 'pending';
+                const StepIcon = step.icon;
+                return (
+                  <StepRow key={step.id} $status={status}>
+                    <StepIconBox $status={status}>
+                      {status === 'done' ? (
+                        <Check style={{ width: 13, height: 13 }} />
+                      ) : status === 'active' ? (
+                        <StepSpinner />
+                      ) : (
+                        <StepIcon style={{ width: 13, height: 13 }} />
+                      )}
+                    </StepIconBox>
+                    <StepLabel $status={status}>
+                      {status === 'done' ? step.doneLabel : step.label}
+                    </StepLabel>
+                  </StepRow>
+                );
+              })}
+            </StepsList>
+          </ProvisioningCard>
+        </NotebookProvisioningOverlay>
+      )}
+
       {/* Header */}
       <HeaderBar>
         <HeaderLeft>
