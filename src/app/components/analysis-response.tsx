@@ -1,4 +1,4 @@
-import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink, BookOpen } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router';
@@ -8,6 +8,7 @@ import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows } from '@/styles/theme';
 import { PinToDashboardDialog } from './chart-builder/pin-to-dashboard-dialog';
 import { canvasStorage } from '../data/canvas-storage';
+import { createNotebook, setPrefillCells } from '../data/notebook-storage';
 import type { WidgetConfig, CanvasLayoutItem } from '@/types';
 
 interface AnalysisChartDataPoint {
@@ -419,7 +420,7 @@ const PinSuccessLink = styled.button`
   }
 `;
 
-function SectionActions({ onPinToCanvas }: { onPinToCanvas?: () => void }) {
+function SectionActions({ onPinToCanvas, onOpenInNotebook }: { onPinToCanvas?: () => void; onOpenInNotebook?: () => void }) {
   const navigate = useNavigate();
   return (
     <SectionActionsWrapper>
@@ -451,10 +452,11 @@ function SectionActions({ onPinToCanvas }: { onPinToCanvas?: () => void }) {
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/notebooks');
+          if (onOpenInNotebook) onOpenInNotebook();
+          else navigate('/notebooks');
         }}
       >
-        <FileText />
+        <BookOpen />
         Notebook
       </ActionButton>
     </SectionActionsWrapper>
@@ -511,6 +513,35 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
     }
     setPendingWidget(null);
   }, [pendingWidget]);
+
+  const [notebookSuccess, setNotebookSuccess] = useState<{ notebookId: string; notebookTitle: string; section: 'chart' | 'table' } | null>(null);
+
+  const handleOpenChartInNotebook = useCallback(() => {
+    const title = 'DashPass Growth Trend Analysis';
+    const nb = createNotebook(title, 'CPU Small', 'data-science');
+    setPrefillCells([
+      { type: 'markdown', source: `# ${title}\nGenerated from AI Chat — deeper analysis of subscriber growth trend.` },
+      { type: 'code', source: `import pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+      { type: 'code', source: `query = """\nSELECT\n    ds,\n    COUNT(DISTINCT subscriber_id) as active_subscribers,\n    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) as new_subscribers\nFROM analytics.dashpass_subscribers\nWHERE ds BETWEEN '2026-01-15' AND '2026-03-16'\nGROUP BY ds\nORDER BY ds\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"Loaded {len(df):,} rows")\ndf.head()` },
+      { type: 'code', source: `fig, ax = plt.subplots(figsize=(14, 6))\nax.plot(df['ds'], df['active_subscribers'], color='#7c3aed', linewidth=2, label='Active Subscribers')\nax.fill_between(df['ds'], df['active_subscribers'], alpha=0.1, color='#7c3aed')\nax.set_title('DashPass Subscriber Growth Trend')\nax.set_xlabel('Date')\nax.set_ylabel('Subscribers')\nax.legend()\nplt.tight_layout()\nplt.show()` },
+      { type: 'markdown', source: '## Next steps\n- Segment by acquisition channel (organic vs paid vs referral)\n- Compare retention across cohorts\n- Forecast next 30-day trajectory' },
+      { type: 'code', source: '' },
+    ]);
+    setNotebookSuccess({ notebookId: nb.id, notebookTitle: title, section: 'chart' });
+  }, []);
+
+  const handleOpenTableInNotebook = useCallback(() => {
+    const title = 'DashPass Regional Deep-Dive';
+    const nb = createNotebook(title, 'CPU Small', 'data-science');
+    setPrefillCells([
+      { type: 'markdown', source: `# ${title}\nGenerated from AI Chat — deeper analysis of executive summary by region.` },
+      { type: 'code', source: `import pandas as pd\nimport numpy as np\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+      { type: 'code', source: `query = """\nSELECT\n    region,\n    active_subscribers,\n    mom_growth_pct,\n    retention_rate,\n    avg_order_value\nFROM analytics.dashpass_regional_summary\nWHERE period = 'L60D'\nORDER BY active_subscribers DESC\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"{len(df)} regions loaded")\ndf` },
+      { type: 'code', source: `# Custom segmentation — slice by growth tier\ndf['growth_tier'] = pd.cut(df['mom_growth_pct'], bins=[0, 5, 10, 15, 100], labels=['Slow', 'Moderate', 'Strong', 'Hypergrowth'])\ndf.groupby('growth_tier').agg(\n    regions=('region', 'count'),\n    avg_retention=('retention_rate', 'mean'),\n    total_subs=('active_subscribers', 'sum')\n).round(1)` },
+      { type: 'code', source: '' },
+    ]);
+    setNotebookSuccess({ notebookId: nb.id, notebookTitle: title, section: 'table' });
+  }, []);
 
   return (
     <OuterContainer>
@@ -587,7 +618,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           <SectionCard>
             <SectionHeader>
               <SectionTitle>Executive Summary by Region</SectionTitle>
-              <SectionActions onPinToCanvas={handlePinTable} />
+              <SectionActions onPinToCanvas={handlePinTable} onOpenInNotebook={handleOpenTableInNotebook} />
             </SectionHeader>
             {pinSuccess?.section === 'table' && (
               <PinSuccessBanner>
@@ -595,6 +626,15 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
                 <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
                   Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
+            {notebookSuccess?.section === 'table' && (
+              <PinSuccessBanner>
+                <BookOpen style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Notebook created: <strong>{notebookSuccess.notebookTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/notebook/${notebookSuccess.notebookId}?name=${encodeURIComponent(notebookSuccess.notebookTitle)}`)}>
+                  Open Notebook <ExternalLink style={{ width: 11, height: 11 }} />
                 </PinSuccessLink>
               </PinSuccessBanner>
             )}
@@ -681,7 +721,7 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <SectionTitle>Subscriber Growth Trend</SectionTitle>
                 <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
               </ChartHeaderLeft>
-              <SectionActions onPinToCanvas={handlePinChart} />
+              <SectionActions onPinToCanvas={handlePinChart} onOpenInNotebook={handleOpenChartInNotebook} />
             </ChartHeaderRow>
             {pinSuccess?.section === 'chart' && (
               <PinSuccessBanner>
@@ -689,6 +729,15 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
                 <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
                   Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
+            {notebookSuccess?.section === 'chart' && (
+              <PinSuccessBanner>
+                <BookOpen style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Notebook created: <strong>{notebookSuccess.notebookTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/notebook/${notebookSuccess.notebookId}?name=${encodeURIComponent(notebookSuccess.notebookTitle)}`)}>
+                  Open Notebook <ExternalLink style={{ width: 11, height: 11 }} />
                 </PinSuccessLink>
               </PinSuccessBanner>
             )}

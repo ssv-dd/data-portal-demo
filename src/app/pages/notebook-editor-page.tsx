@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, staggerItem } from '@/app/lib/motion';
@@ -23,6 +23,7 @@ import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel, radius, fonts } from '@/styles/theme';
 import { mockNotebooks } from '../data/mock/notebooks-data';
+import { consumePrefillCells } from '../data/notebook-storage';
 
 type KernelStatus = 'starting' | 'idle' | 'busy' | 'not_connected';
 type CellType = 'code' | 'markdown';
@@ -477,8 +478,21 @@ export function NotebookEditorPage() {
   const existingNotebook = mockNotebooks.find((n) => n.id === id);
   const notebookTitle = existingNotebook?.title ?? searchParams.get('name') ?? 'Untitled Notebook';
 
+  const initialCells = useMemo(() => {
+    const prefill = consumePrefillCells();
+    if (prefill && prefill.length > 0) {
+      return prefill.map((c, i) => ({
+        id: `prefill-${i}`,
+        type: c.type,
+        source: c.source,
+        executionCount: c.type === 'code' ? null : undefined,
+      } as NotebookCell));
+    }
+    return SAMPLE_CELLS;
+  }, []);
+
   const [kernelStatus, setKernelStatus] = useState<KernelStatus>('idle');
-  const [cells, setCells] = useState<NotebookCell[]>(SAMPLE_CELLS);
+  const [cells, setCells] = useState<NotebookCell[]>(initialCells);
   const [focusedCellId, setFocusedCellId] = useState<string | null>(null);
   const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
 

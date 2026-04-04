@@ -45,3 +45,16 @@ export function deleteNotebook(id: string): void {
   const existing = loadUserNotebooks();
   saveUserNotebooks(existing.filter((n) => n.id !== id));
 }
+
+const PREFILL_CELLS_KEY = 'data-portal-notebook-prefill';
+
+export function setPrefillCells(cells: { type: 'code' | 'markdown'; source: string }[]): void {
+  sessionStorage.setItem(PREFILL_CELLS_KEY, JSON.stringify(cells));
+}
+
+export function consumePrefillCells(): { type: 'code' | 'markdown'; source: string }[] | null {
+  const raw = sessionStorage.getItem(PREFILL_CELLS_KEY);
+  if (!raw) return null;
+  sessionStorage.removeItem(PREFILL_CELLS_KEY);
+  try { return JSON.parse(raw); } catch { return null; }
+}
