@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import styled, { css, keyframes } from 'styled-components';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem, fadeInUp } from '@/app/lib/motion';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ChevronRight, ChevronDown, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
+import { ChevronRight, ChevronDown, Database, Table, Search, Clock, Users, Plus, Play, Square, Share2, BookmarkPlus, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Sparkles, MessageSquare, X, BookOpen, ArrowUp, Folder, FolderOpen, BarChart3, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { mockSavedQueries, sampleResults, DEFAULT_SQL } from '../data/mock/sql-studio-data';
+import { consumeSqlPrefill } from '../data/sql-prefill';
 import { GradientOrb } from '../components/hero/gradient-orb';
 import { Theme } from '@doordash/prism-react';
 import { colors, fonts, shadows, glassPanel, glassPanelSubtle, glassPanelChat } from '@/styles/theme';
@@ -1605,9 +1607,49 @@ const catalogBrowse = {
   ],
 };
 
+const SourceBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: 6px 16px;
+  background: rgb(var(--app-violet-rgb) / 0.06);
+  border-bottom: 1px solid rgb(var(--app-violet-rgb) / 0.12);
+  font-size: 12px;
+`;
+
+const SourceBannerIcon = styled(Sparkles)`
+  width: 14px;
+  height: 14px;
+  color: ${colors.violet600};
+  flex-shrink: 0;
+`;
+
+const SourceBannerText = styled.span`
+  color: ${colors.foreground};
+  flex: 1;
+`;
+
+const SourceBannerLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: ${colors.violet600};
+  background: transparent;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 /* ─── Component ─────────────────────────────────────────────────────── */
 
 export function SQLStudioPage() {
+  const navigate = useNavigate();
+  const [prefillSource, setPrefillSource] = useState<string | null>(null);
   const [showLanding, setShowLanding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'mine' | 'shared'>('all');
@@ -1645,6 +1687,17 @@ export function SQLStudioPage() {
     { id: 'tab-2', name: 'revenue_report.sql', sql: '' },
   ]);
   const [activeFileTab, setActiveFileTab] = useState('tab-1');
+
+  useEffect(() => {
+    const prefill = consumeSqlPrefill();
+    if (prefill) {
+      const newTabId = `tab-prefill-${Date.now()}`;
+      setSqlTabs((prev) => [...prev, { id: newTabId, name: prefill.tabName, sql: prefill.sql }]);
+      setActiveFileTab(newTabId);
+      setSql(prefill.sql);
+      setPrefillSource(prefill.sourceLabel ?? null);
+    }
+  }, []);
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editingTabName, setEditingTabName] = useState('');
   const editInputRef = useRef<HTMLInputElement>(null);
@@ -2093,6 +2146,19 @@ export function SQLStudioPage() {
                 </ExpandButton>
               </TabBarActions>
             </TabBar>
+
+            {prefillSource && activeFileTab.startsWith('tab-prefill') && (
+              <SourceBanner>
+                <SourceBannerIcon />
+                <SourceBannerText>
+                  Generated from AI Chat: <strong>{prefillSource}</strong>
+                </SourceBannerText>
+                <SourceBannerLink onClick={() => navigate('/')}>
+                  <ArrowLeft style={{ width: 12, height: 12 }} />
+                  Back to Chat
+                </SourceBannerLink>
+              </SourceBanner>
+            )}
 
             <MonacoWrapper $dark={isDarkMode}>
               <Editor

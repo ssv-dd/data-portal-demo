@@ -265,7 +265,7 @@ export function PinToDashboardDialog({
 
   const handleCreateAndPin = () => {
     if (!newName.trim()) {
-      setFormError('Dashboard name is required');
+      setFormError('Canvas name is required');
       return;
     }
     setFormError('');
@@ -291,16 +291,16 @@ export function PinToDashboardDialog({
     <Dialog
       open={open}
       onOpenChange={(v) => { if (!v) onClose(); }}
-      title="Pin to Dashboard"
+      title="Pin to Canvas"
       size={ModalSize.medium}
     >
       <DialogContent>
         <TabBar>
           <Tab $active={activeTab === 'existing'} onClick={() => setActiveTab('existing')}>
-            Existing Dashboard
+            Existing Canvas
           </Tab>
           <Tab $active={activeTab === 'new'} onClick={() => setActiveTab('new')}>
-            New Dashboard
+            New Canvas
           </Tab>
         </TabBar>
 
@@ -309,14 +309,14 @@ export function PinToDashboardDialog({
             <SearchWrapper>
               <SearchIcon />
               <SearchInput
-                placeholder="Search dashboards..."
+                placeholder="Search canvases..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </SearchWrapper>
             <DashboardList>
               {filtered.length === 0 ? (
-                <EmptyState>No dashboards found</EmptyState>
+                <EmptyState>No canvases found</EmptyState>
               ) : (
                 filtered.map((canvas) => {
                   const isActive = canvas.id === selectedCanvasId;
@@ -343,7 +343,7 @@ export function PinToDashboardDialog({
                 disabled={!selectedCanvasId}
                 onClick={handlePinToExisting}
               >
-                Pin to Dashboard
+                Pin to Canvas
               </PinButton>
             </DialogFooter>
           </>
@@ -352,7 +352,7 @@ export function PinToDashboardDialog({
         {activeTab === 'new' && (
           <>
             <FormGroup>
-              <Label htmlFor="new-dashboard-name">Dashboard Name *</Label>
+              <Label htmlFor="new-dashboard-name">Canvas Name *</Label>
               <TextInput
                 id="new-dashboard-name"
                 placeholder="e.g. Q2 Revenue Metrics"

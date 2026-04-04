@@ -1,11 +1,16 @@
-import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2 } from 'lucide-react';
+import { Sparkles, ChevronUp, ChevronDown, TrendingUp, ArrowRight, LayoutDashboard, Code2, FileText, Copy, Download, Share2, Pin, CheckCircle2, ExternalLink, BookOpen, Loader2, Server, Package, Cpu, Check } from 'lucide-react';
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import styled from 'styled-components';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius, shadows } from '@/styles/theme';
+import { PinToDashboardDialog } from './chart-builder/pin-to-dashboard-dialog';
+import { canvasStorage } from '../data/canvas-storage';
+import { createNotebook, setPrefillCells } from '../data/notebook-storage';
+import { setSqlPrefill } from '../data/sql-prefill';
+import type { WidgetConfig, CanvasLayoutItem } from '@/types';
 
 interface AnalysisChartDataPoint {
   date: string;
@@ -383,7 +388,131 @@ const NextCutTag = styled.div`
   margin-top: ${Theme.usage.space.xxSmall};
 `;
 
-function SectionActions() {
+const PinSuccessBanner = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: 6px 20px;
+  background: #f0fdf4;
+  border-bottom: 1px solid #bbf7d0;
+`;
+
+const PinSuccessText = styled.span`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  color: #15803d;
+  flex: 1;
+`;
+
+const PinSuccessLink = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: 600;
+  color: #15803d;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #166534;
+  }
+`;
+
+const spin = `@keyframes nb-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+
+const NotebookProvisioningOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+`;
+
+const ProvisioningCard = styled.div`
+  background: ${colors.white};
+  border-radius: ${radius.xl};
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${Theme.usage.space.large};
+  min-width: 360px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+`;
+
+const ProvisioningSpinner = styled(Loader2)`
+  width: 32px;
+  height: 32px;
+  color: ${colors.violet600};
+  animation: nb-spin 1s linear infinite;
+`;
+
+const ProvisioningTitle = styled.h3`
+  font-size: ${Theme.usage.fontSize.medium};
+  font-weight: 600;
+  color: ${colors.foreground};
+`;
+
+const StepsList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${Theme.usage.space.small};
+  width: 100%;
+`;
+
+const StepRow = styled.div<{ $status: 'pending' | 'active' | 'done' }>`
+  display: flex;
+  align-items: center;
+  gap: ${Theme.usage.space.small};
+  padding: 6px ${Theme.usage.space.small};
+  border-radius: ${radius.lg};
+  background: ${({ $status }) => $status === 'active' ? 'rgb(var(--app-violet-rgb) / 0.06)' : 'transparent'};
+  transition: background 300ms;
+`;
+
+const StepIconBox = styled.div<{ $status: 'pending' | 'active' | 'done' }>`
+  width: 26px;
+  height: 26px;
+  border-radius: ${radius.full};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: ${({ $status }) => {
+    if ($status === 'done') return '#16a34a';
+    if ($status === 'active') return colors.violet600;
+    return colors.muted;
+  }};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.white};
+  transition: all 300ms;
+`;
+
+const StepSpinner = styled(Loader2)`
+  width: 13px;
+  height: 13px;
+  animation: nb-spin 1s linear infinite;
+`;
+
+const StepLabel = styled.span<{ $status: 'pending' | 'active' | 'done' }>`
+  font-size: ${Theme.usage.fontSize.xSmall};
+  font-weight: ${({ $status }) => $status === 'active' ? 600 : 400};
+  color: ${({ $status }) => $status === 'pending' ? colors.slate400 : colors.foreground};
+  transition: all 300ms;
+`;
+
+const NOTEBOOK_STEPS = [
+  { id: 'server', label: 'Provisioning server…', doneLabel: 'Server provisioned', icon: Server },
+  { id: 'env', label: 'Installing environment…', doneLabel: 'Environment ready', icon: Package },
+  { id: 'kernel', label: 'Starting kernel…', doneLabel: 'Kernel started', icon: Cpu },
+];
+
+function SectionActions({ onPinToCanvas, onEditInSql, onOpenInNotebook }: { onPinToCanvas?: () => void; onEditInSql?: () => void; onOpenInNotebook?: () => void }) {
   const navigate = useNavigate();
   return (
     <SectionActionsWrapper>
@@ -392,43 +521,242 @@ function SectionActions() {
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/dashboards');
+          if (onPinToCanvas) onPinToCanvas();
+          else navigate('/dashboards');
         }}
       >
-        <LayoutDashboard />
-        Canvas
+        <Pin />
+        Pin to Canvas
       </ActionButton>
       <ActionButton
         size="sm"
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/sql-studio');
+          if (onEditInSql) onEditInSql();
+          else navigate('/sql-studio');
         }}
       >
         <Code2 />
-        SQL
+        Edit in SQL Studio
       </ActionButton>
       <ActionButton
         size="sm"
         variant="ghost"
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/notebooks');
+          if (onOpenInNotebook) onOpenInNotebook();
+          else navigate('/notebooks');
         }}
       >
-        <FileText />
-        Notebook
+        <BookOpen />
+        Explore in Notebook
       </ActionButton>
     </SectionActionsWrapper>
   );
 }
 
 export function AnalysisResponse({ chartData, summaryData }: AnalysisResponseProps) {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [pendingWidget, setPendingWidget] = useState<WidgetConfig | null>(null);
+  const [pinSuccess, setPinSuccess] = useState<{ canvasId: string; canvasTitle: string; widgetTitle: string; section: 'chart' | 'table' } | null>(null);
+
+  const handlePinChart = useCallback(() => {
+    setPendingWidget({
+      id: crypto.randomUUID(),
+      title: 'Subscriber Growth Trend',
+      subtitle: '60-day window • millions',
+      type: 'area',
+      data: chartData.map((d) => ({ name: d.date, value: d.subscribers, target: d.target })),
+    });
+    setPinSuccess(null);
+    setPinDialogOpen(true);
+  }, [chartData]);
+
+  const handlePinTable = useCallback(() => {
+    setPendingWidget({
+      id: crypto.randomUUID(),
+      title: 'Executive Summary by Region',
+      subtitle: 'DashPass Growth Deep-Dive',
+      type: 'table',
+      data: summaryData.map((r) => ({ name: r.region, value: parseFloat(r.subs.replace(/[^0-9.]/g, '')), growth: r.growth, retention: r.retention, aov: r.aov })),
+    });
+    setPinSuccess(null);
+    setPinDialogOpen(true);
+  }, [summaryData]);
+
+  const handlePin = useCallback((canvasId: string) => {
+    if (!pendingWidget) return;
+    canvasStorage.saveCanvasWidget(canvasId, pendingWidget);
+    const existing = canvasStorage.getCanvas(canvasId);
+    if (existing) {
+      const maxY = existing.layout.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+      const newLayoutItem: CanvasLayoutItem = {
+        widgetId: pendingWidget.id,
+        x: 0,
+        y: maxY,
+        w: 6,
+        h: 4,
+      };
+      canvasStorage.saveCanvas({ ...existing, layout: [...existing.layout, newLayoutItem] });
+      const section = pendingWidget.type === 'table' ? 'table' as const : 'chart' as const;
+      setPinSuccess({ canvasId, canvasTitle: existing.title, widgetTitle: pendingWidget.title, section });
+    }
+    setPendingWidget(null);
+  }, [pendingWidget]);
+
+  const [notebookSuccess, setNotebookSuccess] = useState<{ notebookId: string; notebookTitle: string; section: 'chart' | 'table' } | null>(null);
+  const [nbProvisioning, setNbProvisioning] = useState(false);
+  const [nbProvisionStep, setNbProvisionStep] = useState(0);
+  const [pendingNotebook, setPendingNotebook] = useState<{ id: string; title: string; section: 'chart' | 'table' } | null>(null);
+
+  useEffect(() => {
+    if (!nbProvisioning) return;
+    if (nbProvisionStep >= NOTEBOOK_STEPS.length) {
+      const nb = pendingNotebook;
+      if (nb) {
+        const timer = setTimeout(() => {
+          setNbProvisioning(false);
+          setNbProvisionStep(0);
+          setPendingNotebook(null);
+          navigate(`/notebook/${nb.id}?name=${encodeURIComponent(nb.title)}`);
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+    const delay = 800 + Math.random() * 600;
+    const timer = setTimeout(() => setNbProvisionStep((s) => s + 1), delay);
+    return () => clearTimeout(timer);
+  }, [nbProvisioning, nbProvisionStep, pendingNotebook, navigate]);
+
+  const chartCells = [
+    { type: 'markdown' as const, source: '# DashPass Growth Trend Analysis\nGenerated from AI Chat — deeper analysis of subscriber growth trend.' },
+    { type: 'code' as const, source: `import pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+    { type: 'code' as const, source: `query = """\nSELECT\n    ds,\n    COUNT(DISTINCT subscriber_id) as active_subscribers,\n    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) as new_subscribers\nFROM analytics.dashpass_subscribers\nWHERE ds BETWEEN '2026-01-15' AND '2026-03-16'\nGROUP BY ds\nORDER BY ds\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"Loaded {len(df):,} rows")\ndf.head()` },
+    { type: 'code' as const, source: `fig, ax = plt.subplots(figsize=(14, 6))\nax.plot(df['ds'], df['active_subscribers'], color='#7c3aed', linewidth=2, label='Active Subscribers')\nax.fill_between(df['ds'], df['active_subscribers'], alpha=0.1, color='#7c3aed')\nax.set_title('DashPass Subscriber Growth Trend')\nax.set_xlabel('Date')\nax.set_ylabel('Subscribers')\nax.legend()\nplt.tight_layout()\nplt.show()` },
+    { type: 'markdown' as const, source: '## Next steps\n- Segment by acquisition channel (organic vs paid vs referral)\n- Compare retention across cohorts\n- Forecast next 30-day trajectory' },
+    { type: 'code' as const, source: '' },
+  ];
+
+  const tableCells = [
+    { type: 'markdown' as const, source: '# DashPass Regional Deep-Dive\nGenerated from AI Chat — deeper analysis of executive summary by region.' },
+    { type: 'code' as const, source: `import pandas as pd\nimport numpy as np\nfrom doordash.data import SnowflakeConnector\n\nconn = SnowflakeConnector(role='DATA_ANALYST')\nprint("Connected to Snowflake ✓")` },
+    { type: 'code' as const, source: `query = """\nSELECT\n    region,\n    active_subscribers,\n    mom_growth_pct,\n    retention_rate,\n    avg_order_value\nFROM analytics.dashpass_regional_summary\nWHERE period = 'L60D'\nORDER BY active_subscribers DESC\n"""\n\ndf = pd.read_sql(query, conn)\nprint(f"{len(df)} regions loaded")\ndf` },
+    { type: 'code' as const, source: `# Custom segmentation — slice by growth tier\ndf['growth_tier'] = pd.cut(df['mom_growth_pct'], bins=[0, 5, 10, 15, 100], labels=['Slow', 'Moderate', 'Strong', 'Hypergrowth'])\ndf.groupby('growth_tier').agg(\n    regions=('region', 'count'),\n    avg_retention=('retention_rate', 'mean'),\n    total_subs=('active_subscribers', 'sum')\n).round(1)` },
+    { type: 'code' as const, source: '' },
+  ];
+
+  const handleOpenChartInNotebook = useCallback(() => {
+    const title = 'DashPass Growth Trend Analysis';
+    const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
+    setPrefillCells(nb.id, chartCells);
+    setPendingNotebook({ id: nb.id, title, section: 'chart' });
+    setNotebookSuccess(null);
+    setNbProvisionStep(0);
+    setNbProvisioning(true);
+  }, []);
+
+  const handleOpenTableInNotebook = useCallback(() => {
+    const title = 'DashPass Regional Deep-Dive';
+    const nb = createNotebook(title, 'Small (2 CPU / 8 GB)', 'data-science');
+    setPrefillCells(nb.id, tableCells);
+    setPendingNotebook({ id: nb.id, title, section: 'table' });
+    setNotebookSuccess(null);
+    setNbProvisionStep(0);
+    setNbProvisioning(true);
+  }, []);
+
+  const handleEditChartInSql = useCallback(() => {
+    setSqlPrefill({
+      tabName: 'dashpass_growth.sql',
+      sourceLabel: 'DashPass Growth Deep-Dive',
+      sql: `-- DashPass Subscriber Growth Trend
+-- Source: AI Chat analysis
+-- Generated: ${new Date().toLocaleDateString()}
+
+SELECT
+    ds,
+    COUNT(DISTINCT subscriber_id) AS active_subscribers,
+    COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) AS new_subscribers,
+    COUNT(DISTINCT CASE WHEN is_churned THEN subscriber_id END) AS churned_subscribers,
+    ROUND(
+        COUNT(DISTINCT CASE WHEN is_new THEN subscriber_id END) * 100.0
+        / NULLIF(COUNT(DISTINCT subscriber_id), 0), 2
+    ) AS new_subscriber_pct
+FROM analytics.dashpass_subscribers
+WHERE ds BETWEEN DATEADD(day, -60, CURRENT_DATE()) AND CURRENT_DATE()
+GROUP BY ds
+ORDER BY ds;`,
+    });
+    navigate('/sql-studio');
+  }, [navigate]);
+
+  const handleEditTableInSql = useCallback(() => {
+    setSqlPrefill({
+      tabName: 'dashpass_regional.sql',
+      sourceLabel: 'DashPass Growth Deep-Dive',
+      sql: `-- DashPass Regional Performance Summary
+-- Source: AI Chat analysis
+-- Generated: ${new Date().toLocaleDateString()}
+
+SELECT
+    region,
+    active_subscribers,
+    mom_growth_pct,
+    retention_rate,
+    avg_order_value,
+    CASE
+        WHEN mom_growth_pct >= 15 THEN 'Hypergrowth'
+        WHEN mom_growth_pct >= 10 THEN 'Strong'
+        WHEN mom_growth_pct >= 5  THEN 'Moderate'
+        ELSE 'Slow'
+    END AS growth_tier
+FROM analytics.dashpass_regional_summary
+WHERE period = 'L60D'
+ORDER BY active_subscribers DESC;`,
+    });
+    navigate('/sql-studio');
+  }, [navigate]);
 
   return (
     <OuterContainer>
+      <style>{spin}</style>
+
+      {nbProvisioning && (
+        <NotebookProvisioningOverlay>
+          <ProvisioningCard>
+            <ProvisioningSpinner />
+            <ProvisioningTitle>Setting up notebook…</ProvisioningTitle>
+            <StepsList>
+              {NOTEBOOK_STEPS.map((step, i) => {
+                const status: 'pending' | 'active' | 'done' =
+                  i < nbProvisionStep ? 'done' : i === nbProvisionStep ? 'active' : 'pending';
+                const StepIcon = step.icon;
+                return (
+                  <StepRow key={step.id} $status={status}>
+                    <StepIconBox $status={status}>
+                      {status === 'done' ? (
+                        <Check style={{ width: 13, height: 13 }} />
+                      ) : status === 'active' ? (
+                        <StepSpinner />
+                      ) : (
+                        <StepIcon style={{ width: 13, height: 13 }} />
+                      )}
+                    </StepIconBox>
+                    <StepLabel $status={status}>
+                      {status === 'done' ? step.doneLabel : step.label}
+                    </StepLabel>
+                  </StepRow>
+                );
+              })}
+            </StepsList>
+          </ProvisioningCard>
+        </NotebookProvisioningOverlay>
+      )}
+
       {/* Header */}
       <HeaderBar>
         <HeaderLeft>
@@ -502,8 +830,26 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           <SectionCard>
             <SectionHeader>
               <SectionTitle>Executive Summary by Region</SectionTitle>
-              <SectionActions />
+              <SectionActions onPinToCanvas={handlePinTable} onEditInSql={handleEditTableInSql} onOpenInNotebook={handleOpenTableInNotebook} />
             </SectionHeader>
+            {pinSuccess?.section === 'table' && (
+              <PinSuccessBanner>
+                <CheckCircle2 style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
+                  Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
+            {notebookSuccess?.section === 'table' && (
+              <PinSuccessBanner>
+                <BookOpen style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Notebook created: <strong>{notebookSuccess.notebookTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/notebook/${notebookSuccess.notebookId}?name=${encodeURIComponent(notebookSuccess.notebookTitle)}`)}>
+                  Open Notebook <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
             <TableWrapper>
               <StyledTable>
                 <thead>
@@ -587,8 +933,26 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
                 <SectionTitle>Subscriber Growth Trend</SectionTitle>
                 <ChartTimeLabel>60-day window • millions</ChartTimeLabel>
               </ChartHeaderLeft>
-              <SectionActions />
+              <SectionActions onPinToCanvas={handlePinChart} onEditInSql={handleEditChartInSql} onOpenInNotebook={handleOpenChartInNotebook} />
             </ChartHeaderRow>
+            {pinSuccess?.section === 'chart' && (
+              <PinSuccessBanner>
+                <CheckCircle2 style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Pinned to <strong>{pinSuccess.canvasTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/dashboard/${pinSuccess.canvasId}`)}>
+                  Open Canvas <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
+            {notebookSuccess?.section === 'chart' && (
+              <PinSuccessBanner>
+                <BookOpen style={{ width: 14, height: 14, color: '#16a34a', flexShrink: 0 }} />
+                <PinSuccessText>Notebook created: <strong>{notebookSuccess.notebookTitle}</strong></PinSuccessText>
+                <PinSuccessLink onClick={() => navigate(`/notebook/${notebookSuccess.notebookId}?name=${encodeURIComponent(notebookSuccess.notebookTitle)}`)}>
+                  Open Notebook <ExternalLink style={{ width: 11, height: 11 }} />
+                </PinSuccessLink>
+              </PinSuccessBanner>
+            )}
             <ChartBody>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
@@ -642,6 +1006,11 @@ export function AnalysisResponse({ chartData, summaryData }: AnalysisResponsePro
           </SectionCard>
         </ContentBody>
       )}
+      <PinToDashboardDialog
+        open={pinDialogOpen}
+        onClose={() => { setPinDialogOpen(false); setPendingWidget(null); }}
+        onPin={handlePin}
+      />
     </OuterContainer>
   );
 }
