@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router';
+import { AppSidebar } from './app-sidebar';
 import { TopNav } from './top-nav';
 import { useState, useEffect } from 'react';
 import { KeyboardShortcutsModal } from '../keyboard-shortcuts-modal';
@@ -12,6 +13,13 @@ const LayoutContainer = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${colors.background};
+`;
+
+const BodyContainer = styled.div`
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
 `;
 
 const MainContent = styled.main`
@@ -38,9 +46,12 @@ export function RootLayout() {
   return (
     <LayoutContainer>
       <TopNav />
-      <MainContent>
-        <Outlet />
-      </MainContent>
+      <BodyContainer>
+        <AppSidebar />
+        <MainContent>
+          <Outlet />
+        </MainContent>
+      </BodyContainer>
       <KeyboardShortcutsModal open={showShortcuts} onOpenChange={setShowShortcuts} />
     </LayoutContainer>
   );
