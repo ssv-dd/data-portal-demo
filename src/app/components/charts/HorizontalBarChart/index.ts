@@ -1,0 +1,1 @@
+export { DPHorizontalBarChart } from './HorizontalBarChart'
