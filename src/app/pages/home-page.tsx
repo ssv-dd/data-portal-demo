@@ -18,7 +18,6 @@ import { quickPrompts } from '../data/mock/quick-prompts-data';
 import { chartData, summaryData } from '../data/mock/analysis-data';
 import { Theme } from '@doordash/prism-react';
 import { colors, glassPanel, shadows } from '@/styles/theme';
-import { ChatHistoryPanel } from '../components/home/chat-history-panel';
 import { CustomizeWatchlistPanel } from '../components/home/customize-watchlist-panel';
 
 const pulse = keyframes`
@@ -335,7 +334,6 @@ export function HomePage() {
   const [isChatCentered, setIsChatCentered] = useState(false);
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [chatHistoryOpen, setChatHistoryOpen] = useState(false);
   const [customizeWatchlistOpen, setCustomizeWatchlistOpen] = useState(false);
 
   // Get initial selected metrics from the Company area
@@ -362,8 +360,6 @@ export function HomePage() {
     const userMessage = customPrompt || searchTerm;
     if (!userMessage.trim()) return;
     if (!isChatCentered) setIsChatCentered(true);
-    // Auto-open chat history when starting a chat
-    if (!chatHistoryOpen) setChatHistoryOpen(true);
     setMessages([{ role: 'user', content: userMessage }]);
     setIsLoading(true);
     setSearchTerm('');
@@ -396,25 +392,6 @@ export function HomePage() {
     if (item.route) {
       navigate(item.route);
     }
-  };
-
-  const handleNewChat = () => {
-    // Reset chat state to start a new conversation
-    setIsChatCentered(false);
-    setMessages([]);
-    setSearchTerm(EXAMPLE_PROMPT);
-  };
-
-  const handleConversationClick = (conversation: { id: string; title: string; group: string }) => {
-    // Load the conversation (mock implementation)
-    console.log('Loading conversation:', conversation.id);
-    setIsChatCentered(true);
-    // Set up mock conversation with the title
-    setMessages([
-      { role: 'user', content: `Show me ${conversation.title}` },
-      { role: 'assistant', content: 'analysis' },
-    ]);
-    // Keep chat history open for easy navigation
   };
 
   const chatBox = (
@@ -470,14 +447,7 @@ export function HomePage() {
       <GradientOrb variant="secondary" style={{ right: '-80px', top: '120px' }} />
       <GradientOrb variant="primary" style={{ left: '60%', top: '600px' }} />
 
-      <ChatHistoryPanel
-        open={chatHistoryOpen}
-        onClose={() => setChatHistoryOpen(false)}
-        onOpen={() => setChatHistoryOpen(true)}
-        onNewChat={handleNewChat}
-        onConversationClick={handleConversationClick}
-        inline
-      />
+      {/* Chat history is owned by the /chats route now that we have a left nav rail. */}
 
       <ContentLayer
         style={{ display: hasMessages && isChatCentered ? 'none' : undefined }}
@@ -588,7 +558,7 @@ export function HomePage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            style={{ left: chatHistoryOpen ? '260px' : '48px' }}
+            style={{ left: 0 }}
           >
             <ChatHeader>
               <ChatHeaderInner>

@@ -1,7 +1,6 @@
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
 import { TopNav } from './top-nav';
-import { useState, useEffect } from 'react';
-import { KeyboardShortcutsModal } from '../keyboard-shortcuts-modal';
+import { LeftNav } from './left-nav';
 import styled from 'styled-components';
 import { colors } from '@/styles/theme';
 
@@ -14,34 +13,38 @@ const LayoutContainer = styled.div`
   background-color: ${colors.background};
 `;
 
+const Body = styled.div`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+`;
+
 const MainContent = styled.main`
   flex: 1;
+  min-width: 0;
   overflow: auto;
   background-color: ${colors.backgroundSecondary};
 `;
 
+const COLLAPSED_RAIL_ROUTES = ['/chats'];
+
 export function RootLayout() {
-  const [showShortcuts, setShowShortcuts] = useState(false);
+  const location = useLocation();
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        setShowShortcuts(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  const railCollapsed = COLLAPSED_RAIL_ROUTES.some(
+    (path) => location.pathname === path || location.pathname.startsWith(`${path}/`),
+  );
 
   return (
     <LayoutContainer>
       <TopNav />
-      <MainContent>
-        <Outlet />
-      </MainContent>
-      <KeyboardShortcutsModal open={showShortcuts} onOpenChange={setShowShortcuts} />
+      <Body>
+        <LeftNav collapsed={railCollapsed} />
+        <MainContent>
+          <Outlet />
+        </MainContent>
+      </Body>
     </LayoutContainer>
   );
 }

@@ -1,6 +1,7 @@
 import { createHashRouter } from 'react-router'
 import { RootLayout } from './components/layout/root-layout'
 import { HomePage } from './pages/home-page'
+import { ChatsPage } from './pages/chats-page'
 import { MyCanvasPage } from './pages/my-canvas-page'
 import { DashboardCanvasPage } from './pages/dashboard-canvas-page'
 import { SQLStudioPage } from './pages/sql-studio-page'
@@ -15,6 +16,7 @@ export const router = createHashRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
+      { path: 'chats', element: <ChatsPage /> },
       { path: 'dashboards', element: <MyCanvasPage /> },
       { path: 'dashboard/:id', element: <DashboardCanvasPage /> },
       { path: 'chart-builder', element: <ChartBuilderPage /> },

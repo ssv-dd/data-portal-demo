@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { Link, useLocation } from "react-router";
 import { Bell, ChevronDown, Moon, Sun, SwatchBook, User } from "lucide-react";
 import { Badge } from "../ui/badge";
 import {
@@ -10,7 +9,7 @@ import {
 } from "@doordash/prism-react";
 import { useTheme } from "@/app/context/theme-context";
 import styled from "styled-components";
-import { colors, radius, shadows } from "@/styles/theme";
+import { colors, radius } from "@/styles/theme";
 
 const Nav = styled.nav`
   height: 56px;
@@ -30,6 +29,8 @@ const LogoContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1;
+  min-width: 0;
 `;
 
 const LogoIcon = styled.img`
@@ -59,37 +60,6 @@ const LogoSubtext = styled.span`
   display: inline-flex;
   align-items: center;
   gap: 4px;
-`;
-
-const TabsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: ${Theme.usage.space.xxSmall};
-  flex: 1;
-`;
-
-const TabLink = styled(Link)<{ $active: boolean }>`
-  padding: ${Theme.usage.space.xSmall} 14px;
-  border-radius: ${radius.lg};
-  transition: all 200ms;
-  font-size: ${Theme.usage.fontSize.small};
-  font-weight: 500;
-  text-decoration: none;
-
-  ${({ $active }) =>
-    $active
-      ? `
-    background-color: ${colors.slate900};
-    color: ${colors.white};
-    box-shadow: ${shadows.sm};
-  `
-      : `
-    color: ${colors.slate600};
-    &:hover {
-      color: ${colors.slate900};
-      background-color: ${colors.slate100};
-    }
-  `}
 `;
 
 const ActionsContainer = styled.div`
@@ -179,17 +149,7 @@ const AvatarButton = styled.div`
   }
 `;
 
-const tabs = [
-  { name: "Home", path: "/" },
-  { name: "Dashboards", path: "/dashboards" },
-  { name: "SQL Studio", path: "/sql-studio" },
-  { name: "Notebooks", path: "/notebooks" },
-  { name: "AI Workflows", path: "/ai-workflows" },
-  { name: "ETL Studio", path: "/etl-studio", comingSoon: true },
-];
-
 export function TopNav() {
-  const location = useLocation();
   const { theme, toggleTheme, useStockPrismDark, setTheme, setUseStockPrismDark } =
     useTheme();
 
@@ -223,11 +183,6 @@ export function TopNav() {
     [theme, useStockPrismDark, setTheme, setUseStockPrismDark],
   );
 
-  const isActive = (path: string) => {
-    if (path === "/") return location.pathname === "/";
-    return location.pathname.startsWith(path);
-  };
-
   return (
     <Nav>
       <LogoContainer>
@@ -241,24 +196,6 @@ export function TopNav() {
           </LogoSubtext>
         </div>
       </LogoContainer>
-
-      <TabsContainer>
-        {tabs.map((tab) =>
-          tab.comingSoon ? (
-            <span
-              key={tab.path}
-              title="Coming soon"
-              style={{ padding: '6px 14px', fontSize: '13px', fontWeight: 500, color: 'rgba(0,0,0,0.25)', cursor: 'not-allowed' }}
-            >
-              {tab.name}
-            </span>
-          ) : (
-            <TabLink key={tab.path} to={tab.path} $active={isActive(tab.path)}>
-              {tab.name}
-            </TabLink>
-          )
-        )}
-      </TabsContainer>
 
       <ActionsContainer>
         <IconButton onClick={toggleTheme} aria-label="Toggle theme">
