@@ -1,5 +1,8 @@
 {
   "buildCommand": "echo 'Using pre-built dist'",
   "outputDirectory": "dist",
-  "installCommand": "echo 'Skipping install — pre-built'"
+  "installCommand": "echo 'Skipping install — pre-built'",
+  "git": {
+    "deploymentEnabled": false
+  }
 }
