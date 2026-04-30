@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { Dialog, DialogContent, DialogDescription } from '@/app/components/ui/dialog';
-import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
 import { Theme } from '@doordash/prism-react';
 import { colors, radius } from '@/styles/theme';
@@ -50,6 +49,40 @@ const Actions = styled.div`
   justify-content: flex-end;
   gap: ${Theme.usage.space.xSmall};
   margin-top: ${Theme.usage.space.small};
+`;
+
+const CancelBtn = styled.button`
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${colors.foreground};
+  background: transparent;
+  border: 1px solid ${colors.border};
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: border-color 150ms, background 150ms;
+
+  &:hover {
+    border-color: ${colors.borderStrong};
+    background: rgb(var(--app-muted-rgb) / 0.4);
+  }
+`;
+
+const CreateBtn = styled.button<{ disabled?: boolean }>`
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: ${colors.white};
+  background: ${colors.violet600};
+  border: none;
+  border-radius: 9999px;
+  cursor: ${({ disabled }) => disabled ? 'not-allowed' : 'pointer'};
+  opacity: ${({ disabled }) => disabled ? 0.5 : 1};
+  transition: opacity 150ms;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
 `;
 
 export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanvasModalProps) {
@@ -119,14 +152,14 @@ export function CreateCanvasModal({ open, onOpenChange, onCreated }: CreateCanva
             </Select>
           </div>
           <Actions>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button
-              style={{ backgroundColor: colors.violet600, color: colors.white }}
+            <CancelBtn type="button" onClick={() => onOpenChange(false)}>Cancel</CancelBtn>
+            <CreateBtn
+              type="button"
               onClick={handleCreate}
               disabled={!name.trim()}
             >
               Create Dashboard
-            </Button>
+            </CreateBtn>
           </Actions>
         </Form>
       </DialogContent>

@@ -1,10 +1,6 @@
 import React from 'react';
-import {
-  Button as PrismButton,
-  ButtonType,
-  ButtonSize as PrismButtonSize,
-} from '@doordash/prism-react';
 import styled, { css } from 'styled-components';
+import { colors } from '@/styles/theme';
 
 export type ButtonVariant = 'default' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
 export type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
@@ -14,22 +10,7 @@ export interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonE
   size?: ButtonSize;
 }
 
-const VARIANT_MAP: Record<Exclude<ButtonVariant, 'outline'>, ButtonType> = {
-  default: ButtonType.primary,
-  secondary: ButtonType.secondary,
-  ghost: ButtonType.flatSecondary,
-  link: ButtonType.flatPrimary,
-  destructive: ButtonType.primary,
-};
-
-const SIZE_MAP: Record<ButtonSize, (typeof PrismButtonSize)[keyof typeof PrismButtonSize]> = {
-  default: PrismButtonSize.medium,
-  sm: PrismButtonSize.small,
-  lg: PrismButtonSize.large,
-  icon: PrismButtonSize.small,
-};
-
-const outlineSizeStyles = {
+const sizeStyles = {
   sm: css`
     padding: 6px 14px;
     font-size: 13px;
@@ -53,11 +34,70 @@ const outlineSizeStyles = {
   `,
 } as const;
 
-/**
- * Pill outline buttons: transparent fill, high-contrast label, subtle border.
- * Implemented natively so selected/hover styles apply to the rounded button, not a wrapper span.
- */
-const OutlineButton = styled.button<{ $size: ButtonSize }>`
+const variantStyles = {
+  default: css`
+    background: ${colors.violet600};
+    color: #fff;
+    border: none;
+
+    &:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+  `,
+  secondary: css`
+    background: ${colors.muted};
+    color: ${colors.foreground};
+    border: 1px solid ${colors.border};
+
+    &:hover:not(:disabled) {
+      background: rgb(var(--app-muted-rgb) / 0.8);
+    }
+  `,
+  outline: css`
+    background: transparent;
+    color: var(--app-fg);
+    border: 1px solid var(--app-outline-pill-border, ${colors.border});
+
+    &:hover:not(:disabled) {
+      border-color: var(--app-outline-pill-border-hover, ${colors.borderStrong});
+      background: var(--app-outline-pill-hover-fill, rgb(var(--app-muted-rgb) / 0.4));
+    }
+  `,
+  ghost: css`
+    background: transparent;
+    color: ${colors.mutedForeground};
+    border: none;
+
+    &:hover:not(:disabled) {
+      color: ${colors.foreground};
+      background: rgb(var(--app-overlay-rgb) / 0.06);
+    }
+  `,
+  link: css`
+    background: transparent;
+    color: ${colors.violet600};
+    border: none;
+    padding: 0;
+    min-height: unset;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover:not(:disabled) {
+      opacity: 0.8;
+    }
+  `,
+  destructive: css`
+    background: #ef4444;
+    color: #fff;
+    border: none;
+
+    &:hover:not(:disabled) {
+      background: #dc2626;
+    }
+  `,
+} as const;
+
+const StyledButton = styled.button<{ $variant: ButtonVariant; $size: ButtonSize }>`
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -69,22 +109,11 @@ const OutlineButton = styled.button<{ $size: ButtonSize }>`
   line-height: 1.25;
   white-space: nowrap;
   border-radius: 9999px;
-  border: 1px solid var(--app-outline-pill-border);
-  background: transparent;
-  color: var(--app-fg);
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    color 0.15s ease;
-
-  &:hover:not(:disabled) {
-    border-color: var(--app-outline-pill-border-hover);
-    background: var(--app-outline-pill-hover-fill);
-  }
+  transition: background 150ms, border-color 150ms, color 150ms, opacity 150ms;
 
   &:focus-visible {
-    outline: 2px solid var(--app-dd-primary);
+    outline: 2px solid var(--app-dd-primary, ${colors.violet600});
     outline-offset: 2px;
   }
 
@@ -93,77 +122,22 @@ const OutlineButton = styled.button<{ $size: ButtonSize }>`
     cursor: not-allowed;
   }
 
-  ${({ $size }) => outlineSizeStyles[$size]}
+  ${({ $size }) => sizeStyles[$size]}
+  ${({ $variant }) => variantStyles[$variant]}
 `;
-
-const ButtonChildrenWrapper = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-function hasMultipleChildren(children: React.ReactNode): boolean {
-  return React.Children.count(children) > 1;
-}
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      variant = 'default',
-      size = 'default',
-      disabled,
-      children,
-      onClick,
-      className,
-      id,
-      style,
-      ...rest
-    },
-    ref,
-  ) => {
-    const wrappedChildren = hasMultipleChildren(children) ? (
-      <ButtonChildrenWrapper>{children}</ButtonChildrenWrapper>
-    ) : (
-      children
-    );
-
-    if (variant === 'outline') {
-      return (
-        <OutlineButton
-          ref={ref}
-          type="button"
-          $size={size}
-          className={className}
-          id={id}
-          style={style}
-          disabled={disabled}
-          onClick={onClick}
-          {...rest}
-        >
-          {wrappedChildren}
-        </OutlineButton>
-      );
-    }
-
-    const tagProps: React.ButtonHTMLAttributes<HTMLButtonElement> = { ...rest };
-    if (style) {
-      tagProps.style = style;
-    }
-
+  ({ variant = 'default', size = 'default', children, ...rest }, ref) => {
     return (
-      <PrismButton
+      <StyledButton
         ref={ref}
-        type={VARIANT_MAP[variant]}
-        size={SIZE_MAP[size]}
-        isDisabled={disabled}
-        onClick={onClick}
-        className={className}
-        id={id}
-        isInline={size === 'icon'}
-        tagProps={Object.keys(tagProps).length > 0 ? tagProps : undefined}
+        type="button"
+        $variant={variant}
+        $size={size}
+        {...rest}
       >
-        {wrappedChildren}
-      </PrismButton>
+        {children}
+      </StyledButton>
     );
   },
 );
