@@ -1,12 +1,7 @@
-import { useMemo } from "react";
-import { Bell, ChevronDown, Moon, Sun, SwatchBook, User } from "lucide-react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { Bell, ChevronDown, Moon, Sun, SwatchBook, User, Check } from "lucide-react";
 import { Badge } from "../ui/badge";
-import {
-  Menu,
-  MenuAlignment,
-  MenuSelectType,
-  Theme,
-} from "@doordash/prism-react";
+import { Theme } from "@doordash/prism-react";
 import { useTheme } from "@/app/context/theme-context";
 import styled from "styled-components";
 import { colors, radius } from "@/styles/theme";
@@ -151,36 +146,70 @@ const AvatarButton = styled.div`
   }
 `;
 
+function useClickOutside(ref: React.RefObject<HTMLElement | null>, handler: () => void) {
+  useEffect(() => {
+    const listener = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) handler();
+    };
+    document.addEventListener('mousedown', listener);
+    return () => document.removeEventListener('mousedown', listener);
+  }, [ref, handler]);
+}
+
+const PopoverWrap = styled.div`
+  position: relative;
+  display: inline-flex;
+`;
+
+const PopoverPanel = styled.div`
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 9990;
+  min-width: 220px;
+  background: ${colors.white};
+  border: 1px solid ${colors.border};
+  border-radius: ${radius.lg};
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 4px;
+`;
+
+const PopoverItem = styled.button<{ $active?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  color: ${colors.foreground};
+  background: ${({ $active }) => $active ? 'rgb(var(--app-muted-rgb) / 0.4)' : 'transparent'};
+  border: none;
+  border-radius: ${radius.md};
+  cursor: pointer;
+  text-align: left;
+  transition: background 100ms;
+
+  &:hover { background: rgb(var(--app-muted-rgb) / 0.5); }
+`;
+
 export function TopNav() {
   const { theme, toggleTheme, useStockPrismDark, setTheme, setUseStockPrismDark } =
     useTheme();
 
-  const appearanceMenuContent = useMemo(
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [notifsOpen, setNotifsOpen] = useState(false);
+  const themeRef = useRef<HTMLDivElement>(null);
+  const notifsRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(themeRef, useCallback(() => setThemeMenuOpen(false), []));
+  useClickOutside(notifsRef, useCallback(() => setNotifsOpen(false), []));
+
+  const appearanceOptions = useMemo(
     () => [
-      {
-        title: "Light",
-        selectType: MenuSelectType.radio,
-        isSelected: theme === "light",
-        onClick: () => setTheme("light"),
-      },
-      {
-        title: "Dark · custom app",
-        selectType: MenuSelectType.radio,
-        isSelected: theme === "dark" && !useStockPrismDark,
-        onClick: () => {
-          setTheme("dark");
-          setUseStockPrismDark(false);
-        },
-      },
-      {
-        title: "Dark · Prism neutral",
-        selectType: MenuSelectType.radio,
-        isSelected: theme === "dark" && useStockPrismDark,
-        onClick: () => {
-          setTheme("dark");
-          setUseStockPrismDark(true);
-        },
-      },
+      { label: "Light", selected: theme === "light", action: () => setTheme("light") },
+      { label: "Dark · custom app", selected: theme === "dark" && !useStockPrismDark, action: () => { setTheme("dark"); setUseStockPrismDark(false); } },
+      { label: "Dark · Prism neutral", selected: theme === "dark" && useStockPrismDark, action: () => { setTheme("dark"); setUseStockPrismDark(true); } },
     ],
     [theme, useStockPrismDark, setTheme, setUseStockPrismDark],
   );
@@ -205,38 +234,37 @@ export function TopNav() {
         <IconButton onClick={toggleTheme} aria-label="Toggle theme">
           {theme === "light" ? <Moon /> : <Sun />}
         </IconButton>
-        <Menu
-          alignMenu={MenuAlignment.bottomRight}
-          menuContainerStyles={{ minWidth: 232 }}
-          content={appearanceMenuContent}
-          renderMenuControl={({ describedBy, accessibilityAttributes }) => (
-            <ThemeAppearanceTrigger
-              type="button"
-              aria-describedby={describedBy}
-              aria-label="Theme: light, custom dark, or Prism neutral dark"
-              title="Choose light mode, custom app dark, or Prism default neutral dark"
-              {...accessibilityAttributes}
-            >
-              <SwatchBook />
-              <ChevronDown className="chevron" aria-hidden />
-            </ThemeAppearanceTrigger>
+
+        <PopoverWrap ref={themeRef}>
+          <ThemeAppearanceTrigger type="button" onClick={() => setThemeMenuOpen(!themeMenuOpen)}>
+            <SwatchBook />
+            <ChevronDown className="chevron" aria-hidden />
+          </ThemeAppearanceTrigger>
+          {themeMenuOpen && (
+            <PopoverPanel>
+              {appearanceOptions.map((opt) => (
+                <PopoverItem key={opt.label} $active={opt.selected} onClick={() => { opt.action(); setThemeMenuOpen(false); }}>
+                  {opt.selected && <Check style={{ width: 14, height: 14 }} />}
+                  {opt.label}
+                </PopoverItem>
+              ))}
+            </PopoverPanel>
           )}
-        />
-        <Menu
-          renderMenuControl={({ describedBy, accessibilityAttributes }) => (
-            <IconButton
-              aria-describedby={describedBy}
-              {...accessibilityAttributes}
-            >
-              <Bell />
-              <NotificationBadge variant="destructive">2</NotificationBadge>
-            </IconButton>
+        </PopoverWrap>
+
+        <PopoverWrap ref={notifsRef}>
+          <IconButton onClick={() => setNotifsOpen(!notifsOpen)}>
+            <Bell />
+            <NotificationBadge variant="destructive">2</NotificationBadge>
+          </IconButton>
+          {notifsOpen && (
+            <PopoverPanel>
+              <PopoverItem onClick={() => setNotifsOpen(false)}>Asset pending verification</PopoverItem>
+              <PopoverItem onClick={() => setNotifsOpen(false)}>Dashboard shared with you</PopoverItem>
+            </PopoverPanel>
           )}
-          content={[
-            { title: "Asset pending verification" },
-            { title: "Dashboard shared with you" },
-          ]}
-        />
+        </PopoverWrap>
+
         <AvatarButton>
           <User />
         </AvatarButton>

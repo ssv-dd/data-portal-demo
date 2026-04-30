@@ -150,28 +150,53 @@ const SectionTitle = styled.h3`
   color: ${colors.foreground};
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 `;
 
 const SectionActionsWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: ${Theme.usage.space.xxxSmall};
+  gap: ${Theme.usage.space.xSmall};
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 `;
 
-const ActionButton = styled(Button)`
+const ActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
-  height: 24px;
-  padding: 0 ${Theme.usage.space.xSmall};
-  gap: ${Theme.usage.space.xxxSmall};
+  height: 26px;
+  padding: 0 ${Theme.usage.space.small};
+  gap: 6px;
   color: ${colors.mutedForeground};
+  border-radius: ${radius.md};
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  white-space: nowrap;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  transition: color 150ms, background 150ms, border-color 150ms;
 
   &:hover {
     color: ${colors.foreground};
+    background: rgb(var(--app-overlay-rgb) / 0.06);
+    border-color: ${colors.border};
+  }
+
+  &:active {
+    background: rgb(var(--app-overlay-rgb) / 0.12);
   }
 
   svg {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    pointer-events: none;
   }
 `;
 
@@ -514,41 +539,36 @@ const NOTEBOOK_STEPS = [
 
 function SectionActions({ onPinToCanvas, onEditInSql, onOpenInNotebook }: { onPinToCanvas?: () => void; onEditInSql?: () => void; onOpenInNotebook?: () => void }) {
   const navigate = useNavigate();
+
+  const handlePinClick = () => {
+    if (onPinToCanvas) onPinToCanvas();
+    else navigate('/dashboards');
+  };
+
+  const handleSqlClick = () => {
+    if (onEditInSql) onEditInSql();
+    else navigate('/sql-studio');
+  };
+
+  const handleNotebookClick = () => {
+    if (onOpenInNotebook) onOpenInNotebook();
+    else navigate('/notebooks');
+  };
+
   return (
-    <SectionActionsWrapper>
-      <ActionButton
-        size="sm"
-        variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onPinToCanvas) onPinToCanvas();
-          else navigate('/dashboards');
-        }}
-      >
+    <SectionActionsWrapper
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      <ActionButton type="button" onClick={handlePinClick}>
         <Pin />
         Pin to Canvas
       </ActionButton>
-      <ActionButton
-        size="sm"
-        variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onEditInSql) onEditInSql();
-          else navigate('/sql-studio');
-        }}
-      >
+      <ActionButton type="button" onClick={handleSqlClick}>
         <Code2 />
         Edit in SQL Studio
       </ActionButton>
-      <ActionButton
-        size="sm"
-        variant="ghost"
-        onClick={(e) => {
-          e.stopPropagation();
-          if (onOpenInNotebook) onOpenInNotebook();
-          else navigate('/notebooks');
-        }}
-      >
+      <ActionButton type="button" onClick={handleNotebookClick}>
         <BookOpen />
         Explore in Notebook
       </ActionButton>
@@ -722,6 +742,7 @@ ORDER BY active_subscribers DESC;`,
   }, [navigate]);
 
   return (
+    <>
     <OuterContainer>
       <style>{spin}</style>
 
@@ -1006,11 +1027,12 @@ ORDER BY active_subscribers DESC;`,
           </SectionCard>
         </ContentBody>
       )}
-      <PinToDashboardDialog
-        open={pinDialogOpen}
-        onClose={() => { setPinDialogOpen(false); setPendingWidget(null); }}
-        onPin={handlePin}
-      />
     </OuterContainer>
+    <PinToDashboardDialog
+      open={pinDialogOpen}
+      onClose={() => { setPinDialogOpen(false); setPendingWidget(null); }}
+      onPin={handlePin}
+    />
+    </>
   );
 }
